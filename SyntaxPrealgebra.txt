@@ -1,0 +1,104 @@
+
+-- Prealgebra interpretation of closed inductive-inductive signatures
+
+#### Syntax
+
+PS := {P, S}
+
+Γ     	: Con
+A     	: PS → Ty Γ
+σ     	: Sub Γ Δ
+t     	: Tm Γ (A k)
+∙     	: Con
+_▶_   	: (Γ : Con) → Ty Γ k → Con
+_[_]  	: Ty Δ → Sub Γ Δ → Ty Γ k
+id    	: (Γ : Con) → Sub Γ Γ
+_∘_   	: Sub Θ Δ → Sub Γ Θ → Sub Γ Δ
+ε     	: (Γ : Con) → Sub Γ ∙
+_,_   	: (σ : Sub Γ Δ) → Tm Γ (A [ σ ]) → Sub Γ (Δ ▶ A)
+π₁    	: Sub Γ (Δ ▶ A) → Sub Γ Δ
+π₂    	: (σ : Sub Γ (Δ ▶ A)) → Tm Γ (A [ π₁ σ ])
+_[_]  	: Tm Δ A → (σ : Sub Γ Δ) → Tm Γ (A [ σ ])
+[id]  	: A [ id ] = A
+[∘]   	: A [ σ ∘ δ ] = A [ σ ] [ δ ]
+ass   	: (σ ∘ δ) ∘ ν = σ ∘ (δ ∘ ν)
+idl   	: id ∘ σ = σ
+idr   	: σ ∘ id = σ
+∙η    	: (σ : Sub Γ ∙) → σ = ε
+▶β₁   	: π₁ (σ , t) = σ
+▶β₂   	: π₂ (σ , t) = t
+▶η    	: (π₁ σ , π₂ σ) = σ
+,∘    	: (σ , t) ∘ δ = (σ ∘ δ , t [ δ ])
+
+U     	: Ty Γ S
+El    	: Tm Γ U → Ty Γ P
+U[]   	: U [ σ ] = U
+El[]  	: (El a) [ σ ] = El (a [ σ ])
+
+Π     	: (a : Tm Γ U) → Ty (Γ ▶ El a) k → Ty Γ k
+app   	: Tm Γ (Π a B) → Tm (Γ ▶ El a) B
+Π[]   	: (Π a B) [ σ ] = Π (a [ σ ]) (B [ σ ↑ ])
+app[] 	: (app t) [ σ ↑ ] = app (t [ σ ])
+
+
+#### Prealgebras
+
+(Γ : Con)ᴾ               : Set
+(A : Ty Γ S)ᴾ            : Set
+(A : Ty Γ P)ᴾ            : Γᴾ → Set
+(σ : Sub Γ Δ)ᴾ           : Γᴾ → Δᴾ
+(t : Tm Γ (A : Ty Γ S))ᴾ : Γᴾ → Aᴾ
+(t : Tm Γ (A : Ty Γ P))ᴾ : (γ : Γᴾ) → Aᴾ γ
+
+∙ᴾ := ⊤
+(Γ ▶ (A : Ty Γ S))ᴾ := Γᴾ × Aᴾ
+(Γ ▶ (A : Ty Γ P))ᴾ := Σ(γ : Γᴾ) × Aᴾ γ
+
+((A : Ty Γ S) [ σ ])ᴾ := Aᴾ
+((A : Ty Γ P) [ σ ])ᴾ γ := Aᴾ (σᴾ γ)
+
+(id : Sub Γ Γ)ᴾ γ := γ
+(σ ∘ δ)ᴾ γ := σᴾ (δᴾ γ)
+εᴾ γ := tt
+
+(σ , (t : Tm Γ (A : Ty Γ S)))ᴾ γ := (σᴾ γ, tᴾ γ)
+(σ , (t : Tm Γ (A : Ty Γ P)))ᴾ γ := (σᴾ γ, tᴾ γ)
+
+(π₁ (σ : Sub Γ (Δ ▶ (A : Ty Δ S))))ᴾ γ := proj₁ (σᴾ γ)
+(π₁ (σ : Sub Γ (Δ ▶ (A : Ty Δ P))))ᴾ γ := proj₁ (σᴾ γ)
+
+(π₂ (σ : Sub Γ (Δ ▶ (A : Ty Δ S))))ᴾ γ := proj₂ (σᴾ γ)
+(π₁ (σ : Sub Γ (Δ ▶ (A : Ty Δ P))))ᴾ γ := proj₂ (σᴾ γ)
+
+((t : Tm Δ (A : Ty Δ S)) [ σ ])ᴾ γ := tᴾ (σᴾ γ)
+((t : Tm Δ (A : Ty Δ P)) [ σ ])ᴾ γ := tᴾ (σᴾ γ)
+
+-- [id]  	: A [ id ] = A
+-- [∘]   	: A [ σ ∘ δ ] = A [ σ ] [ δ ]
+-- ass   	: (σ ∘ δ) ∘ ν = σ ∘ (δ ∘ ν)
+-- idl   	: id ∘ σ = σ
+-- idr   	: σ ∘ id = σ
+-- ∙η    	: (σ : Sub Γ ∙) → σ = ε
+-- ▶β₁   	: π₁ (σ , t) = σ
+-- ▶β₂   	: π₂ (σ , t) = t
+-- ▶η    	: (π₁ σ , π₂ σ) = σ
+-- ,∘    	: (σ , t) ∘ δ = (σ ∘ δ , t [ δ ])
+REFL after matching on PS
+
+
+Uᴾ := Set
+(El a)ᴾ γ := aᴾ γ
+
+-- REFL
+-- U[]   	: U [ σ ] = U
+-- El[]  	: (El a) [ σ ] = El (a [ σ ])
+
+(Π a (B : Ty (Γ ▶ El a) S))ᴾ := Bᴾ
+(Π a (B : Ty (Γ ▶ El a) P))ᴾ γ := (α : aᴾ γ) → Bᴾ (γ, α)
+
+(app (t : Tm Γ (Π a (B : Ty (Γ ▶ El a) S)))) (γ, α) := tᴾ γ
+(app (t : Tm Γ (Π a (B : Ty (Γ ▶ El a) P)))) (γ, α) := tᴾ γ α
+
+-- REFL after pattern matching
+-- Π[]   	: (Π a B) [ σ ] = Π (a [ σ ]) (B [ σ ↑ ])
+-- app[] 	: (app t) [ σ ↑ ] = app (t [ σ ])
