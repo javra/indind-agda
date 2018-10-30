@@ -12,60 +12,60 @@ infixl 8 _[_]t
 infixl 3 _▶_
 
 i : Level
-i = suc (suc zero)
+i = suc (suc (suc zero))
 
 j : Level
-j = suc zero
+j = suc (suc zero)
 
-record Con : Set i where
+record Con : Set₃ where
   constructor mkCon
   field
-    ᴬ  : Set₁
-    ᴹ  : ᴬ → ᴬ → Set₁
-    ᴾ  : Set₁                 -- prealg
-    ᴾᴰ : ᴾ → Set₁             -- displayed prealg
-    ᴾˢ : (γ : ᴾ) → ᴾᴰ γ → Set -- displayed prealg section
+    ᴬ  : Set₂
+    ᴹ  : ᴬ → ᴬ → Set₂
+    ᴾ  : Set₂                  -- prealg
+    ᴾᴰ : ᴾ → Set₂              -- displayed prealg
+    ᴾˢ : (γ : ᴾ) → ᴾᴰ γ → Set₁ -- displayed prealg section
 open Con public
 
-Tyᴾ : ∀ {k : PS}(Γ : Con) → Set₂
-Tyᴾ {P} Γ = Γ .ᴾ → Set₁
-Tyᴾ {S} Γ = Set₁
+Tyᴾ : ∀ {k : PS}(Γ : Con) → Set₃
+Tyᴾ {P} Γ = Γ .ᴾ → Set₂
+Tyᴾ {S} Γ = Set₂
 
-Tyᴾᴰ : ∀ {k : PS}(Γ : Con) → Tyᴾ {k} Γ → Set₂
-Tyᴾᴰ {P} Γ Aᴾ = (γ : Con.ᴾ Γ) → Con.ᴾᴰ Γ γ → Aᴾ γ → Set₁
-Tyᴾᴰ {S} Γ Aᴾ = Aᴾ → Set₁
+Tyᴾᴰ : ∀ {k : PS}(Γ : Con) → Tyᴾ {k} Γ → Set₃
+Tyᴾᴰ {P} Γ Aᴾ = (γ : Con.ᴾ Γ) → Con.ᴾᴰ Γ γ → Aᴾ γ → Set₂
+Tyᴾᴰ {S} Γ Aᴾ = Aᴾ → Set₂
 
-Tyᴾˢ : ∀ {k : PS}(Γ : Con){Aᴾ : Tyᴾ {k} Γ}(Aᴾᴰ : Tyᴾᴰ {k} Γ Aᴾ) → Set₁
+Tyᴾˢ : ∀ {k : PS}(Γ : Con){Aᴾ : Tyᴾ {k} Γ}(Aᴾᴰ : Tyᴾᴰ {k} Γ Aᴾ) → Set₂
 Tyᴾˢ {P} Γ {Aᴾ} Aᴾᴰ = {γᴾ : Γ .ᴾ}(γᴾᴰ : Γ .ᴾᴰ γᴾ)(γˢ : Γ .ᴾˢ γᴾ γᴾᴰ)
-                    → (α : Aᴾ γᴾ) → Aᴾᴰ γᴾ γᴾᴰ α → Set
-Tyᴾˢ {S} Γ {Aᴾ} Aᴾᴰ = (α : Aᴾ) → Aᴾᴰ α → Set
+                    → (α : Aᴾ γᴾ) → Aᴾᴰ γᴾ γᴾᴰ α → Set₁
+Tyᴾˢ {S} Γ {Aᴾ} Aᴾᴰ = (α : Aᴾ) → Aᴾᴰ α → Set₁
 
-record Ty (Γ : Con)(k : PS) : Set i where
+record Ty (Γ : Con)(k : PS) : Set₃ where
   constructor mkTy
   field
-    ᴬ  : Γ .ᴬ → Set₁
-    ᴹ  : ∀ {γ₀ γ₁} → Γ .ᴹ γ₀ γ₁ → ᴬ γ₀ → ᴬ γ₁ → Set
+    ᴬ  : Γ .ᴬ → Set₂
+    ᴹ  : ∀ {γ₀ γ₁} → Γ .ᴹ γ₀ γ₁ → ᴬ γ₀ → ᴬ γ₁ → Set₁
     ᴾ  : Tyᴾ {k} Γ
     ᴾᴰ : Tyᴾᴰ {k} Γ ᴾ
     ᴾˢ : Tyᴾˢ {k} Γ ᴾᴰ
 open Ty public
 
-Tmᴾ : ∀ {Γ}{k}(A : Ty Γ k) → Set₁
+Tmᴾ : ∀ {Γ}{k}(A : Ty Γ k) → Set₂
 Tmᴾ {Γ} {P} A = (γ : Γ .ᴾ) → A .ᴾ γ
 Tmᴾ {Γ} {S} A = Γ .ᴾ → A .ᴾ
 
-Tmᴾᴰ : ∀ {Γ}{k}(A : Ty Γ k) → Tmᴾ {Γ}{k} A → Set₁
+Tmᴾᴰ : ∀ {Γ}{k}(A : Ty Γ k) → Tmᴾ {Γ}{k} A → Set₂
 Tmᴾᴰ {Γ} {P} A tᴾ = (γ : Γ .ᴾ)(γᴾᴰ : Γ .ᴾᴰ γ) → A .ᴾᴰ γ γᴾᴰ (tᴾ γ)
 Tmᴾᴰ {Γ} {S} A tᴾ = (γ : Γ .ᴾ) → Γ .ᴾᴰ γ → A .ᴾᴰ (tᴾ γ)
 
-Tmᴾˢ : ∀ {Γ}{k}(A : Ty Γ k){tᴾ : Tmᴾ {Γ}{k} A} → Tmᴾᴰ {Γ}{k} A tᴾ → Set₁
+Tmᴾˢ : ∀ {Γ}{k}(A : Ty Γ k){tᴾ : Tmᴾ {Γ}{k} A} → Tmᴾᴰ {Γ}{k} A tᴾ → Set₂
 Tmᴾˢ {Γ} {P} A {tᴾ} tᴾᴰ =
   (γ : Γ .ᴾ)(γᴾᴰ : Γ .ᴾᴰ γ)(γᴾˢ : Γ .ᴾˢ γ γᴾᴰ)
   → A .ᴾˢ γᴾᴰ γᴾˢ (tᴾ γ) (tᴾᴰ γ γᴾᴰ)
 Tmᴾˢ {Γ} {S} A {tᴾ} tᴾᴰ =
   (γ : Γ .ᴾ)(γᴾᴰ : Γ .ᴾᴰ γ) → Γ .ᴾˢ γ γᴾᴰ → A .ᴾˢ (tᴾ γ) (tᴾᴰ γ γᴾᴰ)
 
-record Tm (Γ : Con){k}(A : Ty Γ k) : Set j where
+record Tm (Γ : Con){k}(A : Ty Γ k) : Set₂ where
   constructor mkTm
   field
     ᴬ  : (γ : Con.ᴬ Γ) → Ty.ᴬ A γ
@@ -74,7 +74,7 @@ record Tm (Γ : Con){k}(A : Ty Γ k) : Set j where
     ᴾᴰ : Tmᴾᴰ {Γ}{k} A ᴾ
     ᴾˢ : Tmᴾˢ {Γ}{k} A ᴾᴰ
 
-record Sub (Γ : Con)(Δ : Con) : Set j where
+record Sub (Γ : Con)(Δ : Con) : Set₂ where
   constructor mkSub
   field
     ᴬ  : Con.ᴬ Γ → Con.ᴬ Δ
@@ -90,15 +90,15 @@ open Sub public
           (Lift ⊤) (λ _ → Lift ⊤)
           (λ _ _ → Lift ⊤)
 
-▶ᴾ : ∀{k}(Γ : Con)(A : Ty Γ k) → Set₁
+▶ᴾ : ∀{k}(Γ : Con)(A : Ty Γ k) → Set₂
 ▶ᴾ {P} Γ A = Σ (Γ .ᴾ) (A .ᴾ)
 ▶ᴾ {S} Γ A = (Γ .ᴾ) × (A .ᴾ)
 
-▶ᴾᴰ : ∀{k}(Γ : Con)(A : Ty Γ k) → ▶ᴾ Γ A → Set₁
+▶ᴾᴰ : ∀{k}(Γ : Con)(A : Ty Γ k) → ▶ᴾ Γ A → Set₂
 ▶ᴾᴰ {P} Γ A (γ , α) = Σ (Γ .ᴾᴰ γ) λ γᴾᴰ → A .ᴾᴰ γ γᴾᴰ α
 ▶ᴾᴰ {S} Γ A (γ , α) = (Γ .ᴾᴰ γ)  × (A .ᴾᴰ α)
 
-▶ᴾˢ : ∀{k}(Γ : Con)(A : Ty Γ k)(γα : ▶ᴾ Γ A) → ▶ᴾᴰ Γ A γα → Set
+▶ᴾˢ : ∀{k}(Γ : Con)(A : Ty Γ k)(γα : ▶ᴾ Γ A) → ▶ᴾᴰ Γ A γα → Set₁
 ▶ᴾˢ {P} Γ A (γ , α) (γᴾᴰ , αᴾᴰ) =
   Σ (Γ .ᴾˢ γ γᴾᴰ) λ γᴾˢ → A .ᴾˢ γᴾᴰ γᴾˢ α αᴾᴰ
 ▶ᴾˢ {S} Γ A (γ , α) (γᴾᴰ , αᴾᴰ) =
@@ -282,10 +282,10 @@ infixl 5 _^_
 U : ∀{Γ} → Ty Γ S
 U {Γ} =
   mkTy
-    (λ _ → Set)
+    (λ _ → Set₁)
     (λ _ A B → (A → B))
-    Set
-    (λ A → (A → Set))
+    Set₁
+    (λ A → (A → Set₁))
     (λ A Aᴾᴰ → (α : A) → Aᴾᴰ α)
 
 U[]  : ∀{Γ Δ}{σ : Sub Γ Δ} → (U [ σ ]T) ≡ U
