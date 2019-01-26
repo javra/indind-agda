@@ -73,12 +73,29 @@ wk : ∀{Γ}{Δ}{B} → Sub Γ Δ → Sub (Γ ▶t B) Δ
 wk ε       = ε
 wk (δ , t) = wk δ , vs t
 
+wkβ : ∀{Γ Δ Ω B}{δ : Sub Γ Δ}{γ : Sub Ω Γ}{t : Tm Ω B} → wk δ ∘ (γ , t) ≡ δ ∘ γ
+wkβ {δ = ε}         = refl
+wkβ {δ = δ , x} {γ} = (λ δ₁ → δ₁ , (x [ γ ]t)) & wkβ
+
 id : ∀{Γ} → Sub Γ Γ
 id {∙t}     = ε
 id {Γ ▶t B} = wk id , vz
 
+idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
+idl ε       = refl
+idl (δ , x) = (λ δ₁ → δ₁ , x) & (wkβ ◾ idl δ)
+
 _^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶t B) (Δ ▶t B)
 δ ^ B = wk δ , vz
+
+id^ : ∀{Γ B} → id {Γ} ^ B ≡ id
+id^ = refl
+
+π₁β : ∀{Γ Δ B}{δ : Sub Γ Δ}{t : Tm Γ B} → π₁ (δ , t) ≡ δ
+π₁β = refl
+
+π₂β : ∀{Γ Δ B}{δ : Sub Γ Δ}{t : Tm Γ B} → π₂ (δ , t) ≡ t
+π₂β = refl
 
 [wk] : ∀{Γ}{B} → (t : Tm Γ B) → t [ wk {B = B} (id {Γ}) ]t ≡ vs t
 [wk] vz = refl
@@ -98,11 +115,5 @@ _^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶t B) (Δ ▶t B)
 [id]t (t $S α) = (λ x → coe x ((t [ id ]t) $S α)) & (const& (_$S_ & [id]t t) ⁻¹) ◾ apd (λ f → f α) (_$S_ & [id]t t)
 
 idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
-idr {∙t} ε = refl
-idr {∙t} (δ , x) = {!!}
-idr {Γ ▶t x} δ = {!!}
-
-idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
-idl {∙t} ε = refl
-idl {∙t} (δ , x) = {!!}
-idl {Γ ▶t x} δ = {!!}
+idr ε       = refl
+idr (δ , x) = _,_ & idr δ ⊗ [id]t x
