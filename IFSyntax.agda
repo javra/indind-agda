@@ -105,6 +105,9 @@ id^ = refl
 π₂β : ∀{Γ Δ B}{δ : Sub Γ Δ}{t : Tm Γ B} → π₂ (δ , t) ≡ t
 π₂β = refl
 
+πβ : ∀{Γ Δ B}{δ : Sub Γ (Δ ▶t B)} → (π₁ δ , π₂ δ) ≡ δ
+πβ {δ = δ , x} = refl
+
 vs$S' : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
 vs$S' {Γ} {T} {α} {B} {B'} t = refl
 
@@ -146,5 +149,23 @@ idr (δ , x) = _,_ & idr δ ⊗ [id]t x
                            ◾ apd (λ f → f α) (_$S_ & [][]t t δ (γ , x))
 
 ass : ∀{Γ Δ Ω Σ}{δ : Sub Γ Δ}{γ : Sub Δ Ω}{ι : Sub Ω Σ} → (ι ∘ γ) ∘ δ ≡ ι ∘ (γ ∘ δ)
-ass {ι = ε} = refl
-ass {ι = ι , x} = _,_ & ass ⊗ {!!}
+ass {ι = ε}     = refl
+ass {ι = ι , x} = _,_ & ass ⊗ [][]t x _ _
+
+εη : ∀{Γ} (δ : Sub Γ ∙t) → δ ≡ ε
+εη ε = refl
+
+,∘ : ∀{Γ Δ Ω}{δ : Sub Γ Δ}{γ : Sub Ω Γ}{B : TyS}{t : Tm Γ B} → ((δ , t) ∘ γ) ≡ (δ ∘ γ) , (t [ γ ]t)
+,∘ = refl
+
+El[] : ∀{Γ Δ}{δ : Sub Γ Δ}{a : Tm Δ U} → (El a) [ δ ]T ≡ El (a [ δ ]t)
+El[] = refl
+
+Π̂P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{T}{A : T → TyP Δ} → (Π̂P T A) [ δ ]T ≡ Π̂P T λ α → A α [ δ ]T
+Π̂P[] = refl
+
+$S[] : ∀{Γ Δ}{δ : Sub Γ Δ}{T}{B}{t : Tm Δ (Π̂S T B)}{α} → (t $S α) [ δ ]t ≡ (t [ δ ]t) $S α
+$S[] = refl
+
+⇒P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{a : Tm Δ U}{A : TyP Δ} → (a ⇒P A) [ δ ]T ≡ (a [ δ ]t) ⇒P (A [ δ ]T)
+⇒P[] = refl
