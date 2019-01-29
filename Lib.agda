@@ -90,6 +90,11 @@ tr2 {B = B} C {a₀}{.a₀} refl refl c₀ = c₀
 happly : ∀ {α β}{A : Set α}{B : Set β}{f g : A → B} → f ≡ g → ∀ a → f a ≡ g a
 happly refl a = refl
 
+happly2 : ∀{i j k}{A : Set i}{B : Set j}{C : B → Set k}(f : A → (b : B) → C b)
+          {a a' : A}(p : a ≡ a')(b : B)
+          → f a b ≡ f a' b
+happly2 f refl b = refl
+
 &⁻¹ : ∀{i j}{A : Set i}{B : Set j}(f : A → B){a₀ a₁ : A}(a₂ : a₀ ≡ a₁)
       → f & a₂ ⁻¹ ≡ f & (a₂ ⁻¹)
 &⁻¹ f refl = refl

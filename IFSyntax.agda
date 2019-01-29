@@ -112,12 +112,10 @@ vs$S' : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs 
 vs$S' {Γ} {T} {α} {B} {B'} t = refl
 
 [wk] : ∀{Γ Δ B B'}(δ : Sub Γ Δ) → (t : Tm Δ B) → t [ wk {B = B'} δ ]t ≡ vs (t [ δ ]t)
-[wk] {Γ = Γ}{B' = B'} ε (t $S α)       = ((λ x → coe x ((t [ ε ]t) $S α)) & (const& ((_$S_ & [wk] {Γ = Γ}{B' = B'} ε t)) ⁻¹)
-                                         ◾ apd (λ f → f α) (_$S_ & [wk] ε t))
+[wk] {Γ = Γ}{B' = B'} ε (t $S α)       = happly2 _$S_ ([wk] ε t) _
 [wk]                  (δ , x) vz       = refl
 [wk]                  (δ , x) (vs t)   = [wk] δ t
-[wk] {Γ = Γ}{B' = B'} (δ , x) (t $S α) = ((λ y → coe y ((t [ wk δ , vs x ]t) $S α)) & (const& (_$S_ & [wk] {Γ = Γ}{B' = B'} (δ , x) t) ⁻¹)
-                                         ◾ apd (λ f → f α) (_$S_ & [wk] (δ , x) t))
+[wk] {Γ = Γ}{B' = B'} (δ , x) (t $S α) = happly2 _$S_ ([wk] (δ , x) t) _
 
 [id]T : ∀{Γ} → (A : TyP Γ) → A [ id ]T ≡ A
 [id]t : ∀{Γ}{B} → (t : Tm Γ B) → t [ id ]t ≡ t
@@ -128,7 +126,7 @@ vs$S' {Γ} {T} {α} {B} {B'} t = refl
 
 [id]t vz       = refl
 [id]t (vs t)   = [wk] id t ◾ vs & [id]t t
-[id]t (t $S α) = (λ x → coe x ((t [ id ]t) $S α)) & (const& (_$S_ & [id]t t) ⁻¹) ◾ apd (λ f → f α) (_$S_ & [id]t t)
+[id]t (t $S α) = happly2 _$S_ ([id]t t) _
 
 idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
 idr ε       = refl
@@ -141,12 +139,10 @@ idr (δ , x) = _,_ & idr δ ⊗ [id]t x
 [][]T {Γ} {Δ} {Ω} (El a) δ γ   = El & [][]t a δ γ
 [][]T {Γ} {Δ} {Ω} (t ⇒P A) δ γ = _⇒P_ & [][]t t δ γ ⊗ [][]T A δ γ
 
-[][]t (t $S α) δ ε       = (λ x → coe x (((t [ ε ]t) [ δ ]t) $S α)) & (const& (_$S_ & [][]t t δ ε) ⁻¹)
-                           ◾ apd (λ f → f α) (_$S_ & [][]t t δ ε)
+[][]t (t $S α) δ ε       = happly2 _$S_ ([][]t t δ ε) _
 [][]t vz δ (γ , x)       = refl
 [][]t (vs t) δ (γ , x)   = [][]t t δ γ
-[][]t (t $S α) δ (γ , x) = (λ y → coe y (((t [ γ , x ]t) [ δ ]t) $S α)) & (const& (_$S_ & [][]t t δ (γ , x)) ⁻¹)
-                           ◾ apd (λ f → f α) (_$S_ & [][]t t δ (γ , x))
+[][]t (t $S α) δ (γ , x) = happly2 _$S_ ([][]t t δ (γ , x)) _
 
 ass : ∀{Γ Δ Ω Σ}{δ : Sub Γ Δ}{γ : Sub Δ Ω}{ι : Sub Ω Σ} → (ι ∘ γ) ∘ δ ≡ ι ∘ (γ ∘ δ)
 ass {ι = ε}     = refl

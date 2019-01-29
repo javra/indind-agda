@@ -1,3 +1,4 @@
+{-# OPTIONS --rewriting #-}
 module EW where
 
 open import Lib hiding (id; _∘_)
@@ -47,8 +48,8 @@ record Sub (Γ : Con) (Δ : Con) : Set₁ where
   field
     Ec : S.Sub Γ.Ec Δ.Ec
     E  : ∀{γc} → (Γ.E ᴬC) γc → (Δ.E ᴬC) ((Ec ᴬs) γc) --name?
-    wc : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wc γ) (Δ.wc δ)
-    w  : ∀{γc}{γ : (Γ.E ᴬC) γc}{α} → ((Γ.w γ) ᴬC) α → (Δ.w (E γ) ᴬC) ((wc ᴬs) α) --name?
+    wc : ∀{γc}{γ : (Γ.E ᴬC) γc} → S.Sub (Γ.wc γ) (Δ.wc {γc = (Ec ᴬs) γc} (E γ))
+ --   w  : ∀{γc}{γ : (Γ.E ᴬC) γc}{α} → ((Γ.w γ) ᴬC) α → (Δ.w (E γ) ᴬC) ((wc ᴬs) α) --name?
 
 ∙ : Con
 Con.Ec ∙ = S.∙c
@@ -117,17 +118,52 @@ _[_]TS B δ = record { w = λ γ → B.w (δ.E γ) }
 
 _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
 _[_]TP A δ = record { E = A.E S.[ δ.Ec ]T ;
-                      w = λ γ α →  A.w (δ.E γ) {!!} S.[ δ.wc ]T }
+                      w = λ {γc} γ α →  A.w (δ.E γ) α S.[ δ.wc ]T }
+--                      w = λ {γc} γ α →  A.w (δ.E γ) (coe ([]TᴬS {A = A.E}{δ = δ.Ec} γc) α) S.[ δ.wc ]T }
   where
     module A = TyP A
     module δ = Sub δ
 
-{-
-_[_]T : ∀{k Γ Δ} → Ty Δ k → Sub Γ Δ → Ty Γ k
+_[_]tS : ∀{Γ Δ}{A : TyS Δ} → TmS Δ A → (σ : Sub Γ Δ) → TmS Γ (A [ σ ]TS)
+_[_]tS a σ = record { E = a.E S.[ σ.Ec ]t ;
+                      w = λ γ α → a.w (σ.E γ) α S.[ σ.wc ]t }
+  where
+    module a = TmS a
+    module σ = Sub σ
 
-id    : ∀{Γ} → Sub Γ Γ
-_∘_   : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
-ε     : ∀{Γ} → Sub Γ ∙
+--_[_]tP : ∀{Γ Δ}{A : TyP Δ} → TmP Δ A → (σ : Sub Γ Δ) → TmP Γ (A [ σ ]TP)
+--_[_]tP a σ = ?
+
+U[] : ∀{Γ Δ}{δ : Sub Γ Δ} → U [ δ ]TS ≡ U
+U[] = refl
+
+El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U} → (El a [ σ ]TP) ≡ (El (coe (TmS Γ & (U[] {δ = σ})) (a [ σ ]tS)))
+El[] = refl
+
+--ΠS[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U}{B : TyS (Δ ▶P El a)}
+--      → ((ΠS a B) [ σ ]TS) ≡ (ΠS (a [ σ ]tS) (B [ σ ^ El a ]TS))
+--ΠS[] = ?
+
+id : ∀{Γ} → Sub Γ Γ
+id {Γ} = record { Ec = S.id ;
+                  E  = λ γ → γ;
+                  wc = S.id }
+
+_∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
+σ ∘ δ = record { Ec = σ.Ec S.∘ δ.Ec ;
+                 E = λ γ → σ.E (δ.E γ) ;
+                 wc = σ.wc S.∘ δ.wc }
+  where
+    module σ = Sub σ
+    module δ = Sub δ
+
+ε : ∀{Γ} → Sub Γ ∙
+ε = record { Ec = S.ε ;
+            E = λ _ → lift tt ;
+            wc = S.ε }
+
+
+{-
 _,s_  : ∀{k Γ Δ}(σ : Sub Γ Δ){A : Ty Δ k} → Tm Γ (A [ σ ]T) → Sub Γ (Δ ▶ A)
 π₁    : ∀{k Γ Δ}{A : Ty Δ k} → Sub Γ (Δ ▶ A) → Sub Γ Δ
 
@@ -178,19 +214,13 @@ infixl 5 _^_
 --------------------------------------------------------------------------------
 
 postulate
-  U[]  : ∀{Γ Δ}{σ : Sub Γ Δ} → (U [ σ ]T) ≡ U
 
-  El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}
-       → (El a [ σ ]T) ≡ (El (coe (Tm Γ & U[]) (a [ σ ]t)))
 
 -- Inductive functions
 --------------------------------------------------------------------------------
 postulate
 
 
-  Π[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}
-      → (Π a B) [ σ ]T ≡ Π (tr (Tm Γ) U[] (a [ σ ]t))
-                           (tr (λ x → Ty (Γ ▶ x) k) El[] (B [ σ ^ El a ]T))
 
   app[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}{t : Tm Δ (Π a B)}
           → tr2 (λ A → Tm (Γ ▶ A)) El[] refl (app t [ σ ^ El a ]t)

@@ -31,14 +31,31 @@ _ᴬs : {Γc Δc : SCon} → Sub Γc Δc → Γc ᴬc → Δc ᴬc
 (ε ᴬs) γ       = lift tt
 ((σ , t) ᴬs) γ = (σ ᴬs) γ , (t ᴬt) γ
 
-[]TᴬS : ∀{Γc Δc A}{δ : Sub Γc Δc} → (γ : Γc ᴬc) → ((A [ δ ]T) ᴬP) γ ≡ (A ᴬP) ((δ ᴬs) γ)
-[]tᴬS : ∀{Γc Δc A}{a : Tm Δc A}{δ : Sub Γc Δc} → (γ : Γc ᴬc) → ((a [ δ ]t) ᴬt) γ ≡ (a ᴬt) ((δ ᴬs) γ)
+[]Tᴬ : ∀{Γc Δc A}{δ : Sub Γc Δc} → (γc : Γc ᴬc) → ((A [ δ ]T) ᴬP) γc ≡ (A ᴬP) ((δ ᴬs) γc)
+[]tᴬ : ∀{Γc Δc A}{a : Tm Δc A}{δ : Sub Γc Δc} → (γc : Γc ᴬc) → ((a [ δ ]t) ᴬt) γc ≡ (a ᴬt) ((δ ᴬs) γc)
 
-[]TᴬS {A = Π̂P T x} γ = Π≡ refl λ α → []TᴬS {A = x α} γ
-[]TᴬS {A = El x} γ   = Lift & []tᴬS {a = x} γ
-[]TᴬS {A = x ⇒P A} γ = Π≡ ([]tᴬS {a = x} γ) λ α → []TᴬS {A = A} γ
+[]Tᴬ {A = Π̂P T x} γc = Π≡ refl λ α → []Tᴬ {A = x α} γc
+[]Tᴬ {A = El x} γc   = Lift & []tᴬ {a = x} γc
+[]Tᴬ {A = x ⇒P A} γc = Π≡ ([]tᴬ {a = x} γc) λ α → []Tᴬ {A = A} γc
 
-[]tᴬS {a = vz} {δ , x} γ = refl
-[]tᴬS {a = vs a} {δ , x} γ = []tᴬS {a = a} γ
-[]tᴬS {a = a $S α} {δ} γ = (λ x → coe x (((a [ δ ]t) ᴬt) γ α)) & (const& ([]tᴬS {a = a} {δ = δ} γ) ⁻¹) ◾ apd (λ f → f α) ([]tᴬS {a = a} {δ = δ} γ)
-{-# REWRITE []TᴬS #-}
+[]tᴬ {a = vz} {δ , x} γc   = refl
+[]tᴬ {a = vs a} {δ , x} γc = []tᴬ {a = a} γc
+[]tᴬ {a = a $S α} {δ} γc   = (λ x → coe x (((a [ δ ]t) ᴬt) γc α)) & (const& ([]tᴬ {a = a} {δ = δ} γc) ⁻¹)
+                             ◾ apd (λ f → f α) ([]tᴬ {a = a} {δ = δ} γc)
+{-# REWRITE []Tᴬ #-}
+{-# REWRITE []tᴬ #-}
+
+wk,ᴬ : ∀{Γc Δc B γc α} → {σ : Sub Γc Δc} → ((wk {B = B} σ) ᴬs) (γc , α) ≡ (σ ᴬs) γc
+wk,ᴬ {σ = ε}     = refl
+wk,ᴬ {σ = σ , x} = ,≡ wk,ᴬ refl
+{-# REWRITE wk,ᴬ #-}
+
+idᴬ : ∀{Γc} → (γc : Γc ᴬc) → (id ᴬs) γc ≡ γc
+idᴬ {∙c} γc            = refl
+idᴬ {Γc ▶c x} (γc , α) = ,≡ (idᴬ γc) refl
+{-# REWRITE idᴬ #-}
+
+∘ᴬ : ∀{Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → ((σ ∘ δ) ᴬs) (γc) ≡ (σ ᴬs) ((δ ᴬs) γc)
+∘ᴬ {σ = ε}                      = refl
+∘ᴬ {σ = σ , x} {δ = δ}{γc = γc} = happly2 _,_ (∘ᴬ {σ = σ} {δ = δ}) ((x ᴬt) ((δ ᴬs) γc))
+{-# REWRITE ∘ᴬ #-}
