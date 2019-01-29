@@ -13,29 +13,100 @@ infixl 3 _▶_
 
 record Con : Set₁ where
   field
-    ET : S.TCon
+    ET : S.SCon
     E  : S.Con ET
-    wT : ET ᴬT → S.TCon
-    T  : {γ : ET ᴬT} → (E ᴬC) γ → S.Con (wT γ)
+    wT : {γc : ET ᴬc} → (γ : (E ᴬC) γc) → S.SCon
+    w  : {γc : ET ᴬc} → (γ : (E ᴬC) γc) → S.Con (wT γ)
+
+record TyS (Γ : Con) : Set₁ where
+  module Γ = Con Γ
+  field
+    w  : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → S.TyS
+
+record TyP (Γ : Con) : Set₁ where
+  module Γ = Con Γ
+  field
+    E : S.TyP Γ.ET
+    w : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wT γ)
+
+record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
+  module Γ = Con Γ
+  module A = TyS A
+  field
+    E : S.Tm Γ.ET S.U
+    w : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wT γ) (A.w γ)
+
+--record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
+--  module Γ = Con Γ
+--  module A = TyS A
+--  field
+
+record Sub (Γ : Con) (Δ : Con) : Set₁ where
+  module Γ = Con Γ
+  module Δ = Con Δ
+  field
+    E : S.Sub Γ.ET Δ.ET
+    w : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wT γ) (Δ.wT δ)
+
+∙ : Con
+Con.ET ∙ = S.∙c
+Con.E ∙ = S.∙
+Con.wT ∙ = λ _ → S.∙c
+Con.w ∙ = λ _ → S.∙
+
+_▶S_ : (Γ : Con) → TyS Γ → Con
+Γ ▶S A = record { ET = Γ.ET S.▶c S.U ;
+                  E = Γ.E S.▶S S.U ;
+                  wT = λ { (γ , T) → Γ.ET S.▶c (T S.⇒̂S A.w γ) } ;
+                  w =  λ { (γ , T) → Γ.E S.▶S (T S.⇒̂S A.w γ)} }
+  where
+    module Γ = Con Γ
+    module A = TyS A
+
+_▶P_ : (Γ : Con) → TyP Γ → Con
+Γ ▶P A = record { ET = Γ.ET ;
+                  E = Γ.E S.▶P A.E ;
+                  wT = λ { (γ , α) → Γ.wT γ } ;
+                  w = λ { (γ , α) → Γ.w γ S.▶P A.w γ α } }
+  where
+    module Γ = Con Γ
+    module A = TyP A
+
+U : {Γ : Con} → TyS Γ
+U {Γ} = record { w = λ γ → S.U }
+  where
+    module Γ = Con Γ
+
+El : {Γ : Con} (a : TmS Γ U) → TyP Γ
+El {Γ} a = record { E = S.El a.E ;
+                    w = λ { γ (lift α) → S.El (a.w γ α) } }
+  where
+    module Γ = Con Γ
+    module a = TmS a
+
+ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
+ΠS a B = record { w = λ {γc} γ → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α)) }
+  where
+    module a = TmS a
+    module B = TyS B
+
+ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
+ΠP a B = record { E = a.E S.⇒P B.E ;
+                  w = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → a.w γ τ S.⇒P (B.w (γ , lift τ) (β τ))) }
+  where
+    module a = TmS a
+    module B = TyP B
+
+--app : ∀{k Γ}{a : Tm Γ U}{B : Ty (Γ ▶ El a) k} → Tm Γ (Π a B) → Tm (Γ ▶ El a) B
+appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
+appS t = record { E = t.E ;
+                  w = λ { (γ , lift υ) τ → t.w γ τ S.$S υ} }
+  where
+    module t = TmS t
+
+
+
 {-
-Ty : Con → PS → Set₁
-Ty (ΓT , Γ) P = S.TyP ΓT
-Ty (ΓT , Γ) S = Lift ⊤
-
-Tm : ∀ Γ → ∀ {k} → Ty Γ k → Set₁
-Tm (ΓT , Γ) {P} A = Lift ⊤
-Tm (ΓT , Γ) {S} A = S.Tm ΓT S.U
-
-Sub : Con → Con → Set₁
-Sub (ΓT , Γ) (ΔT , Δ) = S.Sub ΓT ΔT
-
-∙     : Con
-∙ = S.∙t , S.∙
-
-_▶_ : ∀{k}(Γ : Con) → Ty Γ k → Con
-_▶_ {P} (ΓT , Γ) A = ΓT , (Γ S.▶P A)
-_▶_ {S} (ΓT , Γ) A = (ΓT S.▶t S.U) , (Γ S.▶S S.U)
-
 _[_]T : ∀{k Γ Δ} → Ty Δ k → Sub Γ Δ → Ty Γ k
 
 id    : ∀{Γ} → Sub Γ Γ
@@ -91,22 +162,19 @@ infixl 5 _^_
 --------------------------------------------------------------------------------
 
 postulate
-  U    : ∀{Γ} → Ty Γ S
   U[]  : ∀{Γ Δ}{σ : Sub Γ Δ} → (U [ σ ]T) ≡ U
-  El   : ∀{Γ}(a : Tm Γ U) → Ty Γ P
+
   El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}
        → (El a [ σ ]T) ≡ (El (coe (Tm Γ & U[]) (a [ σ ]t)))
 
 -- Inductive functions
 --------------------------------------------------------------------------------
 postulate
-  Π : ∀{k Γ}(a : Tm Γ U)(B : Ty (Γ ▶ El a) k) → Ty Γ k
+
 
   Π[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}
       → (Π a B) [ σ ]T ≡ Π (tr (Tm Γ) U[] (a [ σ ]t))
                            (tr (λ x → Ty (Γ ▶ x) k) El[] (B [ σ ^ El a ]T))
-
-  app : ∀{k Γ}{a : Tm Γ U}{B : Ty (Γ ▶ El a) k} → Tm Γ (Π a B) → Tm (Γ ▶ El a) B
 
   app[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}{t : Tm Δ (Π a B)}
           → tr2 (λ A → Tm (Γ ▶ A)) El[] refl (app t [ σ ^ El a ]t)
