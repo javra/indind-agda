@@ -60,8 +60,8 @@ Con.w ∙ = λ _ → S.∙
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S A = record { Ec = Γ.Ec S.▶c S.U ;
                   E = Γ.E S.▶S S.U ;
-                  wc = λ { (γ , T) → Γ.Ec S.▶c (T S.⇒̂S A.w γ) } ;
-                  w =  λ { (γ , T) → Γ.E S.▶S (T S.⇒̂S A.w γ)} }
+                  wc = λ { (γ , T) → (Γ.wc γ) S.▶c (T S.⇒̂S A.w γ) } ;
+                  w =  λ { (γ , T) → (Γ.w γ) S.▶S (T S.⇒̂S A.w γ)} }
   where
     module Γ = Con Γ
     module A = TyS A
@@ -159,12 +159,18 @@ _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 
 ε : ∀{Γ} → Sub Γ ∙
 ε = record { Ec = S.ε ;
-            E = λ _ → lift tt ;
-            wc = S.ε }
+             E = λ _ → lift tt ;
+             wc = S.ε }
 
+_,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
+σ ,s t = record { Ec = σ.Ec S., t.E ;
+                  E = λ {γc} γ → σ.E γ , (t.E ᴬt) γc;
+                  wc = λ {γc}{γ} → σ.wc S., {!!} }
+  where
+    module σ = Sub σ
+    module t = TmS t
 
 {-
-_,s_  : ∀{k Γ Δ}(σ : Sub Γ Δ){A : Ty Δ k} → Tm Γ (A [ σ ]T) → Sub Γ (Δ ▶ A)
 π₁    : ∀{k Γ Δ}{A : Ty Δ k} → Sub Γ (Δ ▶ A) → Sub Γ Δ
 
 _[_]t : ∀{k Γ Δ}{A : Ty Δ k} → Tm Δ A → (σ : Sub Γ Δ) → Tm Γ (A [ σ ]T)
