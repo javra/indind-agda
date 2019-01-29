@@ -52,10 +52,7 @@ record Sub (Γ : Con) (Δ : Con) : Set₁ where
  --   w  : ∀{γc}{γ : (Γ.E ᴬC) γc}{α} → ((Γ.w γ) ᴬC) α → (Δ.w (E γ) ᴬC) ((wc ᴬs) α) --name?
 
 ∙ : Con
-Con.Ec ∙ = S.∙c
-Con.E ∙ = S.∙
-Con.wc ∙ = λ _ → S.∙c
-Con.w ∙ = λ _ → S.∙
+∙ = record { Ec = S.∙c ; E = S.∙ ; wc = λ _ → S.∙c ; w = λ _ → S.∙ }
 
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S A = record { Ec = Γ.Ec S.▶c S.U ;
@@ -165,17 +162,32 @@ _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 _,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
 σ ,s t = record { Ec = σ.Ec S., t.E ;
                   E = λ {γc} γ → σ.E γ , (t.E ᴬt) γc;
-                  wc = λ {γc}{γ} → σ.wc S., {!!} }
+                  wc = λ {γc}{γ} → σ.wc S., {!!} } -- this is a problem, seems like we do need λ̂ in the end
   where
     module σ = Sub σ
     module t = TmS t
 
+π₁S : ∀{Γ Δ}{A : TyS Δ} → Sub Γ (Δ ▶S A) → Sub Γ Δ
+π₁S σ = record { Ec = S.π₁ σ.Ec ;
+                 E = λ γ → ₁ (σ.E γ) ;
+                 wc = S.π₁ σ.wc }
+  where
+    module σ = Sub σ
+
+π₁P : ∀{Γ Δ}{A : TyP Δ} → Sub Γ (Δ ▶P A) → Sub Γ Δ
+π₁P σ = record { Ec = σ.Ec ;
+                 E = λ γ → ₁ (σ.E γ) ;
+                 wc = σ.wc }
+  where
+    module σ = Sub σ
+
+π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
+π₂S σ = record { E = S.π₂ σ.Ec ;
+                 w = λ γ τ → S.π₂ {!!} }
+  where
+    module σ = Sub σ
+
 {-
-π₁    : ∀{k Γ Δ}{A : Ty Δ k} → Sub Γ (Δ ▶ A) → Sub Γ Δ
-
-_[_]t : ∀{k Γ Δ}{A : Ty Δ k} → Tm Δ A → (σ : Sub Γ Δ) → Tm Γ (A [ σ ]T)
-π₂    : ∀{k Γ Δ}{A : Ty Δ k}(σ : Sub Γ (Δ ▶ A)) → Tm Γ (A [ π₁ σ ]T)
-
 [id]T : ∀{k Γ}{A : Ty Γ k} → A [ id ]T ≡ A
 [][]T : ∀{k Γ Δ Σ}{A : Ty Σ k}{σ : Sub Γ Δ}{δ : Sub Δ Σ}
         → A [ δ ]T [ σ ]T ≡ A [ δ ∘ σ ]T
