@@ -38,7 +38,6 @@ data Tm where
   _$S_ : ∀{Γ}{T}{B} → Tm Γ (Π̂S T B) → (α : T) → Tm Γ (B α)
 
 postulate vs$S : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
-
 {-# REWRITE vs$S #-}
 
 data Con : SCon → Set₁ where

@@ -45,8 +45,10 @@ record Sub (Γ : Con) (Δ : Con) : Set₁ where
   module Γ = Con Γ
   module Δ = Con Δ
   field
-    E : S.Sub Γ.Ec Δ.Ec
-    w : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wc γ) (Δ.wc δ)
+    Ec : S.Sub Γ.Ec Δ.Ec
+    E  : ∀{γc} → (Γ.E ᴬC) γc → (Δ.E ᴬC) ((Ec ᴬs) γc) --name?
+    wc : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wc γ) (Δ.wc δ)
+    w  : ∀{γc}{γ : (Γ.E ᴬC) γc}{α} → ((Γ.w γ) ᴬC) α → (Δ.w (E γ) ᴬC) ((wc ᴬs) α) --name?
 
 ∙ : Con
 Con.Ec ∙ = S.∙c
@@ -108,13 +110,14 @@ appS t = record { E = t.E ;
 --appP t = ?
 
 _[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
-_[_]TS B δ = record { w = λ γ → B.w {!!} }
+_[_]TS B δ = record { w = λ γ → B.w (δ.E γ) }
   where
     module B = TyS B
+    module δ = Sub δ
 
 _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
-_[_]TP A δ = record { E = A.E S.[ δ.E ]T ;
-                      w = λ γ α → A.w {!!} {!!} S.[ δ.w ]T }
+_[_]TP A δ = record { E = A.E S.[ δ.Ec ]T ;
+                      w = λ γ α →  A.w (δ.E γ) {!!} S.[ δ.wc ]T }
   where
     module A = TyP A
     module δ = Sub δ
