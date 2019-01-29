@@ -1,4 +1,3 @@
-
 module Syntax where
 
 open import Lib hiding (id; _∘_)

@@ -11,6 +11,7 @@ infixl 3 _▶P_
 infixr 5 _$S_
 infixr 5 _⇒P_
 
+
 data TCon where
   ∙t   : TCon
   _▶t_ : TCon → TyS → TCon
@@ -80,6 +81,7 @@ id {Γ ▶t B} = wk id , vz
 _^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶t B) (Δ ▶t B)
 δ ^ B = wk δ , vz
 
+{-
 [wk] : ∀{Γ}{B} → (t : Tm Γ B) → t [ wk {B = B} (id {Γ}) ]t ≡ vs t
 [wk] vz = refl
 [wk] (vs t) = {!!}
@@ -106,3 +108,4 @@ idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
 idl {∙t} ε = refl
 idl {∙t} (δ , x) = {!!}
 idl {Γ ▶t x} δ = {!!}
+-}
