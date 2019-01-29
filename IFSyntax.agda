@@ -6,26 +6,26 @@ open import Lib hiding (id; _∘_)
 
 --{-# BUILTIN REWRITE _≡_ #-}
 
-data TCon : Set₁
+data SCon : Set₁
 data TyS : Set₁
 
-infixl 3 _▶t_
+infixl 3 _▶c_
 infixl 3 _▶S_
 infixl 3 _▶P_
 infixr 5 _$S_
 infixr 5 _⇒P_
 
 
-data TCon where
-  ∙t   : TCon
-  _▶t_ : TCon → TyS → TCon
+data SCon where
+  ∙c   : SCon
+  _▶c_ : SCon → TyS → SCon
 
 data TyS where
   U  : TyS
   Π̂S : (T : Set) → (T → TyS) → TyS
 
-data TyP : TCon → Set₁
-data Tm : TCon → TyS → Set₁
+data TyP : SCon → Set₁
+data Tm : SCon → TyS → Set₁
 
 data TyP where
   Π̂P   : ∀{Γ}(T : Set) → (T → TyP Γ) → TyP Γ
@@ -33,17 +33,17 @@ data TyP where
   _⇒P_ : ∀{Γ} → Tm Γ U → TyP Γ → TyP Γ
 
 data Tm where
-  vz   : ∀{Γ}{A} → Tm (Γ ▶t A) A
-  vs   : ∀{Γ}{A}{B} → Tm Γ A → Tm (Γ ▶t B) A
+  vz   : ∀{Γ}{A} → Tm (Γ ▶c A) A
+  vs   : ∀{Γ}{A}{B} → Tm Γ A → Tm (Γ ▶c B) A
   _$S_ : ∀{Γ}{T}{B} → Tm Γ (Π̂S T B) → (α : T) → Tm Γ (B α)
 
 postulate vs$S : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
 
 {-# REWRITE vs$S #-}
 
-data Con : TCon → Set₁ where
-  ∙    : Con ∙t
-  _▶S_ : ∀{Γ} → Con Γ → (A : TyS) → Con (Γ ▶t A)
+data Con : SCon → Set₁ where
+  ∙    : Con ∙c
+  _▶S_ : ∀{Γ} → Con Γ → (A : TyS) → Con (Γ ▶c A)
   _▶P_ : ∀{Γ} → Con Γ → TyP Γ → Con Γ
 
 _⇒̂S_ : Set → TyS → TyS
@@ -53,9 +53,9 @@ _⇒̂P_ : ∀{Γ} → Set → TyP Γ → TyP Γ
 T ⇒̂P A = Π̂P T (λ _ → A)
 
 -- Substitution calculus
-data Sub : TCon → TCon → Set₁ where
-  ε   : ∀{Γ} → Sub Γ ∙t
-  _,_ : ∀{Γ}{Δ}{B} → Sub Γ Δ → Tm Γ B → Sub Γ (Δ ▶t B)
+data Sub : SCon → SCon → Set₁ where
+  ε   : ∀{Γ} → Sub Γ ∙c
+  _,_ : ∀{Γ}{Δ}{B} → Sub Γ Δ → Tm Γ B → Sub Γ (Δ ▶c B)
 
 _[_]T : ∀{Γ}{Δ} → TyP Δ → Sub Γ Δ → TyP Γ
 _[_]t : ∀{Γ}{Δ}{B} → Tm Δ B → Sub Γ Δ → Tm Γ B
@@ -68,17 +68,17 @@ vz       [ δ , t ]t = t
 vs a     [ δ , t ]t = a [ δ ]t
 (a $S α) [ δ ]t     = (a [ δ ]t) $S α
 
-π₁ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶t B) → Sub Γ Δ
+π₁ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶c B) → Sub Γ Δ
 π₁ (δ , t) = δ
 
-π₂ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶t B) → Tm Γ B
+π₂ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶c B) → Tm Γ B
 π₂ (δ , t) = t
 
 _∘_ : ∀{Γ}{Δ}{Ω} → Sub Ω Δ → Sub Γ Ω → Sub Γ Δ
 ε       ∘ γ = ε
 (δ , x) ∘ γ = (δ ∘ γ) , (x [ γ ]t)
 
-wk : ∀{Γ}{Δ}{B} → Sub Γ Δ → Sub (Γ ▶t B) Δ
+wk : ∀{Γ}{Δ}{B} → Sub Γ Δ → Sub (Γ ▶c B) Δ
 wk ε       = ε
 wk (δ , t) = wk δ , vs t
 
@@ -87,22 +87,15 @@ wkβ {δ = ε}         = refl
 wkβ {δ = δ , x} {γ} = (λ δ₁ → δ₁ , (x [ γ ]t)) & wkβ
 
 id : ∀{Γ} → Sub Γ Γ
-id {∙t}     = ε
-id {Γ ▶t B} = wk id , vz
+id {∙c}     = ε
+id {Γ ▶c B} = wk id , vz
 
 idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
 idl ε       = refl
 idl (δ , x) = (λ δ₁ → δ₁ , x) & (wkβ ◾ idl δ)
 
-_^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶t B) (Δ ▶t B)
+_^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶c B) (Δ ▶c B)
 δ ^ B = wk δ , vz
-
-{-
-[wk] : ∀{Γ}{B} → (t : Tm Γ B) → t [ wk {B = B} (id {Γ}) ]t ≡ vs t
-[wk] vz = refl
-[wk] (vs t) = {!!}
-[wk] (t $S α) = {!!}
--}
 
 id^ : ∀{Γ B} → id {Γ} ^ B ≡ id
 id^ = refl
@@ -113,7 +106,7 @@ id^ = refl
 π₂β : ∀{Γ Δ B}{δ : Sub Γ Δ}{t : Tm Γ B} → π₂ (δ , t) ≡ t
 π₂β = refl
 
-πβ : ∀{Γ Δ B}{δ : Sub Γ (Δ ▶t B)} → (π₁ δ , π₂ δ) ≡ δ
+πβ : ∀{Γ Δ B}{δ : Sub Γ (Δ ▶c B)} → (π₁ δ , π₂ δ) ≡ δ
 πβ {δ = δ , x} = refl
 
 vs$S' : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
@@ -142,13 +135,6 @@ idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
 idr ε       = refl
 idr (δ , x) = _,_ & idr δ ⊗ [id]t x
 
-{-
-idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
-idl {∙t} ε = refl
-idl {∙t} (δ , x) = {!!}
-idl {Γ ▶t x} δ = {!!}
--}
-
 [][]T : ∀{Γ Δ Ω} → (A : TyP Ω) (δ : Sub Γ Δ)(γ : Sub Δ Ω) → A [ γ ]T [ δ ]T ≡ A [ γ ∘ δ ]T
 [][]t : ∀{Γ Δ Ω B}(t : Tm Ω B)(δ : Sub Γ Δ)(γ : Sub Δ Ω) → t [ γ ]t [ δ ]t ≡ t [ γ ∘ δ ]t
 
@@ -167,7 +153,7 @@ ass : ∀{Γ Δ Ω Σ}{δ : Sub Γ Δ}{γ : Sub Δ Ω}{ι : Sub Ω Σ} → (ι �
 ass {ι = ε}     = refl
 ass {ι = ι , x} = _,_ & ass ⊗ [][]t x _ _
 
-εη : ∀{Γ} (δ : Sub Γ ∙t) → δ ≡ ε
+εη : ∀{Γ} (δ : Sub Γ ∙c) → δ ≡ ε
 εη ε = refl
 
 ,∘ : ∀{Γ Δ Ω}{δ : Sub Γ Δ}{γ : Sub Ω Γ}{B : TyS}{t : Tm Γ B} → ((δ , t) ∘ γ) ≡ (δ ∘ γ) , (t [ γ ]t)
@@ -184,4 +170,3 @@ $S[] = refl
 
 ⇒P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{a : Tm Δ U}{A : TyP Δ} → (a ⇒P A) [ δ ]T ≡ (a [ δ ]t) ⇒P (A [ δ ]T)
 ⇒P[] = refl
-
