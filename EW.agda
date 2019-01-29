@@ -13,28 +13,28 @@ infixl 3 _▶_
 
 record Con : Set₁ where
   field
-    ET : S.SCon
-    E  : S.Con ET
-    wT : {γc : ET ᴬc} → (γ : (E ᴬC) γc) → S.SCon
-    w  : {γc : ET ᴬc} → (γ : (E ᴬC) γc) → S.Con (wT γ)
+    Ec : S.SCon
+    E  : S.Con Ec
+    wc : {γc : Ec ᴬc} → (γ : (E ᴬC) γc) → S.SCon
+    w  : {γc : Ec ᴬc} → (γ : (E ᴬC) γc) → S.Con (wc γ)
 
 record TyS (Γ : Con) : Set₁ where
   module Γ = Con Γ
   field
-    w  : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → S.TyS
+    w  : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.TyS
 
 record TyP (Γ : Con) : Set₁ where
   module Γ = Con Γ
   field
-    E : S.TyP Γ.ET
-    w : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wT γ)
+    E : S.TyP Γ.Ec
+    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wc γ)
 
 record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
   module Γ = Con Γ
   module A = TyS A
   field
-    E : S.Tm Γ.ET S.U
-    w : {γc : Γ.ET ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wT γ) (A.w γ)
+    E : S.Tm Γ.Ec S.U
+    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wc γ) (A.w γ)
 
 --record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
 --  module Γ = Con Γ
@@ -45,28 +45,28 @@ record Sub (Γ : Con) (Δ : Con) : Set₁ where
   module Γ = Con Γ
   module Δ = Con Δ
   field
-    E : S.Sub Γ.ET Δ.ET
-    w : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wT γ) (Δ.wT δ)
+    E : S.Sub Γ.Ec Δ.Ec
+    w : ∀{γc}{γ : (Γ.E ᴬC) γc}{δc}{δ : (Δ.E ᴬC) δc} → S.Sub (Γ.wc γ) (Δ.wc δ)
 
 ∙ : Con
-Con.ET ∙ = S.∙c
+Con.Ec ∙ = S.∙c
 Con.E ∙ = S.∙
-Con.wT ∙ = λ _ → S.∙c
+Con.wc ∙ = λ _ → S.∙c
 Con.w ∙ = λ _ → S.∙
 
 _▶S_ : (Γ : Con) → TyS Γ → Con
-Γ ▶S A = record { ET = Γ.ET S.▶c S.U ;
+Γ ▶S A = record { Ec = Γ.Ec S.▶c S.U ;
                   E = Γ.E S.▶S S.U ;
-                  wT = λ { (γ , T) → Γ.ET S.▶c (T S.⇒̂S A.w γ) } ;
+                  wc = λ { (γ , T) → Γ.Ec S.▶c (T S.⇒̂S A.w γ) } ;
                   w =  λ { (γ , T) → Γ.E S.▶S (T S.⇒̂S A.w γ)} }
   where
     module Γ = Con Γ
     module A = TyS A
 
 _▶P_ : (Γ : Con) → TyP Γ → Con
-Γ ▶P A = record { ET = Γ.ET ;
+Γ ▶P A = record { Ec = Γ.Ec ;
                   E = Γ.E S.▶P A.E ;
-                  wT = λ { (γ , α) → Γ.wT γ } ;
+                  wc = λ { (γ , α) → Γ.wc γ } ;
                   w = λ { (γ , α) → Γ.w γ S.▶P A.w γ α } }
   where
     module Γ = Con Γ
@@ -104,7 +104,20 @@ appS t = record { E = t.E ;
   where
     module t = TmS t
 
+--appP : {Γ : Con} {a : TmS Γ U} → {B : TyP (Γ ▶P El a)} → (t : TmP Γ (ΠS a B)) → TmP (Γ ▶P El a) B
+--appP t = ?
 
+_[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
+_[_]TS B δ = record { w = λ γ → B.w {!!} }
+  where
+    module B = TyS B
+
+_[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
+_[_]TP A δ = record { E = A.E S.[ δ.E ]T ;
+                      w = λ γ α → A.w {!!} {!!} S.[ δ.w ]T }
+  where
+    module A = TyP A
+    module δ = Sub δ
 
 {-
 _[_]T : ∀{k Γ Δ} → Ty Δ k → Sub Γ Δ → Ty Γ k
