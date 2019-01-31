@@ -23,7 +23,7 @@ _ᴬP : {Γc : SCon} → TyP Γc → (γ : Γc ᴬc) → Set₁
 ((a ⇒P B) ᴬP) γ = (a ᴬt) γ → (B ᴬP) γ
 
 _ᴬC : {Γc : SCon} → Con Γc → Γc ᴬc → Set₁
-(∙ ᴬC) γ = Lift ⊤
+(∙ ᴬC) γ              = Lift ⊤
 ((Γ ▶S A) ᴬC) (γ , _) = (Γ ᴬC) γ × A ᴬS
 ((Γ ▶P A) ᴬC) γ       = (Γ ᴬC) γ × (A ᴬP) γ
 
@@ -59,3 +59,27 @@ idᴬ {Γc ▶c x} (γc , α) = ,≡ (idᴬ γc) refl
 ∘ᴬ {σ = ε}                      = refl
 ∘ᴬ {σ = σ , x} {δ = δ}{γc = γc} = happly2 _,_ (∘ᴬ {σ = σ} {δ = δ}) ((x ᴬt) ((δ ᴬs) γc))
 {-# REWRITE ∘ᴬ #-}
+
+π₁ᴬ : ∀{Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → ((π₁ σ) ᴬs) γc ≡ ₁ ((σ ᴬs) γc)
+π₁ᴬ {σ = σ , x} = refl
+{-# REWRITE π₁ᴬ #-}
+
+π₂ᴬ : ∀{Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → ((π₂ σ) ᴬt) γc ≡ ₂ ((σ ᴬs) γc)
+π₂ᴬ {σ = σ , x} = refl
+{-# REWRITE π₂ᴬ #-}
+
+--Want the algebras over this:
+--data SubL : {Γc Δc : SCon} → (σ : Sub Γc Δc) → Con Γc → Con Δc → Set₁ where
+--  εL    : ∀{Γc : SCon}{Γ : Con Γc} → SubL ε Γ ∙
+--  _,SL_ : ∀{Γc Δc B}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : B ᴬS) → {t : Tm Γc B} → (SubL (σ , t) Γ (Δ ▶S B))
+--  _,PL_ : ∀{Γc Δc A}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : A) → SubL {!!} Γ (Δ ▶P A)
+
+PSub : ∀{Γc} (γc : Γc ᴬc) → (Γ : Con Γc) → Set₁
+PSub γc ∙        = Lift ⊤
+PSub γc (Γ ▶S B) = PSub (₁ γc) Γ
+PSub γc (Γ ▶P A) = (PSub γc Γ) × (A ᴬP) γc
+
+_ᴬsL : ∀{Γc Δc : SCon}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δc}(γc : Γc ᴬc)(d : PSub ((σ ᴬs) γc) Δ) → (Γ ᴬC) γc → (Δ ᴬC) ((σ ᴬs) γc)
+_ᴬsL σ {Γ = Γ} {∙}  γc d        γ       = lift tt
+_ᴬsL σ {Δ = Δ ▶S B} γc d        γ       = _ᴬsL (π₁ σ) _ d γ , (π₂ σ ᴬt) γc
+_ᴬsL σ {Δ = Δ ▶P A} γc (d , d') γ       = _ᴬsL σ _ d γ , d'

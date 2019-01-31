@@ -1,5 +1,5 @@
 {-# OPTIONS --rewriting #-}
-module EW where
+module EW' where
 
 open import Lib hiding (id; _∘_)
 open import Syntax using (PS; P; S)
@@ -22,7 +22,7 @@ record Con : Set₁ where
 record TyS (Γ : Con) : Set₁ where
   module Γ = Con Γ
   field
-    w  : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.TyS
+    w  : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → Set → S.TyS
 
 record TyP (Γ : Con) : Set₁ where
   module Γ = Con Γ
@@ -35,30 +35,31 @@ record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
   module A = TyS A
   field
     E : S.Tm Γ.Ec S.U
-    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wc γ) (A.w γ)
+--    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wc γ) (A.w γ ((E ᴬt) γc))
+    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.Tm (Γ.wc γ) (A.w γ ((E ᴬt) γc))
 
 --record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
 --  module Γ = Con Γ
 --  module A = TyS A
 --  field
 
-record Sub (Γ : Con) (Δ : Con) : Set₁ where
+record Sub (Γ : Con) (Δ : Con) : Set₂ where
   module Γ = Con Γ
   module Δ = Con Δ
   field
     Ec : S.Sub Γ.Ec Δ.Ec
-    E  : ∀{γc} → (Γ.E ᴬC) γc → (Δ.E ᴬC) ((Ec ᴬs) γc) --name?
-    wc : ∀{γc}{γ : (Γ.E ᴬC) γc} → S.Sub (Γ.wc γ) (Δ.wc {γc = (Ec ᴬs) γc} (E γ))
- --   w  : ∀{γc}{γ : (Γ.E ᴬC) γc}{α} → ((Γ.w γ) ᴬC) α → (Δ.w (E γ) ᴬC) ((wc ᴬs) α) --name?
+    E  : ∀{γc} → PSub γc Δ.E
+    wc : ∀{γc}{γ : (Γ.E ᴬC) γc} → S.Sub (Γ.wc γ) (Δ.wc ((Ec ᴬsL) γc E γ))
 
+{-
 ∙ : Con
 ∙ = record { Ec = S.∙c ; E = S.∙ ; wc = λ _ → S.∙c ; w = λ _ → S.∙ }
 
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S A = record { Ec = Γ.Ec S.▶c S.U ;
                   E = Γ.E S.▶S S.U ;
-                  wc = λ { (γ , T) → (Γ.wc γ) S.▶c (T S.⇒̂S A.w γ) } ;
-                  w =  λ { (γ , T) → (Γ.w γ) S.▶S (T S.⇒̂S A.w γ)} }
+                  wc = λ { (γ , T) → (Γ.wc γ) S.▶c (A.w γ T) } ;
+                  w =  λ { (γ , T) → (Γ.w γ) S.▶S (A.w γ T)} }
   where
     module Γ = Con Γ
     module A = TyS A
@@ -73,34 +74,33 @@ _▶P_ : (Γ : Con) → TyP Γ → Con
     module A = TyP A
 
 U : {Γ : Con} → TyS Γ
-U {Γ} = record { w = λ γ → S.U }
+U {Γ} = record { w = λ γ T → (T S.⇒̂S S.U) }
   where
     module Γ = Con Γ
 
 El : {Γ : Con} (a : TmS Γ U) → TyP Γ
 El {Γ} a = record { E = S.El a.E ;
-                    w = λ { γ (lift α) → S.El (a.w γ α) } }
+                    w = λ { γ (lift α) → S.El (a.w γ S.$S α) } }
   where
     module Γ = Con Γ
     module a = TmS a
 
 ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
-ΠS a B = record { w = λ {γc} γ → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α)) }
+ΠS a B = record { w = λ {γc} γ T → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α) T) }
   where
     module a = TmS a
     module B = TyS B
 
 ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
 ΠP a B = record { E = a.E S.⇒P B.E ;
-                  w = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → a.w γ τ S.⇒P (B.w (γ , lift τ) (β τ))) }
+                  w = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → (a.w γ S.$S τ) S.⇒P (B.w (γ , lift τ) (β τ))) }
   where
     module a = TmS a
     module B = TyP B
 
---app : ∀{k Γ}{a : Tm Γ U}{B : Ty (Γ ▶ El a) k} → Tm Γ (Π a B) → Tm (Γ ▶ El a) B
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS t = record { E = t.E ;
-                  w = λ { (γ , lift υ) τ → t.w γ τ S.$S υ} }
+                  w = λ { (γ , lift υ) → t.w γ S.$S υ} }
   where
     module t = TmS t
 
@@ -123,7 +123,7 @@ _[_]TP A δ = record { E = A.E S.[ δ.Ec ]T ;
 
 _[_]tS : ∀{Γ Δ}{A : TyS Δ} → TmS Δ A → (σ : Sub Γ Δ) → TmS Γ (A [ σ ]TS)
 _[_]tS a σ = record { E = a.E S.[ σ.Ec ]t ;
-                      w = λ γ α → a.w (σ.E γ) α S.[ σ.wc ]t }
+                      w = λ γ → a.w (σ.E γ) S.[ σ.wc ]t }
   where
     module a = TmS a
     module σ = Sub σ
@@ -162,7 +162,7 @@ _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 _,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
 σ ,s t = record { Ec = σ.Ec S., t.E ;
                   E = λ {γc} γ → σ.E γ , (t.E ᴬt) γc;
-                  wc = λ {γc}{γ} → σ.wc S., {!t.w!} } -- this is a problem, seems like we do need λ̂ in the end
+                  wc = λ {γc}{γ} → σ.wc S., t.w γ }
   where
     module σ = Sub σ
     module t = TmS t
@@ -182,10 +182,11 @@ _,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub �
     module σ = Sub σ
 
 π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
-π₂S σ = record { E = S.π₂ σ.Ec ;
-                 w = λ γ τ → {!!} }
+π₂S {Γ}{Δ}{A} σ = record { E = S.π₂ σ.Ec ;
+                 w = λ γ → S.π₂ {_}{Con.wc Δ (₁ (σ.E γ))}({!σ.wc {γ = γ}!}) }
   where
     module σ = Sub σ
+-}
 
 {-
 [id]T : ∀{k Γ}{A : Ty Γ k} → A [ id ]T ≡ A
