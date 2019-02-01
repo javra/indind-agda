@@ -5,17 +5,17 @@ open import Lib hiding (id; _∘_)
 open import IFSyntax
 
 _ᴬS : TyS → Set₁
-U ᴬS = Set
+U ᴬS      = Set
 Π̂S T A ᴬS = (α : T) → (A α) ᴬS
 
 _ᴬc : SCon → Set₁
-∙c ᴬc = Lift ⊤
+∙c ᴬc       = Lift ⊤
 (Γ ▶c A) ᴬc = Γ ᴬc × A ᴬS
 
 _ᴬt : {Γ : SCon}{A : TyS} → Tm Γ A → Γ ᴬc → A ᴬS
-(vz ᴬt) (γ , α) = α
+(vz ᴬt) (γ , α)   = α
 (vs t ᴬt) (γ , α) = (t ᴬt) γ
-((t $S α) ᴬt) γ = (t ᴬt) γ α
+((t $S α) ᴬt) γ   = (t ᴬt) γ α
 
 _ᴬP : {Γc : SCon} → TyP Γc → (γ : Γc ᴬc) → Set₁
 (Π̂P T A ᴬP) γ   = (α : T) → ((A α) ᴬP) γ
@@ -24,7 +24,7 @@ _ᴬP : {Γc : SCon} → TyP Γc → (γ : Γc ᴬc) → Set₁
 
 _ᴬC : {Γc : SCon} → Con Γc → Γc ᴬc → Set₁
 (∙ ᴬC) γ              = Lift ⊤
-((Γ ▶S A) ᴬC) (γ , _) = (Γ ᴬC) γ × A ᴬS
+((Γ ▶S A) ᴬC) (γ , _) = (Γ ᴬC) γ
 ((Γ ▶P A) ᴬC) γ       = (Γ ᴬC) γ × (A ᴬP) γ
 
 _ᴬs : {Γc Δc : SCon} → Sub Γc Δc → Γc ᴬc → Δc ᴬc
@@ -74,12 +74,49 @@ idᴬ {Γc ▶c x} (γc , α) = ,≡ (idᴬ γc) refl
 --  _,SL_ : ∀{Γc Δc B}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : B ᴬS) → {t : Tm Γc B} → (SubL (σ , t) Γ (Δ ▶S B))
 --  _,PL_ : ∀{Γc Δc A}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : A) → SubL {!!} Γ (Δ ▶P A)
 
-PSub : ∀{Γc} (γc : Γc ᴬc) → (Γ : Con Γc) → Set₁
-PSub γc ∙        = Lift ⊤
-PSub γc (Γ ▶S B) = PSub (₁ γc) Γ
-PSub γc (Γ ▶P A) = (PSub γc Γ) × (A ᴬP) γc
+data LSub : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set₁ where
+  Lε   : ∀{Γc}{Γ : Con Γc} → LSub ε Γ ∙
+  _,S_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub σ Γ Δ) → {B : TyS} → (b : Tm Γc B) → LSub (σ , b) Γ (Δ ▶S B)
+  _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub σ Γ Δ) → {A : TyP Δc} → (α : ∀{γc} → (Γ ᴬC) γc → (A ᴬP) ((σ ᴬs) γc))
+            → LSub σ Γ (Δ ▶P A)
 
-_ᴬsL : ∀{Γc Δc : SCon}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δc}(γc : Γc ᴬc)(d : PSub ((σ ᴬs) γc) Δ) → (Γ ᴬC) γc → (Δ ᴬC) ((σ ᴬs) γc)
-_ᴬsL σ {Γ = Γ} {∙}  γc d        γ       = lift tt
-_ᴬsL σ {Δ = Δ ▶S B} γc d        γ       = _ᴬsL (π₁ σ) _ d γ , (π₂ σ ᴬt) γc
-_ᴬsL σ {Δ = Δ ▶P A} γc (d , d') γ       = _ᴬsL σ _ d γ , d'
+_ᴬsL : ∀{Γc Δc : SCon}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc}(σP : LSub σ Γ Δ) → (γc : Γc ᴬc) → (Γ ᴬC) γc → (Δ ᴬC) ((σ ᴬs) γc)
+_ᴬsL Lε γc γ                            = lift tt
+_ᴬsL (_,S_ {σ = σ} σP b) γc γ           = (σP ᴬsL) γc γ
+_ᴬsL (σP ,P α) γc γ                     = (σP ᴬsL) γc γ , α γ
+
+Lπ₁ : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → LSub (π₁ σ) Γ Δ
+Lπ₁ (σP ,S b) = σP
+
+LwkS : ∀{Γc Δc Γ Δ B}{σ : Sub Γc Δc}(σP : LSub σ Γ Δ) → LSub (wk σ) (Γ ▶S B) Δ
+LwkS Lε        = Lε
+LwkS (σP ,S b) = LwkS σP ,S vs b
+LwkS (σP ,P α) = LwkS σP ,P λ γ → α γ
+
+LwkSᴬsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᴬC) γc}{β}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkS {B = B} σP ᴬsL)(γc , β) γ  ≡ (σP ᴬsL) γc γ
+LwkSᴬsL Lε        = refl
+LwkSᴬsL (σP ,S b) = LwkSᴬsL σP
+LwkSᴬsL (σP ,P α) = ,≡ (LwkSᴬsL σP) refl
+{-# REWRITE LwkSᴬsL #-}
+
+LwkP : ∀{Γc Δc Γ Δ A}{σ : Sub Γc Δc}(σP : LSub σ Γ Δ) → LSub σ (Γ ▶P A) Δ
+LwkP Lε        = Lε
+LwkP (σP ,S b) = LwkP σP ,S b
+LwkP (σP ,P α) = LwkP σP ,P λ γ → α (₁ γ)
+
+LwkPᴬsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᴬC) γc}{α : (A ᴬP) γc}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkP {A = A} σP ᴬsL) γc (γ , α) ≡ (σP ᴬsL) γc γ
+LwkPᴬsL Lε        = refl
+LwkPᴬsL (σP ,S b) = LwkPᴬsL σP
+LwkPᴬsL (σP ,P α) = ,≡ (LwkPᴬsL σP) refl
+{-# REWRITE LwkPᴬsL #-}
+
+Lid : ∀{Γc}{Γ : Con Γc} → LSub id Γ Γ
+Lid {Γ = ∙}      = Lε
+Lid {Γ = Γ ▶S B} = LwkS Lid ,S vz
+Lid {Γ = Γ ▶P A} = LwkP Lid ,P ₂
+
+LidᴬsL : ∀{Γc}{Γ : Con Γc}{γc}{γ : (Γ ᴬC) γc} → (Lid {Γ = Γ} ᴬsL) γc γ ≡ γ
+LidᴬsL {Γ = ∙}      = refl
+LidᴬsL {Γ = Γ ▶S B} = LidᴬsL {Γ = Γ}
+LidᴬsL {Γ = Γ ▶P A} = ,≡ (LidᴬsL {Γ = Γ}) refl
+{-# REWRITE LidᴬsL #-}
