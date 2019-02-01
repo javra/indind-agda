@@ -2,7 +2,7 @@
 module IFA where
 
 open import Lib hiding (id; _∘_)
-open import IFSyntax
+open import IF
 
 _ᴬS : TyS → Set₁
 U ᴬS      = Set
@@ -85,12 +85,15 @@ _ᴬsL Lε γc γ                            = lift tt
 _ᴬsL (_,S_ {σ = σ} σP b) γc γ           = (σP ᴬsL) γc γ
 _ᴬsL (σP ,P α) γc γ                     = (σP ᴬsL) γc γ , α γ
 
-Lπ₁ : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → LSub (π₁ σ) Γ Δ
-Lπ₁ (σP ,S b) = σP
+Lπ₁S : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → LSub (π₁ σ) Γ Δ
+Lπ₁S (σP ,S b) = σP
 
-Lπ₁ᴬsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᴬC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁ σP ᴬsL) γc γ ≡ (σP ᴬsL) γc γ
-Lπ₁ᴬsL (σP ,S b) = refl
-{-# REWRITE Lπ₁ᴬsL #-}
+Lπ₁SᴬsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᴬC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁S σP ᴬsL) γc γ ≡ (σP ᴬsL) γc γ
+Lπ₁SᴬsL (σP ,S b) = refl
+{-# REWRITE Lπ₁SᴬsL #-}
+
+Lπ₂S : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → Tm Γc B
+Lπ₂S (σP ,S b) = b
 
 LwkS : ∀{Γc Δc Γ Δ B}{σ : Sub Γc Δc}(σP : LSub σ Γ Δ) → LSub (wk σ) (Γ ▶S B) Δ
 LwkS Lε        = Lε

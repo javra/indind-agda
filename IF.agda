@@ -1,6 +1,6 @@
 {-# OPTIONS --rewriting #-}
 
-module IFSyntax where
+module IF where
 
 open import Lib hiding (id; _∘_)
 
