@@ -88,6 +88,10 @@ _ᴬsL (σP ,P α) γc γ                     = (σP ᴬsL) γc γ , α γ
 Lπ₁ : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → LSub (π₁ σ) Γ Δ
 Lπ₁ (σP ,S b) = σP
 
+Lπ₁ᴬsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᴬC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁ σP ᴬsL) γc γ ≡ (σP ᴬsL) γc γ
+Lπ₁ᴬsL (σP ,S b) = refl
+{-# REWRITE Lπ₁ᴬsL #-}
+
 LwkS : ∀{Γc Δc Γ Δ B}{σ : Sub Γc Δc}(σP : LSub σ Γ Δ) → LSub (wk σ) (Γ ▶S B) Δ
 LwkS Lε        = Lε
 LwkS (σP ,S b) = LwkS σP ,S vs b
@@ -120,3 +124,15 @@ LidᴬsL {Γ = ∙}      = refl
 LidᴬsL {Γ = Γ ▶S B} = LidᴬsL {Γ = Γ}
 LidᴬsL {Γ = Γ ▶P A} = ,≡ (LidᴬsL {Γ = Γ}) refl
 {-# REWRITE LidᴬsL #-}
+
+_L∘_ : ∀{Γc Δc Ωc}{Γ Δ Ω}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}(δP : LSub δ Ω Δ)(σP : LSub σ Γ Ω) → LSub (δ ∘ σ) Γ Δ
+Lε L∘ σP                      = Lε
+_L∘_ {σ = σ} (δP ,S b) σP     = (δP L∘ σP) ,S (b [ σ ]t)
+_L∘_ {δ = δ} {σ} (δP ,P α) σP = (δP L∘ σP) ,P λ γ → α ((σP ᴬsL) _ γ)
+
+L∘ᴬsL : ∀{Γc Δc Ωc}{Γ Δ Ω}{γc}{γ : (Γ ᴬC) γc}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}(δP : LSub δ Ω Δ)(σP : LSub σ Γ Ω)
+        → ((δP L∘ σP) ᴬsL) γc γ ≡ (δP ᴬsL) _ ((σP ᴬsL) γc γ)
+L∘ᴬsL Lε σP        = refl
+L∘ᴬsL (δP ,S b) σP = L∘ᴬsL δP σP
+L∘ᴬsL (δP ,P α) σP = ,≡ (L∘ᴬsL δP σP) refl
+{-# REWRITE L∘ᴬsL #-}

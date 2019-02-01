@@ -140,31 +140,31 @@ id {Γ} = record { Ec = S.id ;
 
 _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 σ ∘ δ = record { Ec = σ.Ec S.∘ δ.Ec ;
-                 E = λ γ → {!!} ; --σ.E _ (δ.E _ γ) ;
+                 E = λ γ → σ.E ((δ.Ec ᴬs) γ) L∘ δ.E γ ;
                  wc = σ.wc S.∘ δ.wc }
   where
     module σ = Sub σ
     module δ = Sub δ
-{-{-
+
 ε : ∀{Γ} → Sub Γ ∙
 ε = record { Ec = S.ε ;
-             E = λ _ → lift tt ;
+             E = λ γ → Lε ;
              wc = S.ε }
 
 _,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
 σ ,s t = record { Ec = σ.Ec S., t.E ;
-                  E = λ {γc} γ → σ.E γ , (t.E ᴬt) γc;
+                  E = λ γ → σ.E γ ,S t.E;
                   wc = λ {γc}{γ} → σ.wc S., t.w γ }
   where
     module σ = Sub σ
     module t = TmS t
--}
+
 π₁S : ∀{Γ Δ}{A : TyS Δ} → Sub Γ (Δ ▶S A) → Sub Γ Δ
 π₁S σ = record { Ec = S.π₁ σ.Ec ;
                  E = λ γc → Lπ₁ (σ.E γc) ;
-                 wc = S.π₁ {!!} }
+                 wc = S.π₁ σ.wc }
   where
-    module σ = Sub σ -}
+    module σ = Sub σ
 {-
 π₁P : ∀{Γ Δ}{A : TyP Δ} → Sub Γ (Δ ▶P A) → Sub Γ Δ
 π₁P σ = record { Ec = σ.Ec ;
