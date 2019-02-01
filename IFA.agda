@@ -68,11 +68,6 @@ idᴬ {Γc ▶c x} (γc , α) = ,≡ (idᴬ γc) refl
 π₂ᴬ {σ = σ , x} = refl
 {-# REWRITE π₂ᴬ #-}
 
---Want the algebras over this:
---data SubL : {Γc Δc : SCon} → (σ : Sub Γc Δc) → Con Γc → Con Δc → Set₁ where
---  εL    : ∀{Γc : SCon}{Γ : Con Γc} → SubL ε Γ ∙
---  _,SL_ : ∀{Γc Δc B}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : B ᴬS) → {t : Tm Γc B} → (SubL (σ , t) Γ (Δ ▶S B))
---  _,PL_ : ∀{Γc Δc A}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc} → (γ : SubL σ Γ Δ) → (α : A) → SubL {!!} Γ (Δ ▶P A)
 
 data LSub : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set₁ where
   Lε   : ∀{Γc}{Γ : Con Γc} → LSub ε Γ ∙
@@ -91,6 +86,13 @@ Lπ₁S (σP ,S b) = σP
 Lπ₁SᴬsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᴬC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁S σP ᴬsL) γc γ ≡ (σP ᴬsL) γc γ
 Lπ₁SᴬsL (σP ,S b) = refl
 {-# REWRITE Lπ₁SᴬsL #-}
+
+Lπ₁P : ∀{Γc Δc Γ Δ A}{σ : Sub Γc Δc}(σP : LSub σ Γ (Δ ▶P A)) → LSub σ Γ Δ
+Lπ₁P (σP ,P α) = σP
+
+Lπ₁PᴬsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᴬC) γc}{σ : Sub Γc Δc}(σP : LSub σ Γ (Δ ▶P A)) → (Lπ₁P σP ᴬsL) γc γ ≡ ₁ ((σP ᴬsL) γc γ)
+Lπ₁PᴬsL (σP ,P α) = refl
+{-# REWRITE Lπ₁PᴬsL #-}
 
 Lπ₂S : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → Tm Γc B
 Lπ₂S (σP ,S b) = b

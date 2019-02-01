@@ -3,6 +3,7 @@ module EW where
 
 open import Lib hiding (id; _∘_)
 open import II using (PS; P; S)
+import IIA as IIA
 import IF as S
 open import IFA
 
@@ -20,6 +21,7 @@ record Con : Set₁ where
     E  : S.Con Ec
     wc : (γc : Ec ᴬc) → (γ : (E ᴬC) γc) → S.SCon
     w  : (γc : Ec ᴬc) → (γ : (E ᴬC) γc) → S.Con (wc γc γ)
+--    sg : IIA.Con
 
 record TyS (Γ : Con) : Set₁ where
   module Γ = Con Γ
@@ -32,18 +34,16 @@ record TyP (Γ : Con) : Set₁ where
     E : S.TyP Γ.Ec
     w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wc γc γ)
 
+Ty : (Γ : Con) (k : PS) → Set₁
+Ty Γ P = TyP Γ
+Ty Γ S = TyS Γ
+
 record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
   module Γ = Con Γ
   module A = TyS A
   field
     E : S.Tm Γ.Ec S.U
---    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬt) γc) → S.Tm (Γ.wc γ) (A.w γ ((E ᴬt) γc))
     w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.Tm (Γ.wc γc γ) (A.w γ ((E ᴬt) γc))
-
---record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
---  module Γ = Con Γ
---  module A = TyS A
---  field
 
 record Sub (Γ : Con) (Δ : Con) : Set₂ where
   module Γ = Con Γ
@@ -74,6 +74,10 @@ _▶P_ : (Γ : Con) → TyP Γ → Con
     module Γ = Con Γ
     module A = TyP A
 
+_▶_ : ∀{k}(Γ : Con) → (A : Ty Γ k) → Con
+_▶_ {P} Γ A = Γ ▶P A
+_▶_ {S} Γ A = Γ ▶S A
+
 U : {Γ : Con} → TyS Γ
 U {Γ} = record { w = λ γ T → (T S.⇒̂S S.U) }
   where
@@ -99,6 +103,10 @@ El {Γ} a = record { E = S.El a.E ;
     module a = TmS a
     module B = TyP B
 
+Π : ∀{k}{Γ : Con} → (a : TmS Γ U) → (B : Ty (Γ ▶ El a) k) → Ty Γ k
+Π {P} a B = ΠP a B
+Π {S} a B = ΠS a B
+
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS t = record { E = t.E ;
                   w = λ { (γ , lift υ) → t.w γ S.$S υ} }
@@ -118,6 +126,10 @@ _[_]TP A δ = record { E = A.E S.[ δ.Ec ]T ;
     module A = TyP A
     module δ = Sub δ
 
+_[_]T : ∀{k Γ Δ} → Ty Δ k → Sub Γ Δ → Ty Γ k
+_[_]T {P} = _[_]TP
+_[_]T {S} = _[_]TS
+
 _[_]tS : ∀{Γ Δ}{A : TyS Δ} → TmS Δ A → (σ : Sub Γ Δ) → TmS Γ (A [ σ ]TS)
 _[_]tS a σ = record { E = a.E S.[ σ.Ec ]t ;
                       w = λ {γc} γ → a.w ((σ.E γc ᴬsL) γc γ) S.[ σ.wc ]t }
@@ -130,10 +142,6 @@ U[] = refl
 
 El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U} → (El a [ σ ]TP) ≡ (El (coe (TmS Γ & (U[] {δ = σ})) (a [ σ ]tS)))
 El[] = refl
-
---ΠS[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U}{B : TyS (Δ ▶P El a)}
---      → ((ΠS a B) [ σ ]TS) ≡ (ΠS (a [ σ ]tS) (B [ σ ^ El a ]TS))
---ΠS[] = ?
 
 id : ∀{Γ} → Sub Γ Γ
 id {Γ} = record { Ec = S.id ;
@@ -167,30 +175,34 @@ _,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub �
                  wc = S.π₁ σ.wc }
   where
     module σ = Sub σ
-{-
+
 π₁P : ∀{Γ Δ}{A : TyP Δ} → Sub Γ (Δ ▶P A) → Sub Γ Δ
 π₁P σ = record { Ec = σ.Ec ;
-                 E = λ γ → ₁ (σ.E γ) ;
+                 E = λ γc → Lπ₁P (σ.E γc) ;
                  wc = σ.wc }
   where
     module σ = Sub σ
--}
+
+π₁ : ∀{k}{Γ Δ}{A : Ty Δ k} → Sub Γ (Δ ▶ A) → Sub Γ Δ
+π₁ {P} = π₁P
+π₁ {S} = π₁S
+
 π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
-π₂S {Γ}{Δ}{A} σ = record { E = S.π₂ σ.Ec ;
-                           w = λ γ → S.π₂ σ.wc }
+π₂S σ = record { E = S.π₂ σ.Ec ;
+                 w = λ γ → S.π₂ σ.wc }
   where
     module σ = Sub σ
 
-wkS : ∀{Γ}{A : TyS Γ} → Sub (Γ ▶S A) Γ
-wkS = π₁S id
+wk : ∀{k Γ}{A : Ty Γ k} → Sub (Γ ▶ A) Γ
+wk {k} = π₁ {k} id
 
-vzS : ∀{Γ}{A : TyS Γ} → TmS (Γ ▶S A) (A [ wkS ]TS)
+vzS : ∀{Γ}{A : TyS Γ} → TmS (Γ ▶S A) (A [ wk {k = S} ]TS)
 vzS = π₂S id
 
-vsSS : ∀{Γ}{A B : TyS Γ} → TmS Γ A → TmS (Γ ▶S B) (A [ wkS ]TS)
-vsSS x = x [ wkS ]tS
+vsS : ∀{k Γ}{A : TyS Γ}{B : Ty Γ k} → TmS Γ A → TmS (Γ ▶ B) (A [ wk {k = k} ]TS)
+vsS {k} t = t [ wk {k = k} ]tS
 
-postulate
+{-postulate
  C0 : Set
  T0 : Set
  n0 : C0
@@ -204,8 +216,13 @@ ConTy = ∙ ▶S U ▶S ΠS vzS U ▶P El (vsSS vzS)
 test : ((Con.wc ConTy) ((lift ⊤.tt , C0) , T0) (lift ⊤.tt , lift n0)) ᴬc ≡
   ((Lift ⊤ × (C0 → Set)) × (C0 → T0 → Set))
 test = refl
-
+-}
 {-
+
+--ΠS[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U}{B : TyS (Δ ▶P El a)}
+--      → ((ΠS a B) [ σ ]TS) ≡ (ΠS (a [ σ ]tS) (B [ σ ^ El a ]TS))
+--ΠS[] = ?
+
 [id]T : ∀{k Γ}{A : Ty Γ k} → A [ id ]T ≡ A
 [][]T : ∀{k Γ Δ Σ}{A : Ty Σ k}{σ : Sub Γ Δ}{δ : Sub Δ Σ}
         → A [ δ ]T [ σ ]T ≡ A [ δ ∘ σ ]T
