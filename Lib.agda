@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K --rewriting #-}
+{-# OPTIONS --rewriting #-}
 
 module Lib where
 
@@ -203,3 +203,21 @@ inspect f x = mkReveal refl
   → (p : A ≡ A') → ((a : A) → B a ≡ B' (coe p a))
   → ({a : A} → B a) ≡ ({a' : A'} → B' a')
 Π≡i {A = A}{B = B} refl q = (λ B → {x : A} → B x) & ext q
+
+-- Pathovers
+
+_≡[_]≡_ : ∀{ℓ}{A B : Set ℓ} → A → A ≡ B → B → Set ℓ
+x ≡[ α ]≡ y = ((coe α x) ≡ y)
+
+infix 4 _≡[_]≡_
+
+coh : ∀{ℓ}{A B : Set ℓ}(p : A ≡ B) → (a : A) → a ≡[ p ]≡ coe p a
+coh refl a = refl
+
+[_]_◾_ : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{a a' : A}{b : B a}
+         (f : (x : A) → B x)(p : b ≡ f a)(q : a ≡ a')
+       → b ≡[ B & q ]≡ f a'
+[ f ] refl ◾ refl = refl
+
+coe_refl : ∀{ℓ}{A : Set ℓ}{p : A ≡ A}{a : A} → coe p a ≡ a
+coe_refl {p = refl} = refl

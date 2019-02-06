@@ -3,7 +3,7 @@ module EW where
 
 open import Lib hiding (id; _∘_)
 open import II using (PS; P; S)
-import IIA as IIA
+-- import IIA as IIA
 import IF as S
 open import IFA
 
@@ -44,6 +44,10 @@ record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
   field
     E : S.Tm Γ.Ec S.U
     w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.Tm (Γ.wc γc γ) (A.w γ ((E ᴬt) γc))
+
+Tm : {k : PS} → (Γ : Con) → (A : Ty Γ k) → Set₁
+Tm {P} = λ Γ A → (∀{γc} → (Con.E Γ ᴬC) γc → (TyP.E A ᴬP) γc)
+Tm {S} = TmS
 
 record Sub (Γ : Con) (Δ : Con) : Set₂ where
   module Γ = Con Γ
@@ -137,6 +141,10 @@ _[_]tS a σ = record { E = a.E S.[ σ.Ec ]t ;
     module a = TmS a
     module σ = Sub σ
 
+_[_]t : ∀{k Γ Δ}{A : Ty Δ k} → Tm Δ A → (σ : Sub Γ Δ) → Tm Γ (A [ σ ]T)
+_[_]t {P} = λ t σ {γc} γ → t ((Sub.E σ γc ᴬsL) γc γ)
+_[_]t {S} = _[_]tS
+
 U[] : ∀{Γ Δ}{δ : Sub Γ Δ} → U [ δ ]TS ≡ U
 U[] = refl
 
@@ -161,13 +169,24 @@ _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
              E = λ γ → Lε ;
              wc = S.ε }
 
-_,s_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
-σ ,s t = record { Ec = σ.Ec S., t.E ;
+_,tS_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
+σ ,tS t = record { Ec = σ.Ec S., t.E ;
                   E = λ γ → σ.E γ ,S t.E;
                   wc = λ {γc}{γ} → σ.wc S., t.w γ }
   where
     module σ = Sub σ
     module t = TmS t
+
+_,tP_ : ∀{Γ Δ}(σ : Sub Γ Δ) → {A : TyP Δ} → (α : Tm Γ (A [ σ ]TP)) → Sub Γ (Δ ▶P A)
+σ ,tP α = record { Ec = σ.Ec ;
+                   E = λ γ → σ.E γ ,P α ;
+                   wc = σ.wc }
+  where
+    module σ = Sub σ
+
+_,t_ : ∀{k Γ Δ}(σ : Sub Γ Δ){A : Ty Δ k} → Tm Γ (A [ σ ]T) → Sub Γ (Δ ▶ A)
+_,t_ {P} = _,tP_
+_,t_ {S} = _,tS_
 
 π₁S : ∀{Γ Δ}{A : TyS Δ} → Sub Γ (Δ ▶S A) → Sub Γ Δ
 π₁S σ = record { Ec = S.π₁ σ.Ec ;
@@ -202,31 +221,59 @@ vzS = π₂S id
 vsS : ∀{k Γ}{A : TyS Γ}{B : Ty Γ k} → TmS Γ A → TmS (Γ ▶ B) (A [ wk {k = k} ]TS)
 vsS {k} t = t [ wk {k = k} ]tS
 
-{-postulate
- C0 : Set
- T0 : Set
- n0 : C0
- C : C0 → Set
- T : C0 → T0 → Set
+-- Congruence Lemmas
 
--- C : U ▶ T : C → U ▶ n : C
-ConTy : Con
-ConTy = ∙ ▶S U ▶S ΠS vzS U ▶P El (vsSS vzS)
+TyS≡ : {Γ : Con}
+    {w₀ w₁ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → Set → S.TyS}
+    (w₂ : (λ {γc} → w₀ {γc}) ≡ w₁)
+  → _≡_ {A = TyS Γ} (record { w = w₀ }) (record { w = w₁ })
+TyS≡ refl = refl
 
-test : ((Con.wc ConTy) ((lift ⊤.tt , C0) , T0) (lift ⊤.tt , lift n0)) ᴬc ≡
-  ((Lift ⊤ × (C0 → Set)) × (C0 → T0 → Set))
-test = refl
--}
-{-
+{-record TyP (Γ : Con) : Set₁ where
+  module Γ = Con Γ
+  field
+    E : S.TyP Γ.Ec
+    w : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wc γc γ)-}
 
---ΠS[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U}{B : TyS (Δ ▶P El a)}
---      → ((ΠS a B) [ σ ]TS) ≡ (ΠS (a [ σ ]tS) (B [ σ ^ El a ]TS))
---ΠS[] = ?
+TyPw≡ : {Γ : Con}
+    {E₀ E₁ : S.TyP (Con.Ec Γ)}
+    (E₂ : E₀ ≡ E₁)
+  → ({γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₀ ᴬP) γc) → S.TyP (Con.wc Γ γc γ))
+  ≡ ({γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₁ ᴬP) γc) → S.TyP (Con.wc Γ γc γ))
+TyPw≡ refl = refl
+
+coeTyPw≡ : {Γ : Con}
+    {E₀ E₁ : S.TyP (Con.Ec Γ)} (E₂ : E₀ ≡ E₁)
+    {w₀ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₀ ᴬP) γc) → S.TyP (Con.wc Γ γc γ)}
+    {w₁ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₁ ᴬP) γc) → S.TyP (Con.wc Γ γc γ)}
+    (w₂ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₀ ᴬP) γc) → w₀ γ α ≡ w₁ γ (coe (happly (_ᴬP & E₂) γc) α))
+    {γc : _} {γ : (Con.E Γ ᴬC) γc} {α : _}
+  → coe (TyPw≡ {Γ = Γ} E₂) w₀ γ α ≡ w₁ γ α
+coeTyPw≡ refl w₂ = w₂ _ _
+    
+TyP≡ : {Γ : Con}
+    {E₀ E₁ : S.TyP (Con.Ec Γ)}
+    (E₂ : E₀ ≡ E₁)
+    {w₀ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₀ ᴬP) γc) → S.TyP (Con.wc Γ γc γ)}
+    {w₁ : {γc : Con.Ec Γ ᴬc} → (γ : (Con.E Γ ᴬC) γc) → (α : (E₁ ᴬP) γc) → S.TyP (Con.wc Γ γc γ)}
+    (w₂ : (λ {γc} → w₀ {γc}) ≡[ TyPw≡ {Γ = Γ} E₂ ]≡ (λ {γc} → w₁ {γc}))
+  → _≡_ {A = TyP Γ} (record { E = E₀ ; w = w₀ }) (record { E = E₁ ; w = w₁ })
+TyP≡ refl refl = refl
+
+-- Proofs of the Substitution Laws
 
 [id]T : ∀{k Γ}{A : Ty Γ k} → A [ id ]T ≡ A
-[][]T : ∀{k Γ Δ Σ}{A : Ty Σ k}{σ : Sub Γ Δ}{δ : Sub Δ Σ}
-        → A [ δ ]T [ σ ]T ≡ A [ δ ∘ σ ]T
+[id]T {P}{Γ}{A} = TyP≡ (S.[id]T (TyP.E A))
+                     (exti (λ γc → ext λ γ → ext λ α → coeTyPw≡ {Γ}
+                       (S.[id]T (TyP.E A)) {w₀ = λ γ₁ α₁ → TyP.w A γ₁ α₁ S.[ S.id ]T} {w₁ = TyP.w A}
+                       (λ γ' α' → S.[id]T (TyP.w A γ' α') ◾ (TyP.w A γ') & (coe_refl ⁻¹))))
+[id]T {S}       = TyS≡ refl
 
+--[][]T : ∀{k Γ Δ Σ}{A : Ty Σ k}{σ : Sub Γ Δ}{δ : Sub Δ Σ} → A [ δ ]T [ σ ]T ≡ A [ δ ∘ σ ]T
+--[][]T {P} = TyP≡ (S.[][]T _ _ _) {!!}
+--[][]T {S} = TyS≡ refl
+
+{-
 idl   : ∀{Γ Δ}{σ : Sub Γ Δ} → (id ∘ σ) ≡ σ
 idr   : ∀{Γ Δ}{σ : Sub Γ Δ} → (σ ∘ id) ≡ σ
 ass   : ∀{Γ Δ Σ Ω}{σ : Sub Σ Ω}{δ : Sub Δ Σ}{ν : Sub Γ Δ}
@@ -243,6 +290,9 @@ ass   : ∀{Γ Δ Σ Ω}{σ : Sub Σ Ω}{δ : Sub Δ Σ}{ν : Sub Γ Δ}
 π₂β   : ∀{k Γ Δ}{A : Ty Δ k}{σ : Sub Γ Δ}{t : Tm Γ (A [ σ ]T)}
       → π₂ (σ ,s t) ≡ tr (λ σ → Tm Γ (A [ σ ]T)) (π₁β ⁻¹) t
 
+_^_ : ∀ {k}{Γ Δ : Con}(σ : Sub Γ Δ)(A : Ty Δ k) → Sub (Γ ▶ (A [ σ ]T)) (Δ ▶ A)
+_^_ {k}{Γ} {Δ} σ A = {!!} --σ ∘ wk ,s coe (Tm _ & [][]T) (vz {k}{Γ}{A [ σ ]T})
+
 <_> : ∀{k Γ}{A : Ty Γ k} → Tm Γ A → Sub Γ (Γ ▶ A)
 < t > = id ,s tr (Tm _) ([id]T ⁻¹) t
 
@@ -252,6 +302,12 @@ _^_ : ∀ {k}{Γ Δ : Con}(σ : Sub Γ Δ)(A : Ty Δ k) → Sub (Γ ▶ (A [ σ 
 _^_ {k}{Γ} {Δ} σ A = σ ∘ wk ,s coe (Tm _ & [][]T) (vz {k}{Γ}{A [ σ ]T})
 
 infixl 5 _^_
+
+
+Π[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U}{B : TyS (Δ ▶P El a)}
+      → ((ΠS a B) [ σ ]TS) ≡ (ΠS (a [ σ ]tS) (B [ σ ^ El a ]TS))
+Π[] = ?
+
 
   app[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}{t : Tm Δ (Π a B)}
           → tr2 (λ A → Tm (Γ ▶ A)) El[] refl (app t [ σ ^ El a ]t)
