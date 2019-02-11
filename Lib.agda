@@ -87,7 +87,7 @@ tr2 :
   → C a₀ b₀ → C a₁ b₁
 tr2 {B = B} C {a₀}{.a₀} refl refl c₀ = c₀
 
-happly : ∀ {α β}{A : Set α}{B : Set β}{f g : A → B} → f ≡ g → ∀ a → f a ≡ g a
+happly : ∀ {α β}{A : Set α}{B : A → Set β}{f g : (a : A) → B a} → f ≡ g → ∀ a → f a ≡ g a
 happly refl a = refl
 
 happly2 : ∀{i j k}{A : Set i}{B : Set j}{C : B → Set k}(f : A → (b : B) → C b)

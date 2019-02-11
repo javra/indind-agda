@@ -13,7 +13,7 @@ infixl 3 _▶_
 Con : Set₂
 Con = Set₁
 
-Ty  : Con → Set₂
+Ty : Con → Set₂
 Ty Γ = Γ → Set₁
 
 Tm : ∀ Γ → Ty Γ → Set₁

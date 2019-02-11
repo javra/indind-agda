@@ -35,7 +35,7 @@ record TyP (Γ : Con) : Set₂ where
   module Γ = Con Γ
   field
     E   : S.TyP Γ.Ec
-    w   : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wc γc γ)
+    w   : ∀{γc} → (γ : (Γ.E ᴬC) γc) → (α : (E ᴬP) γc) → S.TyP (Γ.wc γc γ)
     Alg : Γ.Alg → Set
     sg  : {γc : _} → (γ : (Γ.E ᴬC) γc) → {δc : _} → (δ : (Γ.w γc γ ᴬC) δc) → (α : (E ᴬP) γc) → (ω : (w γ α ᴬP) δc) → Alg (Γ.sg γc γ δc δ)
 
@@ -48,9 +48,9 @@ record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
   module A = TyS A
   field
     E   : S.Tm Γ.Ec S.U
-    w   : {γc : Γ.Ec ᴬc} → (γ : (Γ.E ᴬC) γc) → S.Tm (Γ.wc γc γ) (A.w γ ((E ᴬt) γc))
+    w   : ∀{γc} → (γ : (Γ.E ᴬC) γc) → S.Tm (Γ.wc γc γ) (A.w γ ((E ᴬt) γc))
     Alg : (γ : Γ.Alg) → A.Alg γ
---    sg  : {!!} --morally A.sg ...
+    sg  : ∀{γc} → (γ : (Γ.E ᴬC) γc) → {δc : _} → (δ : (Γ.w γc γ ᴬC) δc) → Alg (Γ.sg γc γ δc δ) ≡ A.sg γ δ ((E ᴬt) γc) ((w γ ᴬt) δc)
 
 record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
   module Γ = Con Γ
@@ -69,7 +69,8 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
   field
     Ec  : S.Sub Γ.Ec Δ.Ec
     E   : ∀ γc → LSub Ec Γ.E Δ.E
-    wc  : ∀{γc}{γ : (Γ.E ᴬC) γc} → S.Sub (Γ.wc γc γ) (Δ.wc _ (((E γc) ᴬsL) γc γ))
+    wc  : ∀{γc}(γ : (Γ.E ᴬC) γc) → S.Sub (Γ.wc γc γ) (Δ.wc _ (((E γc) ᴬsL) γc γ))
+    w   : ∀{γc}(γ : (Γ.E ᴬC) γc){δc}(δ : (Γ.w γc γ ᴬC) δc) → LSub (wc γ) (Γ.w γc γ) (Δ.w _ _)
     Alg : Γ.Alg → Δ.Alg
 
 ∙ : Con
@@ -92,7 +93,7 @@ _▶P_ : (Γ : Con) → TyP Γ → Con
                   wc = λ { γc (γ , α) → Γ.wc γc γ } ;
                   w = λ { γc (γ , α) → Γ.w γc γ S.▶P A.w γ α } ;
                   Alg = Σ Γ.Alg A.Alg ;
-                  sg = λ { γc (γ , α) δc (δ , ω) → Γ.sg γc γ δc δ , A.sg γ δ α ω} }
+                  sg = λ { γc (γ , α) δc (δ , ω) → Γ.sg γc γ δc δ , A.sg γ δ α ω } }
   where
     module Γ = Con Γ
     module A = TyP A
@@ -112,22 +113,29 @@ El : {Γ : Con} (a : TmS Γ U) → TyP Γ
 El {Γ} a = record { E = S.El a.E ;
                     w = λ { γ (lift α) → S.El (a.w γ S.$S α) } ;
                     Alg = λ γ → a.Alg γ ;
-                    sg = λ { γ δ (lift α) (lift ω) → {!!}} } -- morally a pair
+                    sg = λ { γ δ (lift α) (lift ω) → coe (a.sg γ δ ⁻¹) (α , ω) } }
   where
     module Γ = Con Γ
     module a = TmS a
 
 ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
-ΠS a B = record { w = λ {γc} γ T → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α) T) ;
-                  Alg = λ γ → (α : a.Alg γ) → B.Alg (γ , α) ;
-                  sg = λ γ δ πc π α → B.sg (γ , lift {!!}) (δ , lift {!!}) πc (π {!!}) }
+ΠS {Γ} a B = record { w = λ {γc} γ T → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α) T) ;
+                      Alg = λ γ → (α : a.Alg γ) → B.Alg (γ , α) ;
+                      sg = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
+                                          coe (B.Alg & ,≡ refl (coecoe⁻¹' (a.sg γ δ) α))
+                                              (B.sg (γ , lift α₁) (δ , lift α₂) πc (π α₁)) }
   where
+    module Γ = Con Γ
     module a = TmS a
     module B = TyS B
-{-
+
 ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
 ΠP a B = record { E = a.E S.⇒P B.E ;
-                  w = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → (a.w γ S.$S τ) S.⇒P (B.w (γ , lift τ) (β τ))) }
+                  w = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → (a.w γ S.$S τ) S.⇒P (B.w (γ , lift τ) (β τ))) ;
+                  Alg = λ γ → (α : a.Alg γ) → B.Alg (γ , α) ;
+                  sg = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
+                                      coe (B.Alg & ,≡ refl (coecoe⁻¹' (a.sg γ δ) α))
+                                          (B.sg (γ , lift α₁) (δ , lift α₂) (πc α₁) (π α₁ α₂)) }
   where
     module a = TmS a
     module B = TyP B
@@ -137,28 +145,42 @@ El {Γ} a = record { E = S.El a.E ;
 Π {S} a B = ΠS a B
 
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
-appS t = record { E = t.E ;
-                  w = λ { (γ , lift υ) → t.w γ S.$S υ} }
+appS {Γ}{a}{B} t = record { E = t.E ;
+                            w = λ { (γ , lift υ) → t.w γ S.$S υ} ;
+                            Alg = λ { (γ , α) → t.Alg γ α } ;
+                            sg = λ { {γc} (γ , lift α) {δc} (δ , ω) →
+                                       let (Bs₁ , α') = (B.Γ.sg γc (γ , lift α) δc (δ , ω)) in
+                                       let pt : t.Alg (t.A.Γ.sg γc γ δc δ) α' ≡ t.A.sg γ δ ((t.E ᴬt) γc) ((t.w γ ᴬt) δc) α'
+                                           pt = happly (t.sg γ δ) α' in
+                                       pt ◾ {!!} } }
   where
+    module a = TmS a
+    module B = TyS B
     module t = TmS t
 
 _[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
-_[_]TS B δ = record { w = λ {γc} γ → B.w ((δ.E γc ᴬsL) γc γ) }
+_[_]TS B σ = record { w = λ {γc} γ → B.w ((σ.E γc ᴬsL) γc γ) ;
+                      Alg = λ γ → B.Alg (σ.Alg γ) ;
+                      sg = λ {γc} γ {δc} δ α ω → coe (B.Alg & {!!})
+                                                     (B.sg ((σ.E γc ᴬsL) γc γ) ((σ.w γ δ ᴬsL) δc δ) α ω) }
   where
     module B = TyS B
-    module δ = Sub δ
+    module σ = Sub σ
 
 _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
-_[_]TP A δ = record { E = A.E S.[ δ.Ec ]T ;
-                      w = λ {γc} γ α →  A.w ((δ.E γc ᴬsL) γc γ) α S.[ δ.wc ]T }
+_[_]TP A σ = record { E = A.E S.[ σ.Ec ]T ;
+                      w = λ {γc} γ α →  A.w ((σ.E γc ᴬsL) γc γ) α S.[ σ.wc γ ]T ;
+                      Alg = λ γ → A.Alg (σ.Alg γ) ;
+                      sg = λ {γc} γ {δc} δ α ω → coe (A.Alg & {!!})
+                                                     (A.sg ((σ.E γc ᴬsL) γc γ) ((σ.w γ δ ᴬsL) δc δ) α ω) }
   where
     module A = TyP A
-    module δ = Sub δ
+    module σ = Sub σ
 
 _[_]T : ∀{k Γ Δ} → Ty Δ k → Sub Γ Δ → Ty Γ k
 _[_]T {P} = _[_]TP
 _[_]T {S} = _[_]TS
-
+{-{-
 _[_]tS : ∀{Γ Δ}{A : TyS Δ} → TmS Δ A → (σ : Sub Γ Δ) → TmS Γ (A [ σ ]TS)
 _[_]tS a σ = record { E = a.E S.[ σ.Ec ]t ;
                       w = λ {γc} γ → a.w ((σ.E γc ᴬsL) γc γ) S.[ σ.wc ]t }
@@ -339,4 +361,5 @@ infixl 5 _^_
           ≡ app (tr (Tm _) Π[] (t [ σ ]t))
 -}
 
+-}
 -}
