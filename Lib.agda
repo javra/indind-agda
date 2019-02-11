@@ -221,3 +221,8 @@ coh refl a = refl
 
 coe_refl : ∀{ℓ}{A : Set ℓ}{p : A ≡ A}{a : A} → coe p a ≡ a
 coe_refl {p = refl} = refl
+
+coe≡ : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : B}
+  → a ≡ coe q b
+  → coe p a ≡ b
+coe≡ {p = refl}{q = refl} r = r
