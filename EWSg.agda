@@ -261,11 +261,11 @@ _,tP_ : ∀{Γ Δ}(σ : Sub Γ Δ) → {A : TyP Δ} → (t : TmP Γ (A [ σ ]TP)
     module σ = Sub σ
     module t = TmP t
     
-{-
+
 _,t_ : ∀{k Γ Δ}(σ : Sub Γ Δ){A : Ty Δ k} → Tm Γ (A [ σ ]T) → Sub Γ (Δ ▶ A)
 _,t_ {P} = _,tP_
 _,t_ {S} = _,tS_
--}
+
 π₁S : ∀{Γ Δ}{A : TyS Δ} → Sub Γ (Δ ▶S A) → Sub Γ Δ
 π₁S σ = record { Ec  = S.π₁ σ.Ec ;
                  E   = λ γc → Lπ₁S (σ.E γc) ;
@@ -304,8 +304,16 @@ wk {k} = π₁ {k} id
 vzS : ∀{Γ}{A : TyS Γ} → TmS (Γ ▶S A) (A [ wk {k = S} ]TS)
 vzS = π₂S id
 
-vsS : ∀{k Γ}{A : TyS Γ}{B : Ty Γ k} → TmS Γ A → TmS (Γ ▶ B) (A [ wk {k = k} ]TS)
-vsS {k} t = t [ wk {k = k} ]tS
+vsS : ∀{k Γ}{A : TyS Γ}{B : Ty Γ k} → TmS Γ A → TmS (Γ ▶ B) (A [ wk {k} ]TS)
+vsS {k} t = t [ wk {k} ]tS
+
+vsP : ∀{k Γ}{A : TyP Γ}{B : Ty Γ k} → TmP Γ A → TmP (Γ ▶ B) (A [ wk {k} ]TP)
+vsP {k} t = t [ wk {k} ]tP
+
+vs : ∀{k l Γ}{A : Ty Γ k}{B : Ty Γ l} → Tm Γ A → Tm (Γ ▶ B) (A [ wk {l} ]T)
+vs {P}{l} t = vsP {l} t
+vs {S}{l} t = vsS {l} t
+
 {-
 -- Congruence Lemmas
 
