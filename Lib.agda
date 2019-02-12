@@ -223,8 +223,11 @@ coh refl a = refl
        → b ≡[ B & q ]≡ f a'
 [ f ] refl ◾ refl = refl
 
-coe_refl : ∀{ℓ}{A : Set ℓ}{p : A ≡ A}{a : A} → coe p a ≡ a
-coe_refl {p = refl} = refl
+coe-refl : ∀{ℓ}{A : Set ℓ}{p : A ≡ A}{a : A} → coe p a ≡ a
+coe-refl {p = refl} = refl
+
+coe-coe : ∀ {i}{A B : Set i}(p q : A ≡ B)(x : A) → coe p x ≡ coe q x
+coe-coe refl refl x = refl
 
 coe≡ : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : B}
   → a ≡ coe q b
