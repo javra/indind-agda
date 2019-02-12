@@ -301,14 +301,17 @@ _,t_ {S} = _,tS_
 π₂S {Γ}{Δ}{A} σ = record { E   = S.π₂ σ.Ec ;
                            w   = λ γ → S.π₂ (σ.wc γ) ;
                            Alg = λ γ → ₂ (σ.Alg γ) ;
-                           sg  = λ γ δ → ,=2 {B = TyS.Alg A} (σ.sg γ δ ⁻¹) ((₁ & σ.sg γ δ ⁻¹)) ⁻¹ }
+                           sg  = λ γ δ → ,=2 {B = TyS.Alg A} (σ.sg γ δ ⁻¹) (₁ & σ.sg γ δ ⁻¹) ⁻¹ }
   where
     module σ = Sub σ
 
 π₂P : ∀{Γ Δ}{A : TyP Δ}(σ : Sub Γ (Δ ▶P A)) → TmP Γ (A [ π₁P σ ]TP)
-π₂P σ = record { E   = λ {γc} γ → ₂ ((σ.E γc ᴬsL) γc γ) ;
-                 Alg = λ γ → ₂ (σ.Alg γ) }
+π₂P {Γ}{Δ}{A} σ = record { E   = λ {γc} γ → ₂ ((σ.E γc ᴬsL) γc γ) ;
+                           w   = λ {γc}{γ}{δc} δ → ₂ ((σ.w γ δ ᴬsL) δc δ) ;
+                           Alg = λ γ → ₂ (σ.Alg γ) ;
+                           sg  = λ γ δ → ,=2 {B = A.Alg} (σ.sg γ δ ⁻¹) (₁ & σ.sg γ δ ⁻¹) ⁻¹ }
   where
+    module A = TyP A
     module σ = Sub σ
 
 π₂ : ∀{k Γ Δ}{A : Ty Δ k}(σ : Sub Γ (Δ ▶ A)) → Tm Γ (A [ π₁ {k} σ ]T)
