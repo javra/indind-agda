@@ -67,6 +67,10 @@ const& :
 const& refl = refl
 {-# REWRITE const& #-}
 
+&& : ∀{ℓ ℓ' ℓ''}{A : Set ℓ}{B : Set ℓ'}{C : Set ℓ''}{f : A → B}{g : B → C}
+       {a₀ a₁ : A}(a₂ : a₀ ≡ a₁) → (λ x → g (f x)) & a₂ ≡ g & (f & a₂)
+&& refl = refl
+
 coe∘ : ∀ {i}{A B C : Set i}(p : B ≡ C)(q : A ≡ B)(a : A)
        → coe p (coe q a) ≡ coe (q ◾ p) a
 coe∘ refl refl _ = refl
@@ -125,7 +129,7 @@ record Σ {i j} (A : Set i) (B : A → Set j) : Set (i ⊔ j) where
   field
     ₁ : A
     ₂ : B ₁
-infixr 5 _,_
+infixl 5 _,_
 
 ∃ : ∀ {a b} {A : Set a} → (A → Set b) → Set (a ⊔ b)
 ∃ = Σ _
@@ -226,3 +230,55 @@ coe≡ : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : 
   → a ≡ coe q b
   → coe p a ≡ b
 coe≡ {p = refl}{q = refl} r = r
+
+aptot : ∀{ℓ}{A : Set ℓ}{B : A → Set}(f : (x : A) → B x){a₀ a₁ : A}(a₂ : a₀ ≡ a₁)
+    → _≡_ {A = Σ Set λ X → X} (B a₀ , f a₀) (B a₁ , f a₁)
+aptot f refl = refl
+
+,= : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{a a' : A}{b : B a}{b' : B a'}
+     (p : a ≡ a') → b ≡[ B & p ]≡ b' → _≡_ {A = Σ A B} (a , b) (a' , b')
+,= refl refl = refl
+
+,=1 : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{a a' : A}{b : B a}{b' : B a'}
+    → _≡_ {A = Σ A B} (a , b) (a' , b') → a ≡ a'
+,=1 = λ p → ₁ & p
+
+,=2 : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{x y : Σ A B}
+      (p : x ≡ y) → (q : ₁ x ≡ ₁ y) → ₂ x ≡[ B & q ]≡ ₂ y
+,=2 {B = B} {x} {.x} refl refl = refl
+
+
+{-
+,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
+      (p : w ≡ w') → ,Σ= (,Σ=0 p) (,Σ=1 p) ≡ p
+,Σ=η refl = refl
+
+,Σ=β0 : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{a a' : A}{b : B a}{b' : B a'}
+       (p : a ≡ a')(q : b ≡[ ap B p ]≡ b') → ,Σ=0 (,Σ= p q) ≡ p
+,Σ=β0 refl refl = refl
+
+,Σ=β1 : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{a a' : A}{b : B a}{b' : B a'}
+       (p : a ≡ a')(q : b ≡[ ap B p ]≡ b')
+     → ,Σ=1 (,Σ= p q) ≡[ ap (λ r → b ≡[ ap B r ]≡ b') (,Σ=β0 p q) ]≡ q
+,Σ=β1 refl refl = refl
+
+Σ= : ∀{ℓ ℓ'}
+     {A₀ A₁ : Set ℓ}(A₂ : A₀ ≡ A₁)
+     {B₀ : A₀ → Set ℓ'}{B₁ : A₁ → Set ℓ'}(B₂ : B₀ ≡[ ap (λ z → z → Set ℓ') A₂ ]≡ B₁)
+   → Σ A₀ B₀ ≡ Σ A₁ B₁
+Σ= refl refl = refl
+
+,Σ=2 : {A : Set}{B : A → Set}{a : A}{b : B a}
+       {α : a ≡ a}{β : b ≡[ ap B α ]≡ b}
+     → (w : α ≡ refl) → β ≡[ ap (λ γ → b ≡[ ap B γ ]≡ b) w ]≡ refl
+     → ,Σ= α β ≡ refl
+,Σ=2 refl refl = refl
+
+,Σ==
+  : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}
+    {a₀ a₁ : A}{b₀ : B a₀}{b₁ : B a₁}
+    {p₀ p₁ : a₀ ≡ a₁}(p₂ : p₀ ≡ p₁)
+    {q₀ : b₀ ≡[ ap B p₀ ]≡ b₁}{q₁ : b₀ ≡[ ap B p₁ ]≡ b₁}(q₂ : q₀ ≡[ ≡= refl {a₀ = coe (ap B p₀) b₀}{coe (ap B p₁) b₀} (ap (λ z → coe (ap B z) b₀) p₂) refl ]≡ q₁) -- xxx
+  → _≡_ (,Σ= p₀ q₀) (,Σ= p₁ q₁)
+,Σ== refl refl = refl
+-}
