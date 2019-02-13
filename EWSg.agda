@@ -147,22 +147,22 @@ El {Γ} a = record { E   = S.El a.E ;
 Π {P} a B = ΠP a B
 Π {S} a B = ΠS a B
 
-appS : {Γ : Con} (a : TmS Γ U) → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
-appS a {B} t = record { E   = t.E ;
-                        w   = λ { (γ , lift υ) → t.w γ S.$S υ} ;
-                        Alg = λ { (γ , α) → t.Alg γ α } ;
-                        sg  = λ { {γc} (γ , lift α) {δc} (δ , lift ω) →
-                                    (happly (t.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
-                                    ◾ coe-coe
-                                        ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , x)) & coecoe⁻¹' (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
-                                        ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)) & coecoe⁻¹ (a.sg γ δ) (α , ω))
-                                        (B.sg (γ , lift (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
-                                         (δ , lift (₂ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
-                                         ((t.E ᴬt) γc)
-                                         ((t.w γ ᴬt) δc (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω))))))
-                                    ◾ apd {B = λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)}
-                                        (λ αω → B.sg (γ , lift (₁ αω)) (δ , lift (₂ αω)) ((t.E ᴬt) γc) ((t.w γ ᴬt) δc (₁ αω)))
-                                        (coecoe⁻¹ (a.sg γ δ) (α , ω)) } }
+appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
+appS {Γ}{a}{B} t = record { E   = t.E ;
+                            w   = λ { (γ , lift υ) → t.w γ S.$S υ} ;
+                            Alg = λ { (γ , α) → t.Alg γ α } ;
+                            sg  = λ { {γc} (γ , lift α) {δc} (δ , lift ω) →
+                                        (happly (t.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
+                                        ◾ coe-coe
+                                            ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , x)) & coecoe⁻¹' (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
+                                            ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)) & coecoe⁻¹ (a.sg γ δ) (α , ω))
+                                            (B.sg (γ , lift (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
+                                             (δ , lift (₂ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
+                                             ((t.E ᴬt) γc)
+                                             ((t.w γ ᴬt) δc (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω))))))
+                                        ◾ apd {B = λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)}
+                                            (λ αω → B.sg (γ , lift (₁ αω)) (δ , lift (₂ αω)) ((t.E ᴬt) γc) ((t.w γ ᴬt) δc (₁ αω)))
+                                            (coecoe⁻¹ (a.sg γ δ) (α , ω)) } }
   where
     module a = TmS a
     module B = TyS B

@@ -1,5 +1,8 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
-module Test1 (C : Set) (Cw : C → Set) (T : Set) (Tw : C → T → Set) (n : C) (nw : Cw n) (u : T) (uw : Tw n u) where
+module Test1 (C : Set) (Cw : C → Set)
+   (T : Set) (Tw : C → T → Set)
+   (n : C) (nw : Cw n)
+   (u : T) (uw : Tw n u) where
 
 open import II using (PS; P; S)
 open import EWSg
