@@ -8,7 +8,6 @@ import IF as S
 open import IFA
 
 infixl 7 _[_]T
-infixl 5 _,s_
 infix  6 _∘_
 infixl 8 _[_]t
 infixl 3 _▶_
@@ -217,31 +216,28 @@ _[_]tS {Γ}{Δ}{A} a σ = record { E   = a.E S.[ σ.Ec ]t ;
                                 Alg = λ γ → a.Alg (σ.Alg γ) ;
                                 sg  = λ {γc} γ {δc} δ →
                                               apd a.Alg (σ.sg γ δ ⁻¹) ⁻¹
-                                              ◾ coe (A.Alg & (σ.sg γ δ ⁻¹)) &
-                                                  (a.sg ((σ.E γc ᴬsL) γc γ) ((σ.w γ δ ᴬsL) δc δ)) }
+                                              ◾ coe (A.Alg & (σ.sg γ δ ⁻¹))
+                                                & (a.sg ((σ.E γc ᴬsL) γc γ) ((σ.w γ δ ᴬsL) δc δ)) }
   where
     module A = TyS A
     module a = TmS a
     module σ = Sub σ
 
 _[_]tP : ∀{Γ Δ}{A : TyP Δ} → TmP Δ A → (σ : Sub Γ Δ) → TmP Γ (A [ σ ]TP)
-_[_]tP t σ = record { E   = λ {γc} γ → t.E ((σ.E γc ᴬsL) γc γ) ;
-                      w   = λ {γc}{γ}{δc} δ → t.w ((σ.w γ δ ᴬsL) δc δ) ;
-                      Alg = λ γ → t.Alg (σ.Alg γ) ;
-                      sg  = {!!} }
+_[_]tP {Γ}{Δ}{A} a σ = record { E   = λ {γc} γ → a.E ((σ.E γc ᴬsL) γc γ) ;
+                                w   = λ {γc}{γ}{δc} δ → a.w ((σ.w γ δ ᴬsL) δc δ) ;
+                                Alg = λ γ → a.Alg (σ.Alg γ) ;
+                                sg  = λ {γc} γ {δc} δ → apd a.Alg (σ.sg γ δ ⁻¹) ⁻¹
+                                                        ◾  coe (A.Alg & (σ.sg γ δ ⁻¹))
+                                                           & a.sg ((σ.E γc ᴬsL) γc γ) ((σ.w γ δ ᴬsL) δc δ) }
   where
-    module t = TmP t
+    module A = TyP A
+    module a = TmP a
     module σ = Sub σ
 
 _[_]t : ∀{k Γ Δ}{A : Ty Δ k} → Tm Δ A → (σ : Sub Γ Δ) → Tm Γ (A [ σ ]T)
 _[_]t {P} = _[_]tP
 _[_]t {S} = _[_]tS
-
-U[] : ∀{Γ Δ}{δ : Sub Γ Δ} → U [ δ ]TS ≡ U
-U[] = refl
-
-El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U} → (El a [ σ ]TP) ≡ (El (coe (TmS Γ & (U[] {δ = σ})) (a [ σ ]tS)))
-El[] = {!!} --refl
 
 id : ∀{Γ} → Sub Γ Γ
 id {Γ} = record { Ec  = S.id ;
@@ -398,6 +394,12 @@ TyP≡ : {Γ : Con}
 TyP≡ refl refl = refl
 
 -- Proofs of the Substitution Laws
+
+U[] : ∀{Γ Δ}{δ : Sub Γ Δ} → U [ δ ]TS ≡ U
+U[] = refl
+
+El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : TmS Δ U} → (El a [ σ ]TP) ≡ (El (coe (TmS Γ & (U[] {δ = σ})) (a [ σ ]tS)))
+El[] = {!!} --refl
 
 [id]T : ∀{k Γ}{A : Ty Γ k} → A [ id ]T ≡ A
 [id]T {P}{Γ}{A} = TyP≡ (S.[id]T (TyP.E A))
