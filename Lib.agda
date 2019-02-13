@@ -151,6 +151,12 @@ infixr 4 _×_
      (p : a ≡ a') → coe (B & p) b ≡ b' → (Σ A B ∋ (a , b)) ≡ (a' , b')
 ,≡ refl refl = refl
 
+{-coe,≡ : ∀{i j k}{A : Set i}{B : A → Set j}{a a' : A}{b : B a}{b' : B a'}
+     (p : a ≡ a') → (q : coe (B & p) b ≡ b')
+     {C : Σ A B → Set k}{c : C (a , b)}
+     → coe (C & ,≡ p q) c ≡ coe (C & ({!!} ◾ (λ x → a' , x) & q)) c
+coe,≡ = {!!}-}
+
 curry : ∀ {a b c} {A : Set a} {B : A → Set b} {C : Σ A B → Set c} →
         ((p : Σ A B) → C p) →
         ((x : A) → (y : B x) → C (x , y))

@@ -125,7 +125,7 @@ El {Γ} a = record { E   = S.El a.E ;
 ΠS {Γ} a B = record { w   = λ {γc} γ T → S.Π̂S ((a.E ᴬt) γc) (λ α → B.w (γ , lift α) T) ;
                       Alg = λ γ → (α : a.Alg γ) → B.Alg (γ , α) ;
                       sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
-                                           coe (B.Alg & ,≡ refl (coecoe⁻¹' (a.sg γ δ) α))
+                                           coe ((λ x → B.Alg (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
                                                (B.sg (γ , lift α₁) (δ , lift α₂) πc (π α₁)) }
   where
     module Γ = Con Γ
@@ -137,7 +137,7 @@ El {Γ} a = record { E   = S.El a.E ;
                   w   = λ {γc} γ β → S.Π̂P ((a.E ᴬt) γc) (λ τ → (a.w γ S.$S τ) S.⇒P (B.w (γ , lift τ) (β τ))) ;
                   Alg = λ γ → (α : a.Alg γ) → B.Alg (γ , α) ;
                   sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
-                                       coe (B.Alg & ,≡ refl (coecoe⁻¹' (a.sg γ δ) α))
+                                       coe ((λ x → B.Alg (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
                                            (B.sg (γ , lift α₁) (δ , lift α₂) (πc α₁) (π α₁ α₂)) }
   where
     module a = TmS a
@@ -147,15 +147,22 @@ El {Γ} a = record { E   = S.El a.E ;
 Π {P} a B = ΠP a B
 Π {S} a B = ΠS a B
 
-appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
-appS {Γ}{a}{B} t = record { E   = t.E ;
-                            w   = λ { (γ , lift υ) → t.w γ S.$S υ} ;
-                            Alg = λ { (γ , α) → t.Alg γ α } ;
-                            sg  = λ { {γc} (γ , lift α) {δc} (δ , ω) →
-                                        let (Bs₁ , α') = (B.Γ.sg γc (γ , lift α) δc (δ , ω)) in
-                                        let pt : t.Alg (t.A.Γ.sg γc γ δc δ) α' ≡ t.A.sg γ δ ((t.E ᴬt) γc) ((t.w γ ᴬt) δc) α'
-                                            pt = happly (t.sg γ δ) α' in
-                                        pt ◾ {!!} } }
+appS : {Γ : Con} (a : TmS Γ U) → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
+appS a {B} t = record { E   = t.E ;
+                        w   = λ { (γ , lift υ) → t.w γ S.$S υ} ;
+                        Alg = λ { (γ , α) → t.Alg γ α } ;
+                        sg  = λ { {γc} (γ , lift α) {δc} (δ , lift ω) →
+                                    (happly (t.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
+                                    ◾ coe-coe
+                                        ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , x)) & coecoe⁻¹' (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))
+                                        ((λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)) & coecoe⁻¹ (a.sg γ δ) (α , ω))
+                                        (B.sg (γ , lift (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
+                                         (δ , lift (₂ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω)))))
+                                         ((t.E ᴬt) γc)
+                                         ((t.w γ ᴬt) δc (₁ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω))))))
+                                    ◾ apd {B = λ x → B.Alg (t.A.Γ.sg γc γ δc δ , coe (a.sg γ δ ⁻¹) x)}
+                                        (λ αω → B.sg (γ , lift (₁ αω)) (δ , lift (₂ αω)) ((t.E ᴬt) γc) ((t.w γ ᴬt) δc (₁ αω)))
+                                        (coecoe⁻¹ (a.sg γ δ) (α , ω)) } }
   where
     module a = TmS a
     module B = TyS B
@@ -199,8 +206,9 @@ _[_]tS {Γ}{Δ}{A} a σ = record { E   = a.E S.[ σ.Ec ]t ;
 
 _[_]tP : ∀{Γ Δ}{A : TyP Δ} → TmP Δ A → (σ : Sub Γ Δ) → TmP Γ (A [ σ ]TP)
 _[_]tP t σ = record { E   = λ {γc} γ → t.E ((σ.E γc ᴬsL) γc γ) ;
+                      w   = λ {γc}{γ}{δc} δ → t.w ((σ.w γ δ ᴬsL) δc δ) ;
                       Alg = λ γ → t.Alg (σ.Alg γ) ;
-                      w   = λ {γc}{γ}{δc} δ → t.w ((σ.w γ δ ᴬsL) δc δ) }
+                      sg  = {!!} }
   where
     module t = TmP t
     module σ = Sub σ
@@ -330,6 +338,7 @@ vsS {k} t = t [ wk {k} ]tS
 vsP : ∀{k Γ}{A : TyP Γ}{B : Ty Γ k} → TmP Γ A → TmP (Γ ▶ B) (A [ wk {k} ]TP)
 vsP {k} t = t [ wk {k} ]tP
 
+-- First kind: What is the resulting kind? Second kind: Along what kind are we weakening?
 vs : ∀{k l Γ}{A : Ty Γ k}{B : Ty Γ l} → Tm Γ A → Tm (Γ ▶ B) (A [ wk {l} ]T)
 vs {P}{l} t = vsP {l} t
 vs {S}{l} t = vsS {l} t
