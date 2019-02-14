@@ -1,4 +1,4 @@
-module IIA where
+module AM where
 
 open import Lib hiding (id; _∘_)
 open import II using (PS;P;S)
