@@ -1,5 +1,3 @@
-
-
 module AMPDS where
 
 open import Lib hiding (id; _∘_)

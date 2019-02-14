@@ -3,41 +3,44 @@ module EWSg where
 
 open import Lib hiding (id; _∘_)
 open import II using (PS; P; S)
---import IIA as IIA
+import AM as AM
 import IF as S
 open import IFA
 
+infixl 7 _[_]TS
+infixl 7 _[_]TP
 infixl 7 _[_]T
+infixl 5 _,tS_
+infixl 5 _,tP_
+infixl 5 _,t_
 infix  6 _∘_
+infixl 8 _[_]tS
+infixl 8 _[_]tP
 infixl 8 _[_]t
-infixl 3 _▶_
 infixl 3 _▶S_
 infixl 3 _▶P_
+infixl 3 _▶_
 
 record Con : Set₂ where
   field
     Ec  : S.SCon
     E   : S.Con Ec
-    wc  : (γc : Ec ᵃc) → (γ : (E ᵃC) γc) → S.SCon
-    w   : (γc : Ec ᵃc) → (γ : (E ᵃC) γc) → S.Con (wc γc γ)
     Alg : Set₁
-    sg  : (γc : Ec ᵃc) → (γ : (E ᵃC) γc) → (δc : wc γc γ ᵃc) → (δ : (w γc γ ᵃC) δc) → Alg
+--    sg  : (γc : Ec ᵃc) → (γ : (E ᵃC) γc) → (δc : wc γc γ ᵃc) → (δ : (w γc γ ᵃC) δc) → Alg
 
 record TyS (Γ : Con) : Set₂ where
   module Γ = Con Γ
   field
-    w   : {γc : Γ.Ec ᵃc} → (γ : (Γ.E ᵃC) γc) → Set → S.TyS
     Alg : Γ.Alg → Set₁
-    sg  : {γc : _} → (γ : (Γ.E ᵃC) γc) → {δc : _} → (δ : (Γ.w γc γ ᵃC) δc) → (α : Set) → (ω : w γ α ᵃS) → Alg (Γ.sg γc γ δc δ)
+--    sg  : {γc : _} → (γ : (Γ.E ᵃC) γc) → {δc : _} → (δ : (Γ.w γc γ ᵃC) δc) → (α : Set) → (ω : w γ α ᵃS) → Alg (Γ.sg γc γ δc δ)
 
 record TyP (Γ : Con) : Set₂ where
   module Γ = Con Γ
   field
     E   : S.TyP Γ.Ec
-    w   : ∀{γc} → (γ : (Γ.E ᵃC) γc) → (α : (E ᵃP) γc) → S.TyP (Γ.wc γc γ)
     Alg : Γ.Alg → Set
-    sg  : {γc : _} → (γ : (Γ.E ᵃC) γc) → {δc : _} → (δ : (Γ.w γc γ ᵃC) δc) → (α : (E ᵃP) γc) → (ω : (w γ α ᵃP) δc) → Alg (Γ.sg γc γ δc δ)
-
+--    sg  : {γc : _} → (γ : (Γ.E ᵃC) γc) → {δc : _} → (δ : (Γ.w γc γ ᵃC) δc) → (α : (E ᵃP) γc) → (ω : (w γ α ᵃP) δc) → Alg (Γ.sg γc γ δc δ)
+{-
 Ty : (Γ : Con) (k : PS) → Set₂
 Ty Γ P = TyP Γ
 Ty Γ S = TyS Γ
@@ -74,10 +77,10 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
     w   : ∀{γc}(γ : (Γ.E ᵃC) γc){δc}(δ : (Γ.w γc γ ᵃC) δc) → LSub (wc γ) (Γ.w γc γ) (Δ.w _ _)
     Alg : Γ.Alg → Δ.Alg
     sg  : ∀{γc}(γ : _){δc}(δ : _) → Alg (Γ.sg γc γ δc δ) ≡ Δ.sg ((Ec ᵃs) γc) ((E γc ᵃsL) γc γ) ((wc γ ᵃs) δc) ((w γ δ ᵃsL) δc δ)
-    
+-}    
 ∙ : Con
-∙ = record { Ec = S.∙c ; E = S.∙ ; wc = λ _ _ → S.∙c ; w = λ _ _ → S.∙ ; Alg = Lift ⊤ ; sg = λ _ _ _ _ → lift tt }
-
+∙ = record { Ec = S.∙c ; E = S.∙ ; Alg = Lift ⊤ {- sg = λ _ _ _ _ → lift tt -} }
+{-
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S A = record { Ec  = Γ.Ec S.▶c S.U ;
                   E   = Γ.E S.▶S S.U ;
@@ -454,4 +457,5 @@ infixl 5 _^_
 -}
 
 
+-}
 -}
