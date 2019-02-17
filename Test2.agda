@@ -15,8 +15,9 @@ module Test2
       ▶S ΠS vz U
       ▶P ΠP (vs {S}{S} vz) (ΠP (appS vz) (El (vsS {P} (vsS {P} (vsS {S} vz))))) -- why do i need to annotate here?
 
-Γsg : Con.Alg Γ
+Γsg : Con.ᴬ Γ
 Γsg = Con.sg Γ (lift tt , C , T)
                (lift tt , e)
                (lift tt , Cw , Tw)
                (lift tt , ew)
+               
