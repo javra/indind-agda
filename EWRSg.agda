@@ -69,9 +69,9 @@ record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
   field
     ᴬ   : (γ : Γ.ᴬ) → A.ᴬ γ
     E   : ∀{γc} → (Γ.E ᵃC) γc → (A.E ᵃP) γc
-    w   : ∀{γc}{γ} → {δc : Γ.wc γc γ ᵃc} → (Γ.w γc γ ᵃC) δc → (A.w γ (E γ) ᵃP) δc
-    R   : ∀{γc} → (γ : (Γ.E ᵃC) γc) →  {!!}
-    sg  : ∀{γc} → (γ : (Γ.E ᵃC) γc) → {δc : _} → (δ : (Γ.w γc γ ᵃC) δc) → ᴬ (Γ.sg γc γ δc δ) ≡ A.sg γ δ (E γ) (w δ)
+    w   : ∀{γc}{γ}{δc : Γ.wc γc γ ᵃc} → (Γ.w γc γ ᵃC) δc → (A.w γ (E γ) ᵃP) δc
+    R   : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ)(δc : Γ.Rc γ γᴬ ᵃc) →  (A.R γ (E γ) (ᴬ γᴬ) ᵃP) δc
+    sg  : ∀{γc}(γ : (Γ.E ᵃC) γc){δc : _}(δ : (Γ.w γc γ ᵃC) δc) → ᴬ (Γ.sg γc γ δc δ) ≡ A.sg γ δ (E γ) (w δ)
 
 Tm : {k : PS} → (Γ : Con) → (A : Ty Γ k) → Set₁
 Tm {P} = TmP
@@ -159,11 +159,14 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
     module Γ = Con Γ
     module a = TmS a
     module B = TyS B
-{-
+
 ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
-ΠP a B = record { E   = a.E S.⇒P B.E ;
-                  w   = λ {γc} γ β → S.Π̂P ((a.E ᵃt) γc) (λ τ → (a.w γ S.$S τ) S.⇒P (B.w (γ , lift τ) (β τ))) ;
-                  ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
+ΠP a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
+                  E   = a.E S.⇒P B.E ;
+                  w   = λ {γc} γ β → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , lift τ) (β τ) ;
+                  R   = λ {γc} γ {γᴬ} π πᴬ → S.Π̂P (a.ᴬ γᴬ)
+                                               λ αᴬ → S.Π̂P ((a.E ᵃt) γc)
+                                                        λ α → ((a.R γ γᴬ S.$S αᴬ) S.$S α) S.⇒P B.R (γ , lift α) (π α) (πᴬ αᴬ) ;
                   sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
                                        coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
                                            (B.sg (γ , lift α₁) (δ , lift α₂) (πc α₁) (π α₁ α₂)) }
@@ -174,7 +177,7 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
 Π : ∀{k}{Γ : Con} → (a : TmS Γ U) → (B : Ty (Γ ▶ El a) k) → Ty Γ k
 Π {P} a B = ΠP a B
 Π {S} a B = ΠS a B
--}
+
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
                              E   = t.E ;
