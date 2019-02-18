@@ -114,6 +114,10 @@ apd : ∀{i j}{A : Set i}{B : A → Set j}(f : (x : A) → B x){a₀ a₁ : A}(a
     → coe (B & a₂) (f a₀) ≡ f a₁
 apd f refl = refl
 
+apd' : ∀{i j}{A : Set i}{B : A → Set j}(f : (x : A) → B x){a₀ a₁ : A}(a₂ : a₀ ≡ a₁){q : B a₀ ≡ B a₁}
+    → coe q (f a₀) ≡ f a₁
+apd' f refl {refl} = refl
+
 J :
   ∀ {α β}{A : Set α} {x : A}(P : ∀ y → x ≡ y → Set β)
   → P x refl → {y : A} → (w : x ≡ y) → P y w
