@@ -75,22 +75,22 @@ data LSub : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con
   _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub σ Γ Δ) → {A : TyP Δc} → (α : ∀{γc} → (Γ ᵃC) γc → (A ᵃP) ((σ ᵃs) γc))
             → LSub σ Γ (Δ ▶P A)
 
-_ᵃsL : ∀{Γc Δc : SCon}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc}(σP : LSub σ Γ Δ) → (γc : Γc ᵃc) → (Γ ᵃC) γc → (Δ ᵃC) ((σ ᵃs) γc)
-_ᵃsL Lε γc γ                            = lift tt
-_ᵃsL (_,S_ {σ = σ} σP b) γc γ           = (σP ᵃsL) γc γ
-_ᵃsL (σP ,P α) γc γ                     = (σP ᵃsL) γc γ , α γ
+_ᵃsL : ∀{Γc Δc : SCon}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc}(σP : LSub σ Γ Δ){γc : Γc ᵃc} → (Γ ᵃC) γc → (Δ ᵃC) ((σ ᵃs) γc)
+_ᵃsL Lε γ                            = lift tt
+_ᵃsL (_,S_ {σ = σ} σP b) γ           = (σP ᵃsL) γ
+_ᵃsL (σP ,P α) γ                     = (σP ᵃsL) γ , α γ
 
 Lπ₁S : ∀{Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → LSub (π₁ σ) Γ Δ
 Lπ₁S (σP ,S b) = σP
 
-Lπ₁SᵃsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᵃC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁S σP ᵃsL) γc γ ≡ (σP ᵃsL) γc γ
+Lπ₁SᵃsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᵃC) γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁S σP ᵃsL) γ ≡ (σP ᵃsL) γ
 Lπ₁SᵃsL (σP ,S b) = refl
 {-# REWRITE Lπ₁SᵃsL #-}
 
 Lπ₁P : ∀{Γc Δc Γ Δ A}{σ : Sub Γc Δc}(σP : LSub σ Γ (Δ ▶P A)) → LSub σ Γ Δ
 Lπ₁P (σP ,P α) = σP
 
-Lπ₁PᵃsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᵃC) γc}{σ : Sub Γc Δc}(σP : LSub σ Γ (Δ ▶P A)) → (Lπ₁P σP ᵃsL) γc γ ≡ ₁ ((σP ᵃsL) γc γ)
+Lπ₁PᵃsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᵃC) γc}{σ : Sub Γc Δc}(σP : LSub σ Γ (Δ ▶P A)) → (Lπ₁P σP ᵃsL) γ ≡ ₁ ((σP ᵃsL) γ)
 Lπ₁PᵃsL (σP ,P α) = refl
 {-# REWRITE Lπ₁PᵃsL #-}
 
@@ -102,7 +102,7 @@ LwkS Lε        = Lε
 LwkS (σP ,S b) = LwkS σP ,S vs b
 LwkS (σP ,P α) = LwkS σP ,P λ γ → α γ
 
-LwkSᵃsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᵃC) γc}{β}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkS {B = B} σP ᵃsL)(γc , β) γ  ≡ (σP ᵃsL) γc γ
+LwkSᵃsL : ∀{Γc Δc Γ Δ B}{γc}{γ : (Γ ᵃC) γc}{β}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkS {B = B} σP ᵃsL) {γc , β} γ  ≡ (σP ᵃsL) γ
 LwkSᵃsL Lε        = refl
 LwkSᵃsL (σP ,S b) = LwkSᵃsL σP
 LwkSᵃsL (σP ,P α) = ,≡ (LwkSᵃsL σP) refl
@@ -113,7 +113,7 @@ LwkP Lε        = Lε
 LwkP (σP ,S b) = LwkP σP ,S b
 LwkP (σP ,P α) = LwkP σP ,P λ γ → α (₁ γ)
 
-LwkPᵃsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᵃC) γc}{α : (A ᵃP) γc}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkP {A = A} σP ᵃsL) γc (γ , α) ≡ (σP ᵃsL) γc γ
+LwkPᵃsL : ∀{Γc Δc Γ Δ A}{γc}{γ : (Γ ᵃC) γc}{α : (A ᵃP) γc}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkP {A = A} σP ᵃsL) (γ , α) ≡ (σP ᵃsL) γ
 LwkPᵃsL Lε        = refl
 LwkPᵃsL (σP ,S b) = LwkPᵃsL σP
 LwkPᵃsL (σP ,P α) = ,≡ (LwkPᵃsL σP) refl
@@ -124,7 +124,7 @@ Lid {Γ = ∙}      = Lε
 Lid {Γ = Γ ▶S B} = LwkS Lid ,S vz
 Lid {Γ = Γ ▶P A} = LwkP Lid ,P ₂
 
-LidᵃsL : ∀{Γc}{Γ : Con Γc}{γc}{γ : (Γ ᵃC) γc} → (Lid {Γ = Γ} ᵃsL) γc γ ≡ γ
+LidᵃsL : ∀{Γc}{Γ : Con Γc}{γc}{γ : (Γ ᵃC) γc} → (Lid {Γ = Γ} ᵃsL) γ ≡ γ
 LidᵃsL {Γ = ∙}      = refl
 LidᵃsL {Γ = Γ ▶S B} = LidᵃsL {Γ = Γ}
 LidᵃsL {Γ = Γ ▶P A} = ,≡ (LidᵃsL {Γ = Γ}) refl
@@ -133,10 +133,10 @@ LidᵃsL {Γ = Γ ▶P A} = ,≡ (LidᵃsL {Γ = Γ}) refl
 _L∘_ : ∀{Γc Δc Ωc}{Γ Δ Ω}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}(δP : LSub δ Ω Δ)(σP : LSub σ Γ Ω) → LSub (δ ∘ σ) Γ Δ
 Lε L∘ σP                      = Lε
 _L∘_ {σ = σ} (δP ,S b) σP     = (δP L∘ σP) ,S (b [ σ ]t)
-_L∘_ {δ = δ} {σ} (δP ,P α) σP = (δP L∘ σP) ,P λ γ → α ((σP ᵃsL) _ γ)
+_L∘_ {δ = δ} {σ} (δP ,P α) σP = (δP L∘ σP) ,P λ γ → α ((σP ᵃsL) γ)
 
 L∘ᵃsL : ∀{Γc Δc Ωc}{Γ Δ Ω}{γc}{γ : (Γ ᵃC) γc}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}(δP : LSub δ Ω Δ)(σP : LSub σ Γ Ω)
-        → ((δP L∘ σP) ᵃsL) γc γ ≡ (δP ᵃsL) _ ((σP ᵃsL) γc γ)
+        → ((δP L∘ σP) ᵃsL) γ ≡ (δP ᵃsL) ((σP ᵃsL) γ)
 L∘ᵃsL Lε σP        = refl
 L∘ᵃsL (δP ,S b) σP = L∘ᵃsL δP σP
 L∘ᵃsL (δP ,P α) σP = ,≡ (L∘ᵃsL δP σP) refl
