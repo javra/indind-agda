@@ -5,7 +5,7 @@ module Test1 (C : Set) (Cw : C → Set)
  where
 
 open import II using (PS; P; S)
-open import EWSg
+open import EWRSg
 open import Lib
 
 Γ : Con

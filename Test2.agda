@@ -1,7 +1,7 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
 open import II using (PS; P; S)
-open import EWSg
+open import EWRSg
 open import Lib
 
 module Test2
