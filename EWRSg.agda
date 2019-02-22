@@ -30,7 +30,7 @@ record Con : Set₂ where
     w   : {γc : Ec ᵃc} → (γ : (E ᵃC) γc) → S.Con (wc γ)
     Rc  : {γc : _ᵃc {zero} Ec} → (γ : (E ᵃC) γc) → (γᴬ : ᴬ) → S.SCon
     R   : {γc : Ec ᵃc} → (γ : (E ᵃC) γc) → (γᴬ : ᴬ) → S.Con (Rc γ γᴬ)
-    A=c : (γᴬ₀ γᴬ₁ : ᴬ) → _ᵃc {suc zero} Ec
+    A=  : (γᴬ₀ γᴬ₁ : ᴬ) → _ᵃc {suc zero} Ec
     sg  : (γc : Ec ᵃc) → (γ : (E ᵃC) γc) → (δc : _ᵃc {zero} (wc γ)) → (δ : (w γ ᵃC) δc) → ᴬ
 
 record TyS (Γ : Con) : Set₂ where
@@ -55,7 +55,7 @@ Ty : (Γ : Con) (k : PS) → Set₂
 Ty Γ P = TyP Γ
 Ty Γ S = TyS Γ
 
-record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
+record TmS (Γ : Con) (A : TyS Γ) : Set₂ where
   module Γ = Con Γ
   module A = TyS A
   field
@@ -63,10 +63,10 @@ record TmS (Γ : Con) (A : TyS Γ) : Set₁ where
     E   : S.Tm Γ.Ec S.U
     w   : ∀{γc}(γ : (Γ.E ᵃC) γc) → S.Tm (Γ.wc γ) (A.w γ ((E ᵃt) γc))
     R   : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ) → S.Tm (Γ.Rc γ γᴬ) (A.R ((E ᵃt) γc) (ᴬ γᴬ))
-    A=  : ∀{γᴬ₀ γᴬ₁} → (E ᵃt) (Γ.A=c γᴬ₀ γᴬ₁)
+    A=  : ∀{γᴬ₀ γᴬ₁} → A.A= (ᴬ γᴬ₀) (ᴬ γᴬ₁)
     sg  : ∀{γc}(γ : (Γ.E ᵃC) γc){δc}(δ : (Γ.w γ ᵃC) δc) → ᴬ (Γ.sg γc γ δc δ) ≡ A.sg γ δ ((E ᵃt) γc) ((w γ ᵃt) δc)
 
-record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
+record TmP (Γ : Con) (A : TyP Γ) : Set₂ where
   module Γ = Con Γ
   module A = TyP A
   field
@@ -76,7 +76,7 @@ record TmP (Γ : Con) (A : TyP Γ) : Set₁ where
     R   : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ)(δc : _ᵃc {zero} (Γ.Rc γ γᴬ)) → (δ : (Γ.R γ γᴬ ᵃC) δc) → (A.R γ (E γ) (ᴬ γᴬ) ᵃP) δc
     sg  : ∀{γc}(γ : (Γ.E ᵃC) γc){δc}(δ : (Γ.w γ ᵃC) δc) → ᴬ (Γ.sg γc γ δc δ) ≡ A.sg γ δ (E γ) (w δ)
 
-Tm : {k : PS} → (Γ : Con) → (A : Ty Γ k) → Set₁
+Tm : {k : PS} → (Γ : Con) → (A : Ty Γ k) → Set₂
 Tm {P} = TmP
 Tm {S} = TmS
 
@@ -91,7 +91,7 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
     w   : ∀{γc}(γ : (Γ.E ᵃC) γc){δc}(δ : (Γ.w γ ᵃC) δc) → LSub (wc γ) (Γ.w γ) (Δ.w _)
     Rc  : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ) → S.Sub (Γ.Rc γ γᴬ) (Δ.Rc ((E γc ᵃsL) γ) (ᴬ γᴬ))
     R   : ∀{γc}(γ : (Γ.E ᵃC) γc){γᴬ : Γ.ᴬ}{δc}(δ : _ᵃC {zero} (Γ.R γ γᴬ) δc) → LSub {zero} (Rc γ γᴬ) (Γ.R γ γᴬ) (Δ.R ((E γc ᵃsL) γ) (ᴬ γᴬ))
-    A=  : ∀{γᴬ₀}{γᴬ₁} → (Ec ᵃs) (Γ.A=c γᴬ₀ γᴬ₁) ≡ Δ.A=c (ᴬ γᴬ₀) (ᴬ γᴬ₁)
+    A=  : ∀{γᴬ₀}{γᴬ₁} → (Ec ᵃs) (Γ.A= γᴬ₀ γᴬ₁) ≡ Δ.A= (ᴬ γᴬ₀) (ᴬ γᴬ₁)
     sg  : ∀{γc}(γ : _){δc}(δ : _) → ᴬ (Γ.sg γc γ δc δ) ≡ Δ.sg ((Ec ᵃs) γc) ((E γc ᵃsL) γ) ((wc γ ᵃs) δc) ((w γ δ ᵃsL) δ)
 
 ∙ : Con
@@ -112,7 +112,7 @@ _▶S_ : (Γ : Con) → TyS Γ → Con
                   w   = λ { {γc , T} γ → Γ.w γ S.▶S A.w γ T } ;
                   Rc  = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.Rc γ γᴬ S.▶c A.R T αᴬ } ;
                   R   = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.R γ γᴬ S.▶S A.R T αᴬ } ;
-                  A=c = λ { (γᴬ₀ , αᴬ₀) (γᴬ₁ , αᴬ₁) → Γ.A=c γᴬ₀ γᴬ₁ , A.A= αᴬ₀ αᴬ₁ } ;
+                  A= = λ { (γᴬ₀ , αᴬ₀) (γᴬ₁ , αᴬ₁) → Γ.A= γᴬ₀ γᴬ₁ , A.A= αᴬ₀ αᴬ₁ } ;
                   sg  = λ { (γc , α) γ (δc , ω) δ → Γ.sg γc γ δc δ , A.sg γ δ α ω } }
   where
     module Γ = Con Γ
@@ -126,7 +126,7 @@ _▶P_ : (Γ : Con) → TyP Γ → Con
                   w   = λ { (γ , α) → Γ.w γ S.▶P A.w γ α } ;
                   Rc  = λ { (γ , α) (γᴬ , αᴬ) → Γ.Rc γ γᴬ } ;
                   R   = λ { (γ , α) (γᴬ , αᴬ) → Γ.R γ γᴬ S.▶P A.R γ α αᴬ } ;
-                  A=c = λ { (γᴬ₀ , αᴬ₀) (γᴬ₁ , αᴬ₁) → Γ.A=c γᴬ₀ γᴬ₁ } ;
+                  A= = λ { (γᴬ₀ , αᴬ₀) (γᴬ₁ , αᴬ₁) → Γ.A= γᴬ₀ γᴬ₁ } ;
                   sg  = λ { γc (γ , α) δc (δ , ω) → Γ.sg γc γ δc δ , A.sg γ δ α ω } }
   where
     module Γ = Con Γ
@@ -148,21 +148,21 @@ U {Γ} = record { ᴬ   = λ γ → Set ;
 El : {Γ : Con} (a : TmS Γ U) → TyP Γ
 El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
                     E   = S.El a.E ;
-                    w   = λ { γ (lift α) → S.El (a.w γ S.$S α) } ;
-                    R   = λ { γ {γᴬ} (lift α) αᴬ → S.El ((a.R γ γᴬ S.$S αᴬ) S.$S α) } ;
-                    sg  = λ { γ δ (lift α) (lift ω) → coe (a.sg γ δ ⁻¹) (α , ω) } }
+                    w   = λ { γ α → S.El (a.w γ S.$S α) } ;
+                    R   = λ { γ {γᴬ} α αᴬ → S.El ((a.R γ γᴬ S.$S αᴬ) S.$S α) } ;
+                    sg  = λ { γ δ α ω → coe (a.sg γ δ ⁻¹) (α , ω) } }
   where
     module Γ = Con Γ
     module a = TmS a
 
 ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
 ΠS {Γ} a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
-                      w   = λ {γc} γ T → S.Π̂S ((a.E ᵃt) γc) λ α → B.w (γ , lift α) T ;
+                      w   = λ {γc} γ T → S.Π̂S ((a.E ᵃt) γc) λ α → B.w (γ , α) T ;
                       R   = λ {γᴬ} T πᴬ → S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R T (πᴬ αᴬ) ;
-                      A=  = λ πᴬ₀ πᴬ₁ → (αᴬ₀ : _) → (αᴬ₁ : _) → B.A= (πᴬ₀ αᴬ₀) (πᴬ₁ αᴬ₁) ;
+                      A=  = λ πᴬ₀ πᴬ₁ → Σ (a.ᴬ _) (λ αᴬ → B.A= (πᴬ₀ αᴬ) (πᴬ₁ (coe a.A= αᴬ))) ; -- ???
                       sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
                                            coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
-                                               (B.sg (γ , lift α₁) (δ , lift α₂) πc (π α₁)) }
+                                               (B.sg (γ , α₁) (δ , α₂) πc (π α₁)) }
   where
     module Γ = Con Γ
     module a = TmS a
@@ -171,13 +171,13 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
 ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
 ΠP a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
                   E   = a.E S.⇒P B.E ;
-                  w   = λ {γc} γ β → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , lift τ) (β τ) ;
+                  w   = λ {γc} γ β → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , τ) (β τ) ;
                   R   = λ {γc} γ {γᴬ} π πᴬ → S.Π̂P (a.ᴬ γᴬ)
                                                λ αᴬ → S.Π̂P ((a.E ᵃt) γc)
-                                                        λ α → ((a.R γ γᴬ S.$S αᴬ) S.$S α) S.⇒P B.R (γ , lift α) (π α) (πᴬ αᴬ) ;
+                                                        λ α → ((a.R γ γᴬ S.$S αᴬ) S.$S α) S.⇒P B.R (γ , α) (π α) (πᴬ αᴬ) ;
                   sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
                                        coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
-                                           (B.sg (γ , lift α₁) (δ , lift α₂) (πc α₁) (π α₁ α₂)) }
+                                           (B.sg (γ , α₁) (δ , α₂) (πc α₁) (π α₁ α₂)) }
   where
     module a = TmS a
     module B = TyP B
@@ -189,12 +189,12 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
                              E   = t.E ;
-                             w   = λ { (γ , lift α) → t.w γ S.$S α } ;
-                             R   = λ { (γ , lift α) (γᴬ , αᴬ) → t.R γ γᴬ S.$S αᴬ } ;
-                             A=  = t.A= ;
-                             sg  = λ { (γ , lift α) {δc} (δ , lift ω) →
+                             w   = λ { (γ , α) → t.w γ S.$S α } ;
+                             R   = λ { (γ , α) (γᴬ , αᴬ) → t.R γ γᴬ S.$S αᴬ } ;
+                             A=  = λ { {γᴬ₀ , αᴬ₀} {γᴬ₁ , αᴬ₁} → {!!} } ;
+                             sg  = λ { (γ , α) {δc} (δ , ω) →
                                          happly (t.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω))
-                                         ◾ apd' (λ { (α , ω) → B.sg (γ , lift α) (δ , lift ω) _ ((t.w γ ᵃt) δc α) } )
+                                         ◾ apd' (λ { (α , ω) → B.sg (γ , α) (δ , ω) _ ((t.w γ ᵃt) δc α) } )
                                              (coecoe⁻¹ (a.sg γ δ) (α , ω)) } }
   where
     module a = TmS a
@@ -203,12 +203,12 @@ appS {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
 
 appP : {Γ : Con} {a : TmS Γ U} → {B : TyP (Γ ▶P El a)} → (t : TmP Γ (ΠP a B)) → TmP (Γ ▶P El a) B
 appP {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
-                             E   = λ { (γ , lift α) → t.E γ α };
-                             w   = λ { {γ = γ , lift α} (δ , lift ω) → t.w δ α ω } ;
-                             R   = λ { (γ , lift α) (γᴬ , αᴬ) δc (δ , lift ω) → t.R γ γᴬ δc δ αᴬ α ω } ;
-                             sg  = λ { (γ , lift α) {δc} (δ , lift ω) →
+                             E   = λ { (γ , α) → t.E γ α };
+                             w   = λ { {γ = γ , α} (δ , ω) → t.w δ α ω } ;
+                             R   = λ { (γ , α) (γᴬ , αᴬ) δc (δ , ω) → t.R γ γᴬ δc δ αᴬ α ω } ;
+                             sg  = λ { (γ , α) {δc} (δ , ω) →
                                         happly (t.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , ω))
-                                        ◾ apd' (λ { (α , ω) → B.sg (γ , lift α) (δ , lift ω) _ (t.w δ α ω) } )
+                                        ◾ apd' (λ { (α , ω) → B.sg (γ , α) (δ , ω) _ (t.w δ α ω) } )
                                             (coecoe⁻¹ (a.sg γ δ) (α , ω)) } }
   where
     module a = TmS a
@@ -246,7 +246,7 @@ _[_]tS {Γ}{Δ}{A} a σ = record { ᴬ   = λ γ → a.ᴬ (σ.ᴬ γ) ;
                                 E   = a.E S.[ σ.Ec ]t ;
                                 w   = λ {γc} γ → a.w ((σ.E γc ᵃsL) γ) S.[ σ.wc γ ]t ;
                                 R   = λ {γc} γ γᴬ → a.R ((σ.E γc ᵃsL) γ) (σ.ᴬ γᴬ) S.[ σ.Rc γ γᴬ ]t ;
-                                A=  = λ {γᴬ₀} {γᴬ₁} → coe ((a.E ᵃt) & (σ.A= ⁻¹)) a.A= ;
+                                A=  = λ {γᴬ₀} {γᴬ₁} → a.A= ;
                                 sg  = λ {γc} γ {δc} δ →
                                               apd a.ᴬ (σ.sg γ δ ⁻¹) ⁻¹
                                               ◾ coe (A.ᴬ & (σ.sg γ δ ⁻¹))
@@ -374,12 +374,13 @@ _,t_ {S} = _,tS_
 π₁ : ∀{k}{Γ Δ}{A : Ty Δ k} → Sub Γ (Δ ▶ A) → Sub Γ Δ
 π₁ {P} = π₁P
 π₁ {S} = π₁S
-{-
+
 π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
 π₂S {Γ}{Δ}{A} σ = record { ᴬ   = λ γ → ₂ (σ.ᴬ γ) ;
                            E   = S.π₂ σ.Ec ;
                            w   = λ γ → S.π₂ (σ.wc γ) ;
                            R   = λ γ γᴬ → S.π₂ (σ.Rc γ γᴬ) ;
+                           A=  = {!!} ;
                            sg  = λ γ δ → ,=2 {B = TyS.ᴬ A} (σ.sg γ δ ⁻¹) (₁ & σ.sg γ δ ⁻¹) ⁻¹ }
   where
     module σ = Sub σ
@@ -510,5 +511,4 @@ infixl 5 _^_
 -}
 
 
--}
 -}
