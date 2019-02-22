@@ -24,7 +24,7 @@ open import IFD
 ˢP (El a)        γcˢ α αᵈ = lift (ˢt a γcˢ α) ≡ αᵈ
 ˢP (t ⇒P A) {γc} γcˢ α αᵈ = (x : (t ᵃt) γc) → ˢP A γcˢ (α x) (αᵈ x (ˢt t γcˢ x))
 
-ˢC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ){γ : (Γ ᵃC) γc}(γᵈ : ᵈC Γ γc γcᵈ γ) → Set (suc ℓ' ⊔ ℓ)
+ˢC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ){γ : (Γ ᵃC) γc}(γᵈ : ᵈC Γ γcᵈ γ) → Set (suc ℓ' ⊔ ℓ)
 ˢC ∙        γcˢ γᵈ                 = Lift ⊤
 ˢC (Γ ▶S B) (γcˢ , αcˢ) γᵈ         = ˢC Γ γcˢ γᵈ
 ˢC (Γ ▶P A) γcˢ         (γᵈ , αᵈ)  = Σ (ˢC Γ γcˢ γᵈ) λ γˢ → ˢP A γcˢ _ αᵈ
