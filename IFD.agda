@@ -44,4 +44,3 @@ open import IFA
 []tᵈ {a = a $S α}{σ}     = happly ([]tᵈ {a = a} {σ = σ}) α
 {-# REWRITE []Tᵈ #-}
 {-# REWRITE []tᵈ #-}
-
