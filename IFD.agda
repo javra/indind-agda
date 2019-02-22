@@ -31,3 +31,17 @@ open import IFA
 ᵈs : ∀{ℓ' ℓ}{Γc Δc}(σ : Sub Γc Δc)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈc {ℓ'} Δc ((σ ᵃs) γc)
 ᵈs ε       γc γcᵈ = lift tt
 ᵈs (σ , t) γc γcᵈ = ᵈs σ γc γcᵈ , ᵈt t γc γcᵈ
+
+[]Tᵈ : ∀{ℓ' ℓ}{Γc Δc A}{σ : Sub Γc Δc}{γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(α : _) → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γc γcᵈ) α
+[]tᵈ : ∀{ℓ' ℓ}{Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc} → ᵈt (a [ σ ]t) γc γcᵈ ≡ ᵈt a ((σ ᵃs) γc) (ᵈs σ γc γcᵈ)
+
+[]Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
+[]Tᵈ {A = El a} α   = Lift & happly ([]tᵈ {a = a}) α
+[]Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
+
+[]tᵈ {a = vz}    {σ , t} = refl
+[]tᵈ {a = vs a}  {σ , t} = []tᵈ {a = a}
+[]tᵈ {a = a $S α}{σ}     = happly ([]tᵈ {a = a} {σ = σ}) α
+{-# REWRITE []Tᵈ #-}
+{-# REWRITE []tᵈ #-}
+

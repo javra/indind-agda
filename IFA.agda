@@ -40,8 +40,7 @@ _ᵃs : ∀{ℓ}{Γc Δc} → Sub Γc Δc → _ᵃc {ℓ} Γc → _ᵃc {ℓ} Δ
 
 []tᵃ {a = vz} {δ , x} γc   = refl
 []tᵃ {a = vs a} {δ , x} γc = []tᵃ {a = a} γc
-[]tᵃ {a = a $S α} {δ} γc   = (λ x → coe x (((a [ δ ]t) ᵃt) γc α)) & (const& ([]tᵃ {a = a} {δ = δ} γc) ⁻¹)
-                             ◾ apd (λ f → f α) ([]tᵃ {a = a} {δ = δ} γc)
+[]tᵃ {a = a $S α} {δ} γc   = happly ([]tᵃ {a = a} {δ = δ} γc) α
 {-# REWRITE []Tᵃ #-}
 {-# REWRITE []tᵃ #-}
 
