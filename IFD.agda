@@ -28,12 +28,12 @@ open import IFA
 ᵈC {ℓ'} (Γ ▶S B) (γcᵈ , αᵈ) γ       = ᵈC {ℓ'} Γ γcᵈ γ
 ᵈC {ℓ'} (Γ ▶P A) γcᵈ        (γ , α) = (ᵈC Γ γcᵈ γ)× (ᵈP A γcᵈ α)
 
-ᵈs : ∀{ℓ' ℓ}{Γc Δc}(σ : Sub Γc Δc)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈc {ℓ'} Δc ((σ ᵃs) γc)
+ᵈs : ∀{ℓ' ℓ Γc Δc}(σ : Sub Γc Δc)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈc {ℓ'} Δc ((σ ᵃs) γc)
 ᵈs ε       γc γcᵈ = lift tt
 ᵈs (σ , t) γc γcᵈ = ᵈs σ γc γcᵈ , ᵈt t γc γcᵈ
 
-[]Tᵈ : ∀{ℓ' ℓ}{Γc Δc A}{σ : Sub Γc Δc}{γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(α : _) → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γc γcᵈ) α
-[]tᵈ : ∀{ℓ' ℓ}{Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc} → ᵈt (a [ σ ]t) γc γcᵈ ≡ ᵈt a ((σ ᵃs) γc) (ᵈs σ γc γcᵈ)
+[]Tᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(α : _) → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γc γcᵈ) α
+[]tᵈ : ∀{ℓ' ℓ Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈt (a [ σ ]t) γc γcᵈ ≡ ᵈt a ((σ ᵃs) γc) (ᵈs σ γc γcᵈ)
 
 []Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
 []Tᵈ {A = El a} α   = Lift & happly ([]tᵈ {a = a}) α
@@ -44,3 +44,26 @@ open import IFA
 []tᵈ {a = a $S α}{σ}     = happly ([]tᵈ {a = a} {σ = σ}) α
 {-# REWRITE []Tᵈ #-}
 {-# REWRITE []tᵈ #-}
+
+wk,ᵈ : ∀{ℓ' ℓ Γc Δc B}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{α αᵈ}  → ᵈs (wk {B = B} σ) (γc , α) (γcᵈ , αᵈ) ≡ ᵈs σ γc γcᵈ
+wk,ᵈ {σ = ε}     = refl
+wk,ᵈ {σ = σ , x} = ,≡ wk,ᵈ refl
+{-# REWRITE wk,ᵈ #-}
+
+idᵈ : ∀{ℓ' ℓ Γc γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈs id γc γcᵈ ≡ γcᵈ
+idᵈ {Γc = ∙c}      = refl
+idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
+{-# REWRITE idᵈ #-}
+
+∘ᵈ : ∀{ℓ' ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈs (σ ∘ δ) γc γcᵈ ≡ ᵈs σ _ (ᵈs δ γc γcᵈ)
+∘ᵈ {σ = ε}        = refl
+∘ᵈ {σ = σ , x}{δ} = ,≡ (∘ᵈ {σ = σ}{δ = δ}) refl
+{-# REWRITE ∘ᵈ #-}
+
+π₁ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈs (π₁ σ) γc γcᵈ ≡ ₁ (ᵈs σ γc γcᵈ)
+π₁ᵈ {σ = σ , x} = refl
+{-# REWRITE π₁ᵈ #-}
+
+π₂ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈt (π₂ σ) γc γcᵈ ≡ ₂ (ᵈs σ γc γcᵈ)
+π₂ᵈ {σ = σ , x} = refl
+{-# REWRITE π₂ᵈ #-}
