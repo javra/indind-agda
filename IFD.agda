@@ -67,3 +67,91 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 π₂ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈt (π₂ σ) γc γcᵈ ≡ ₂ (ᵈs σ γc γcᵈ)
 π₂ᵈ {σ = σ , x} = refl
 {-# REWRITE π₂ᵈ #-}
+
+data dLSub {ℓ' ℓ} : ∀{Γc Δc}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δc}(σP : LSub {ℓ} σ Γ Δ) → Set (suc (ℓ' ⊔ ℓ)) where
+  dLε   : ∀{Γc}{Γ : Con Γc} → dLSub ε {Γ = Γ} Lε
+  _,dS_ : ∀{Γc Δc σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP){B}(b : Tm Γc B) → dLSub (σ , b) (σP ,S b)
+  _,dP_ : ∀{Γc Δc σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP){A : TyP Δc}
+          → {α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc)}
+          → (αᵈ : ∀{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γ : _ᵃC {ℓ} Γ γc) → ᵈC Γ γcᵈ γ → ᵈP A {(σ ᵃs) γc} (ᵈs σ γc γcᵈ) (α γ))
+          → dLSub σ (_,P_ σP {A} α)
+
+ᵈsL : ∀{ℓ' ℓ Γc Δc}{σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP){γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γ : (Γ ᵃC) γc)
+      → ᵈC Γ γcᵈ γ → ᵈC Δ (ᵈs σ γc γcᵈ) ((σP ᵃsL) γ)
+ᵈsL dLε          γ γᵈ = lift tt
+ᵈsL (σdP ,dS b)  γ γᵈ = ᵈsL σdP γ γᵈ
+ᵈsL (σdP ,dP αᵈ) γ γᵈ = ᵈsL σdP γ γᵈ , αᵈ γ γᵈ
+
+dLπ₁S : ∀{ℓ' ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}{σP : LSub σ Γ (Δ ▶S B)}(σdP : dLSub {ℓ'}{ℓ} σ σP) → dLSub {ℓ'} (π₁ σ) (Lπ₁S σP)
+dLπ₁S (σdP ,dS b) = σdP
+
+ᵈsLdLπ₁S : ∀{ℓ' ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}{σP : LSub σ Γ (Δ ▶S B)}(σdP : dLSub {ℓ'}{ℓ} σ σP)
+            {γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC Γ γcᵈ γ}
+            → ᵈsL (dLπ₁S σdP) γ γᵈ ≡ ᵈsL σdP γ γᵈ
+ᵈsLdLπ₁S (σdP ,dS b) = refl
+{-# REWRITE ᵈsLdLπ₁S #-}
+
+dLπ₁P : ∀{ℓ' ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}{σP : LSub σ Γ (Δ ▶P A)}(σdP : dLSub {ℓ'}{ℓ} σ σP) → dLSub {ℓ'} σ (Lπ₁P σP)
+dLπ₁P (σdP ,dP αᵈ) = σdP
+
+ᵈsLdLπ₁P : ∀{ℓ' ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}{σP : LSub σ Γ (Δ ▶P A)}(σdP : dLSub {ℓ'}{ℓ} σ σP)
+            {γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC Γ γcᵈ γ}
+            → ᵈsL (dLπ₁P σdP) γ γᵈ ≡ ₁ (ᵈsL σdP γ γᵈ)
+ᵈsLdLπ₁P (σdP ,dP αᵈ) = refl
+{-# REWRITE ᵈsLdLπ₁P #-}
+
+dLπ₂S : ∀{ℓ' ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}{σP : LSub σ Γ (Δ ▶S B)}(σdP : dLSub {ℓ'}{ℓ} σ σP) → Tm Γc B
+dLπ₂S (σdP ,dS b) = b
+
+dLwkS : ∀{ℓ' ℓ Γc Δc Γ Δ B}{σ : Sub Γc Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP) → dLSub {ℓ'} (wk {B = B} σ) (LwkS σP)
+dLwkS dLε          = dLε
+dLwkS (σdP ,dS b)  = dLwkS σdP ,dS vs b
+dLwkS (σdP ,dP αᵈ) = dLwkS σdP ,dP λ γ → αᵈ γ
+
+ᵈsLdLwkS : ∀{ℓ' ℓ Γc Δc Γ Δ B}{σ : Sub Γc Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP)
+            {γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC {ℓ'} Γ γcᵈ γ}{β : B ᵃS}{βᵈ : ᵈS B β}
+            → ᵈsL (dLwkS {B = B} σdP) {γc , β} {γcᵈ , βᵈ} γ γᵈ ≡ ᵈsL σdP γ γᵈ
+ᵈsLdLwkS dLε                    = refl
+ᵈsLdLwkS (σdP ,dS b)  {γᵈ = γᵈ} = ᵈsLdLwkS σdP {γᵈ = γᵈ}
+ᵈsLdLwkS (σdP ,dP αᵈ) {γᵈ = γᵈ} = ,≡ (ᵈsLdLwkS σdP {γᵈ = γᵈ}) refl
+{-# REWRITE ᵈsLdLwkS #-}
+
+dLwkP : ∀{ℓ' ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP) → dLSub {ℓ'} σ (LwkP {A = A} σP)
+dLwkP dLε          = dLε
+dLwkP (σdP ,dS b)  = dLwkP σdP ,dS b
+dLwkP (σdP ,dP αᵈ) = dLwkP σdP ,dP λ γ γᵈ → αᵈ (₁ γ) (₁ γᵈ)
+
+ᵈsLdLwkP : ∀{ℓ' ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP)
+            {γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC {ℓ'} Γ γcᵈ γ}{α : (A ᵃP) γc}{αᵈ : ᵈP A γcᵈ α}
+            → ᵈsL (dLwkP {A = A} σdP) (γ , α) (γᵈ , αᵈ) ≡ ᵈsL σdP γ γᵈ
+ᵈsLdLwkP dLε                              = refl
+ᵈsLdLwkP (σdP ,dS b)  {γᵈ = γᵈ}{αᵈ = αᵈ}  = ᵈsLdLwkP σdP {γᵈ = γᵈ}{αᵈ = αᵈ}
+ᵈsLdLwkP (σdP ,dP αᵈ) {γᵈ = γᵈ}{αᵈ = αᵈ'} = ,≡ (ᵈsLdLwkP σdP {γᵈ = γᵈ}{αᵈ = αᵈ'}) refl
+{-# REWRITE ᵈsLdLwkP #-}
+
+dLid : ∀{ℓ' ℓ Γc}{Γ : Con Γc} → dLSub {ℓ'}{ℓ} id (Lid {Γ = Γ})
+dLid {Γ = ∙}      = dLε
+dLid {Γ = Γ ▶S A} = dLwkS dLid ,dS vz
+dLid {Γ = Γ ▶P x} = dLwkP dLid ,dP λ γ → ₂
+
+ᵈsLdLid : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC {ℓ'} Γ γcᵈ γ}
+           → ᵈsL {ℓ'}{ℓ} (dLid {Γ = Γ}) γ γᵈ ≡ γᵈ
+ᵈsLdLid {Γ = ∙}      = refl
+ᵈsLdLid {Γ = Γ ▶S A} = ᵈsLdLid {Γ = Γ}
+ᵈsLdLid {Γ = Γ ▶P x} = ,≡ (ᵈsLdLid {Γ = Γ}) refl
+{-# REWRITE ᵈsLdLid #-}
+
+_dL∘_ : ∀{ℓ' ℓ Γc Δc Ωc Γ Δ Ω}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}{δP : LSub {ℓ} δ Ω Δ}{σP : LSub {ℓ} σ Γ Ω}
+         (δdP : dLSub {ℓ'}{ℓ} δ δP)(σdP : dLSub {ℓ'}{ℓ} σ σP) → dLSub {ℓ'}{ℓ} (δ ∘ σ) (δP L∘ σP)
+dLε dL∘ σdP = dLε
+_dL∘_ {σ = σ}       (δdP ,dS b)  σdP = (δdP dL∘ σdP) ,dS (b [ σ ]t)
+_dL∘_ {δP = δP}{σP} (δdP ,dP αᵈ) σdP = (δdP dL∘ σdP) ,dP λ γ γᵈ → αᵈ ((σP ᵃsL) γ) (ᵈsL σdP γ γᵈ)
+
+ᵈsLdL∘ : ∀{ℓ' ℓ Γc Δc Ωc Γ Δ Ω}{δ : Sub Ωc Δc}{σ : Sub Γc Ωc}{δP : LSub {ℓ} δ Ω Δ}{σP : LSub {ℓ} σ Γ Ω}
+          (δdP : dLSub {ℓ'}{ℓ} δ δP)(σdP : dLSub {ℓ'}{ℓ} σ σP)
+          {γc γcᵈ}{γ : (Γ ᵃC) γc}{γᵈ : ᵈC {ℓ'} Γ γcᵈ γ}
+          → ᵈsL (δdP dL∘ σdP) γ γᵈ ≡ ᵈsL δdP ((σP ᵃsL) γ) (ᵈsL σdP γ γᵈ)
+ᵈsLdL∘ dLε          σdP = refl
+ᵈsLdL∘ (δdP ,dS b)  σdP = ᵈsLdL∘ δdP σdP
+ᵈsLdL∘ (δdP ,dP αᵈ) σdP = ,≡ (ᵈsLdL∘ δdP σdP) refl
+{-# REWRITE ᵈsLdL∘ #-}
