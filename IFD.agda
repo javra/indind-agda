@@ -7,7 +7,7 @@ open import IFA
 
 ᵈS : ∀{ℓ' ℓ}(B : TyS)(α : _ᵃS {ℓ} B) → Set (suc ℓ' ⊔ ℓ)
 ᵈS {ℓ'} U        α = α → Set ℓ'
-ᵈS {ℓ'} (Π̂S T B) π = (α : T) → ᵈS {ℓ'} (B α) (π α)
+ᵈS {ℓ'} (Π̂S T B) π = (x : T) → ᵈS {ℓ'} (B x) (π x)
 
 ᵈc : ∀{ℓ' ℓ}(Γc : SCon)(γc : _ᵃc {ℓ} Γc) → Set (suc ℓ' ⊔ ℓ)
 ᵈc ∙c             γc       = Lift ⊤
@@ -26,7 +26,7 @@ open import IFA
 ᵈC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(γ : (Γ ᵃC) γc) → Set (suc ℓ' ⊔ ℓ)
 ᵈC      ∙        γcᵈ        γ       = Lift ⊤
 ᵈC {ℓ'} (Γ ▶S B) (γcᵈ , αᵈ) γ       = ᵈC {ℓ'} Γ γcᵈ γ
-ᵈC {ℓ'} (Γ ▶P A) γcᵈ        (γ , α) = (ᵈC Γ γcᵈ γ)× (ᵈP A γcᵈ α)
+ᵈC {ℓ'} (Γ ▶P A) γcᵈ        (γ , α) = (ᵈC Γ γcᵈ γ) × (ᵈP A γcᵈ α)
 
 ᵈs : ∀{ℓ' ℓ Γc Δc}(σ : Sub Γc Δc)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈc {ℓ'} Δc ((σ ᵃs) γc)
 ᵈs ε       γc γcᵈ = lift tt
