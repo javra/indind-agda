@@ -25,6 +25,7 @@ data TyS where
   Π̂S : (T : Set) → (T → TyS) → TyS
 
 data TyP : SCon → Set₁
+data Var : SCon → TyS → Set₁
 data Tm : SCon → TyS → Set₁
 
 data TyP where
@@ -32,13 +33,20 @@ data TyP where
   El   : ∀{Γ} → Tm Γ U → TyP Γ
   _⇒P_ : ∀{Γ} → Tm Γ U → TyP Γ → TyP Γ
 
+data Var where
+  vvz : ∀{Γ}{A} → Var (Γ ▶c A) A
+  vvs : ∀{Γ}{A}{B} → Var Γ A → Var (Γ ▶c B) A
+
 data Tm where
-  vz   : ∀{Γ}{A} → Tm (Γ ▶c A) A
-  vs   : ∀{Γ}{A}{B} → Tm Γ A → Tm (Γ ▶c B) A
+  var  : ∀{Γ}{A} → Var Γ A → Tm Γ A
   _$S_ : ∀{Γ}{T}{B} → Tm Γ (Π̂S T B) → (α : T) → Tm Γ (B α)
 
-postulate vs$S : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
-{-# REWRITE vs$S #-}
+vz : ∀{Γ}{A} → Tm (Γ ▶c A) A
+vz = var vvz
+
+vs : ∀{Γ}{A}{B} → Tm Γ A → Tm (Γ ▶c B) A
+vs (var x)  = var (vvs x)
+vs (t $S α) = vs t $S α
 
 data Con : SCon → Set₁ where
   ∙    : Con ∙c
@@ -63,9 +71,14 @@ _[_]t : ∀{Γ}{Δ}{B} → Tm Δ B → Sub Γ Δ → Tm Γ B
 El u     [ δ ]T = El (u [ δ ]t)
 (a ⇒P B) [ δ ]T = (a [ δ ]t) ⇒P (B [ δ ]T)
 
-vz       [ δ , t ]t = t
-vs a     [ δ , t ]t = a [ δ ]t
-(a $S α) [ δ ]t     = (a [ δ ]t) $S α
+var vvz      [ δ , t ]t = t
+var (vvs a)  [ δ , t ]t = var a [ δ ]t
+(a $S α)     [ δ ]t     = (a [ δ ]t) $S α
+
+vs[,]t : ∀{Γ}{Δ}{A B}(s : Tm Δ A)(t : Tm Γ B)(δ : Sub Γ Δ) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
+vs[,]t (var vvz) t δ     = refl
+vs[,]t (var (vvs x)) t δ = refl
+vs[,]t (s $S α) t δ      = happly2 _$S_ (vs[,]t s t δ) α
 
 π₁ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶c B) → Sub Γ Δ
 π₁ (δ , t) = δ
@@ -82,8 +95,9 @@ wk ε       = ε
 wk (δ , t) = wk δ , vs t
 
 wkβ : ∀{Γ Δ Ω B}{δ : Sub Γ Δ}{γ : Sub Ω Γ}{t : Tm Ω B} → wk δ ∘ (γ , t) ≡ δ ∘ γ
-wkβ {δ = ε}         = refl
-wkβ {δ = δ , x} {γ} = (λ δ₁ → δ₁ , (x [ γ ]t)) & wkβ
+wkβ {δ = ε}                  = refl
+wkβ {δ = δ , var x} {γ}      = (λ δ₁ → δ₁ , (var x [ γ ]t)) & wkβ
+wkβ {δ = δ , (x $S α)}{γ}{t} = _,_ (wk δ ∘ (γ , _)) & vs[,]t (x $S α) t γ ◾ (λ δ₁ → δ₁ , ((x [ γ ]t) $S α)) & wkβ
 
 id : ∀{Γ} → Sub Γ Γ
 id {∙c}     = ε
@@ -108,14 +122,12 @@ id^ = refl
 πβ : ∀{Γ Δ B}{δ : Sub Γ (Δ ▶c B)} → (π₁ δ , π₂ δ) ≡ δ
 πβ {δ = δ , x} = refl
 
-vs$S' : ∀{Γ T}{α : T}{B : T → TyS}{B'} → (t : Tm Γ (Π̂S T B)) → vs {B = B'} (t $S α) ≡ vs t $S α
-vs$S' {Γ} {T} {α} {B} {B'} t = refl
-
 [wk] : ∀{Γ Δ B B'}(δ : Sub Γ Δ) → (t : Tm Δ B) → t [ wk {B = B'} δ ]t ≡ vs (t [ δ ]t)
-[wk] {Γ = Γ}{B' = B'} ε (t $S α)       = happly2 _$S_ ([wk] ε t) _
-[wk]                  (δ , x) vz       = refl
-[wk]                  (δ , x) (vs t)   = [wk] δ t
-[wk] {Γ = Γ}{B' = B'} (δ , x) (t $S α) = happly2 _$S_ ([wk] (δ , x) t) _
+[wk] ε       (var ())
+[wk] ε       (t $S α)       = happly2 _$S_ ([wk] ε t) _
+[wk] (δ , x) (var vvz)      = refl
+[wk] (δ , x) (var (vvs t))  = [wk] δ (var t)
+[wk] (δ , x) (t $S α)       = happly2 _$S_ ([wk] (δ , x) t) _
 
 [id]T : ∀{Γ} → (A : TyP Γ) → A [ id ]T ≡ A
 [id]t : ∀{Γ}{B} → (t : Tm Γ B) → t [ id ]t ≡ t
@@ -124,9 +136,9 @@ vs$S' {Γ} {T} {α} {B} {B'} t = refl
 [id]T (El x)   = El & [id]t x
 [id]T (x ⇒P A) = (_⇒P_ & [id]t x) ⊗ [id]T A
 
-[id]t vz       = refl
-[id]t (vs t)   = [wk] id t ◾ vs & [id]t t
-[id]t (t $S α) = happly2 _$S_ ([id]t t) _
+[id]t (var vvz)     = refl
+[id]t (var (vvs t)) = [wk] id (var t) ◾ vs & [id]t (var t)
+[id]t (t $S α)      = happly2 _$S_ ([id]t t) _
 
 idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
 idr ε       = refl
@@ -139,10 +151,10 @@ idr (δ , x) = _,_ & idr δ ⊗ [id]t x
 [][]T {Γ} {Δ} {Ω} (El a) δ γ   = El & [][]t a δ γ
 [][]T {Γ} {Δ} {Ω} (t ⇒P A) δ γ = _⇒P_ & [][]t t δ γ ⊗ [][]T A δ γ
 
-[][]t (t $S α) δ ε       = happly2 _$S_ ([][]t t δ ε) _
-[][]t vz δ (γ , x)       = refl
-[][]t (vs t) δ (γ , x)   = [][]t t δ γ
-[][]t (t $S α) δ (γ , x) = happly2 _$S_ ([][]t t δ (γ , x)) _
+[][]t (t $S α)      δ ε       = happly2 _$S_ ([][]t t δ ε) _
+[][]t (var vvz)     δ (γ , x) = refl
+[][]t (var (vvs t)) δ (γ , x) = [][]t (var t) δ γ
+[][]t (t $S α)      δ (γ , x) = happly2 _$S_ ([][]t t δ (γ , x)) _
 
 ass : ∀{Γ Δ Ω Σ}{δ : Sub Γ Δ}{γ : Sub Δ Ω}{ι : Sub Ω Σ} → (ι ∘ γ) ∘ δ ≡ ι ∘ (γ ∘ δ)
 ass {ι = ε}     = refl

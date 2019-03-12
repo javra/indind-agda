@@ -15,9 +15,9 @@ open import IFD
 ˢc (Γc ▶c B) (γcᵈ , αcᵈ) = ˢc Γc γcᵈ × ˢS B _ αcᵈ
 
 ˢt : ∀{ℓ' ℓ}{Γc : SCon}{B : TyS}(t : Tm Γc B){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ) → ˢS B ((t ᵃt) γc) (ᵈt t γc γcᵈ)
-ˢt vz       (γcˢ , αcˢ) = αcˢ
-ˢt (vs t)   (γcˢ , αcˢ) = ˢt t γcˢ
-ˢt (t $S α) γcˢ         = ˢt t γcˢ α
+ˢt (var vvz)     (γcˢ , αcˢ) = αcˢ
+ˢt (var (vvs t)) (γcˢ , αcˢ) = ˢt (var t) γcˢ
+ˢt (t $S α)      γcˢ         = ˢt t γcˢ α
 
 ˢP : ∀{ℓ' ℓ}{Γc : SCon}(A : TyP Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ)(α : (A ᵃP) γc)(αᵈ : ᵈP A γcᵈ α) → Set (ℓ' ⊔ ℓ)
 ˢP (Π̂P T A)      γcˢ π πᵈ = (α : T) → ˢP (A α) γcˢ (π α) (πᵈ α)

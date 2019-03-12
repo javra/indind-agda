@@ -13,9 +13,9 @@ _ᵃc : ∀{ℓ} → SCon → Set (suc ℓ)
 _ᵃc {ℓ} (Γ ▶c A) = (_ᵃc {ℓ} Γ) × _ᵃS {ℓ} A
 
 _ᵃt : ∀{ℓ}{Γ : SCon}{A : TyS} → Tm Γ A → _ᵃc {ℓ} Γ → _ᵃS {ℓ} A
-(vz ᵃt) (γ , α)   = α
-(vs t ᵃt) (γ , α) = (t ᵃt) γ
-((t $S α) ᵃt) γ   = (t ᵃt) γ α
+(var vvz ᵃt)     (γ , α) = α
+(var (vvs t) ᵃt) (γ , α) = (var t ᵃt) γ
+((t $S α) ᵃt)    γ       = (t ᵃt) γ α
 
 _ᵃP : ∀{ℓ}{Γc} → TyP Γc → (γ : _ᵃc {ℓ} Γc) → Set ℓ
 (Π̂P T A ᵃP) γ   = (α : T) → ((A α) ᵃP) γ
@@ -35,23 +35,28 @@ _ᵃs : ∀{ℓ}{Γc Δc} → Sub Γc Δc → _ᵃc {ℓ} Γc → _ᵃc {ℓ} Δ
 []tᵃ : ∀{ℓ}{Γc Δc A}{a : Tm Δc A}{δ : Sub Γc Δc} → (γc : _ᵃc {ℓ} Γc) → ((a [ δ ]t) ᵃt) γc ≡ (a ᵃt) ((δ ᵃs) γc)
 
 []Tᵃ {A = Π̂P T x} γc = Π≡ refl λ α → []Tᵃ {A = x α} γc
-[]Tᵃ {A = El x} γc   = []tᵃ {a = x} γc
+[]Tᵃ {A = El x}   γc = []tᵃ {a = x} γc
 []Tᵃ {A = x ⇒P A} γc = Π≡ ([]tᵃ {a = x} γc) λ α → []Tᵃ {A = A} γc
 
-[]tᵃ {a = vz} {δ , x} γc   = refl
-[]tᵃ {a = vs a} {δ , x} γc = []tᵃ {a = a} γc
-[]tᵃ {a = a $S α} {δ} γc   = happly ([]tᵃ {a = a} {δ = δ} γc) α
+[]tᵃ {a = var vvz}    {δ , x} γc = refl
+[]tᵃ {a = var (vvs a)}{δ , x} γc = []tᵃ {a = var a} γc
+[]tᵃ {a = a $S α}     {δ}     γc = happly ([]tᵃ {a = a} {δ = δ} γc) α
 {-# REWRITE []Tᵃ #-}
 {-# REWRITE []tᵃ #-}
 
-wk,ᵃ : ∀{ℓ}{Γc Δc B γc α} → {σ : Sub Γc Δc} → _ᵃs {ℓ} (wk {B = B} σ) (γc , α) ≡ (σ ᵃs) γc
+vs,ᵃ : ∀{ℓ}{Γc B B'}{x : Tm Γc B}{γc}{α : _ᵃS {ℓ} B'} → (vs x ᵃt) (γc , α) ≡ (x ᵃt) γc
+vs,ᵃ {x = var x}  = refl
+vs,ᵃ {x = x $S α} = happly (vs,ᵃ {x = x}) α
+{-# REWRITE vs,ᵃ #-}
+
+wk,ᵃ : ∀{ℓ}{Γc Δc B γc}{α : _ᵃS {ℓ} B} → {σ : Sub Γc Δc} → _ᵃs {ℓ} (wk {B = B} σ) (γc , α) ≡ (σ ᵃs) γc
 wk,ᵃ {σ = ε}     = refl
 wk,ᵃ {σ = σ , x} = ,≡ wk,ᵃ refl
 {-# REWRITE wk,ᵃ #-}
 
 idᵃ : ∀{ℓ}{Γc} → (γc : _ᵃc {ℓ} Γc) → (id ᵃs) γc ≡ γc
 idᵃ {ℓ}{∙c} γc            = refl
-idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ γc) refl
+idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ {Γc = Γc} γc) refl
 {-# REWRITE idᵃ #-}
 
 ∘ᵃ : ∀{ℓ}{Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → _ᵃs {ℓ} (σ ∘ δ) γc ≡ (σ ᵃs) ((δ ᵃs) γc)
@@ -139,3 +144,5 @@ L∘ᵃsL Lε σP        = refl
 L∘ᵃsL (δP ,S b) σP = L∘ᵃsL δP σP
 L∘ᵃsL (δP ,P α) σP = ,≡ (L∘ᵃsL δP σP) refl
 {-# REWRITE L∘ᵃsL #-}
+
+
