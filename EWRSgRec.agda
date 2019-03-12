@@ -141,7 +141,7 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
                              E   = t.E ;
-                             w   = λ γc → ext {!!} }
+                             w   = λ γc → t.w γc ◾ {!!} }
   where
     module a = TmS a
     module B = TyS B
