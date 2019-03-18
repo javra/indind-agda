@@ -29,43 +29,43 @@ data Var : SCon → TyS → Set₁
 data Tm : SCon → TyS → Set₁
 
 data TyP where
-  Π̂P   : ∀{Γ}(T : Set) → (T → TyP Γ) → TyP Γ
-  El   : ∀{Γ} → Tm Γ U → TyP Γ
-  _⇒P_ : ∀{Γ} → Tm Γ U → TyP Γ → TyP Γ
+  Π̂P   : ∀{Γc}(T : Set) → (T → TyP Γc) → TyP Γc
+  El   : ∀{Γc} → Tm Γc U → TyP Γc
+  _⇒P_ : ∀{Γc} → Tm Γc U → TyP Γc → TyP Γc
 
 data Var where
-  vvz : ∀{Γ}{A} → Var (Γ ▶c A) A
-  vvs : ∀{Γ}{A}{B} → Var Γ A → Var (Γ ▶c B) A
+  vvz : ∀{Γc}{A} → Var (Γc ▶c A) A
+  vvs : ∀{Γc}{A}{B} → Var Γc A → Var (Γc ▶c B) A
 
 data Tm where
-  var  : ∀{Γ}{A} → Var Γ A → Tm Γ A
-  _$S_ : ∀{Γ}{T}{B} → Tm Γ (Π̂S T B) → (α : T) → Tm Γ (B α)
+  var  : ∀{Γc}{A} → Var Γc A → Tm Γc A
+  _$S_ : ∀{Γc}{T}{B} → Tm Γc (Π̂S T B) → (α : T) → Tm Γc (B α)
 
-vz : ∀{Γ}{A} → Tm (Γ ▶c A) A
+vz : ∀{Γc}{A} → Tm (Γc ▶c A) A
 vz = var vvz
 
-vs : ∀{Γ}{A}{B} → Tm Γ A → Tm (Γ ▶c B) A
+vs : ∀{Γc}{A}{B} → Tm Γc A → Tm (Γc ▶c B) A
 vs (var x)  = var (vvs x)
 vs (t $S α) = vs t $S α
 
 data Con : SCon → Set₁ where
   ∙    : Con ∙c
-  _▶S_ : ∀{Γ} → Con Γ → (A : TyS) → Con (Γ ▶c A)
-  _▶P_ : ∀{Γ} → Con Γ → TyP Γ → Con Γ
+  _▶S_ : ∀{Γc} → Con Γc → (A : TyS) → Con (Γc ▶c A)
+  _▶P_ : ∀{Γc} → Con Γc → TyP Γc → Con Γc
 
 _⇒̂S_ : Set → TyS → TyS
 T ⇒̂S A = Π̂S T (λ _ → A)
 
-_⇒̂P_ : ∀{Γ} → Set → TyP Γ → TyP Γ
+_⇒̂P_ : ∀{Γc} → Set → TyP Γc → TyP Γc
 T ⇒̂P A = Π̂P T (λ _ → A)
 
 -- Substitution calculus
 data Sub : SCon → SCon → Set₁ where
-  ε   : ∀{Γ} → Sub Γ ∙c
-  _,_ : ∀{Γ}{Δ}{B} → Sub Γ Δ → Tm Γ B → Sub Γ (Δ ▶c B)
+  ε   : ∀{Γc} → Sub Γc ∙c
+  _,_ : ∀{Γc}{Δc}{B} → Sub Γc Δc → Tm Γc B → Sub Γc (Δc ▶c B)
 
-_[_]T : ∀{Γ}{Δ} → TyP Δ → Sub Γ Δ → TyP Γ
-_[_]t : ∀{Γ}{Δ}{B} → Tm Δ B → Sub Γ Δ → Tm Γ B
+_[_]T : ∀{Γc}{Δc} → TyP Δc → Sub Γc Δc → TyP Γc
+_[_]t : ∀{Γc}{Δc}{B} → Tm Δc B → Sub Γc Δc → Tm Γc B
 
 Π̂P T u   [ δ ]T = Π̂P T (λ α → u α [ δ ]T)
 El u     [ δ ]T = El (u [ δ ]t)
@@ -80,24 +80,24 @@ vs[,]t (var vvz) t δ     = refl
 vs[,]t (var (vvs x)) t δ = refl
 vs[,]t (s $S α) t δ      = happly2 _$S_ (vs[,]t s t δ) α
 
-π₁ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶c B) → Sub Γ Δ
+π₁ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Sub Γc Δc
 π₁ (δ , t) = δ
 
-π₂ : ∀{Γ}{Δ}{B} → Sub Γ (Δ ▶c B) → Tm Γ B
+π₂ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Tm Γc B
 π₂ (δ , t) = t
 
-_∘_ : ∀{Γ}{Δ}{Ω} → Sub Ω Δ → Sub Γ Ω → Sub Γ Δ
-ε       ∘ γ = ε
-(δ , x) ∘ γ = (δ ∘ γ) , (x [ γ ]t)
+_∘_ : ∀{Γc}{Δc}{Ωc} → Sub Ωc Δc → Sub Γc Ωc → Sub Γc Δc
+ε        ∘ γc = ε
+(δc , x) ∘ γc = (δc ∘ γc) , (x [ γc ]t)
 
-wk : ∀{Γ}{Δ}{B} → Sub Γ Δ → Sub (Γ ▶c B) Δ
-wk ε       = ε
-wk (δ , t) = wk δ , vs t
+wk : ∀{Γc}{Δc}{B} → Sub Γc Δc → Sub (Γc ▶c B) Δc
+wk ε        = ε
+wk (δc , t) = wk δc , vs t
 
-wkβ : ∀{Γ Δ Ω B}{δ : Sub Γ Δ}{γ : Sub Ω Γ}{t : Tm Ω B} → wk δ ∘ (γ , t) ≡ δ ∘ γ
-wkβ {δ = ε}                  = refl
-wkβ {δ = δ , var x} {γ}      = (λ δ₁ → δ₁ , (var x [ γ ]t)) & wkβ
-wkβ {δ = δ , (x $S α)}{γ}{t} = _,_ (wk δ ∘ (γ , _)) & vs[,]t (x $S α) t γ ◾ (λ δ₁ → δ₁ , ((x [ γ ]t) $S α)) & wkβ
+wkβ : ∀{Γc Δc Ωc B}{δc : Sub Γc Δc}{γc : Sub Ωc Γc}{t : Tm Ωc B} → wk δc ∘ (γc , t) ≡ δc ∘ γc
+wkβ {δc = ε}                    = refl
+wkβ {δc = δc , var x}{γc}       = (λ δc₁ → δc₁ , (var x [ γc ]t)) & wkβ
+wkβ {δc = δc , (x $S α)}{γc}{t} = _,_ (wk δc ∘ (γc , _)) & vs[,]t (x $S α) t γc ◾ (λ δc₁ → δc₁ , ((x [ γc ]t) $S α)) & wkβ
 
 id : ∀{Γ} → Sub Γ Γ
 id {∙c}     = ε
