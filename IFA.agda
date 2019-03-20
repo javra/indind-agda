@@ -58,27 +58,51 @@ idᵃ {ℓ}{∙c} γc            = refl
 idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ {Γc = Γc} γc) refl
 {-# REWRITE idᵃ #-}
 
-∘ᵃ : ∀{ℓ}{Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → _ᵃs {ℓ} (σ ∘ δ) γc ≡ (σ ᵃs) ((δ ᵃs) γc)
+∘ᵃ : ∀{ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → _ᵃs {ℓ} (σ ∘ δ) γc ≡ (σ ᵃs) ((δ ᵃs) γc)
 ∘ᵃ {σ = ε}                      = refl
 ∘ᵃ {σ = σ , x} {δ = δ}{γc = γc} = happly2 _,_ (∘ᵃ {σ = σ} {δ = δ}) ((x ᵃt) ((δ ᵃs) γc))
 {-# REWRITE ∘ᵃ #-}
 
-π₁ᵃ : ∀{ℓ}{Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃs {ℓ} (π₁ σ) γc ≡ ₁ ((σ ᵃs) γc)
+π₁ᵃ : ∀{ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃs {ℓ} (π₁ σ) γc ≡ ₁ ((σ ᵃs) γc)
 π₁ᵃ {σ = σ , x} = refl
 {-# REWRITE π₁ᵃ #-}
 
-π₂ᵃ : ∀{ℓ}{Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃt {ℓ} (π₂ σ) γc ≡ ₂ ((σ ᵃs) γc)
+π₂ᵃ : ∀{ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃt {ℓ} (π₂ σ) γc ≡ ₂ ((σ ᵃs) γc)
 π₂ᵃ {σ = σ , x} = refl
 {-# REWRITE π₂ᵃ #-}
+
+Twkᵃ : ∀{ℓ Γc}{B A γc T} → _ᵃP {ℓ} (Twk {Γc = Γc}{B = B} A) (γc , T) ≡ _ᵃP A γc
+Twkᵃ {A = El x} = refl
+Twkᵃ {A = Π̂P T B} = Π≡ refl λ τ → Twkᵃ {A = B τ}
+Twkᵃ {A = a ⇒P A} = Π≡ refl λ α → Twkᵃ {A = A}
+{-# REWRITE Twkᵃ #-}
+
+▶Sᵃ : ∀{ℓ Γc}{Γ : Con Γc}{B γc T} → _ᵃC {ℓ} (Γ ▶S B) (γc , T) ≡ _ᵃC Γ γc
+▶Sᵃ {Γ = ∙} = refl
+▶Sᵃ {Γ = Γ ▶P B} = (λ A → A × (B ᵃP) _) & ▶Sᵃ {Γ = Γ}
+{-# REWRITE ▶Sᵃ #-}
 
 data LSub {ℓ} : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set (suc ℓ) where
   Lε   : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc} → LSub σ Γ ∙
   _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {A : TyP Δc} → (α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc))
             → LSub σ Γ (Δ ▶P A)
 
+_,S_ : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {B : TyS} → (b : Tm Γc B) → LSub {ℓ} (σ , b) Γ (Δ ▶S B)
+_,S_ {Δ = ∙}      σP        b = Lε
+_,S_ {Δ = Δ ▶P B} (σP ,P α) b = (σP ,S b) ,P α
+
 _ᵃsL : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc}(σP : LSub {ℓ} σ Γ Δ){γc : _ᵃc {ℓ} Γc} → (Γ ᵃC) γc → (Δ ᵃC) ((σ ᵃs) γc)
 _ᵃsL Lε γ                            = lift tt
 _ᵃsL (σP ,P α) γ                     = (σP ᵃsL) γ , α γ
+
+Lπ₁S : ∀{ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub {ℓ} σ Γ (Δ ▶S B)) → LSub {ℓ} (π₁ σ) Γ Δ
+Lπ₁S {Δ = ∙} Lε = Lε
+Lπ₁S {Δ = Δ ▶P B} (σP ,P α) = Lπ₁S σP ,P α
+
+Lπ₁SᵃsL : ∀{ℓ Γc Δc Γ Δ B}{γc}{γ : _ᵃC {ℓ} Γ γc}{σ : Sub Γc (Δc ▶c B)}(σP : LSub σ Γ (Δ ▶S B)) → (Lπ₁S σP ᵃsL) γ ≡ (σP ᵃsL) γ
+Lπ₁SᵃsL {Δ = ∙} Lε = refl
+Lπ₁SᵃsL {Δ = Δ ▶P B} (σP ,P α) = ,≡ (Lπ₁SᵃsL σP) refl
+{-# REWRITE Lπ₁SᵃsL #-}
 
 Lπ₁P : ∀{ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}(σP : LSub {ℓ} σ Γ (Δ ▶P A)) → LSub {ℓ} σ Γ Δ
 Lπ₁P (σP ,P α) = σP
@@ -86,6 +110,18 @@ Lπ₁P (σP ,P α) = σP
 Lπ₁PᵃsL : ∀{ℓ Γc Δc Γ Δ A}{γc}{γ : (Γ ᵃC) γc}{σ : Sub Γc Δc}(σP : LSub {ℓ} σ Γ (Δ ▶P A)) → (Lπ₁P σP ᵃsL) γ ≡ ₁ ((σP ᵃsL) γ)
 Lπ₁PᵃsL (σP ,P α) = refl
 {-# REWRITE Lπ₁PᵃsL #-}
+
+Lπ₂S : ∀{ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub {ℓ} σ Γ (Δ ▶S B)) → Tm Γc B
+Lπ₂S {σ = σ , t} σP = t
+
+LwkS : ∀{ℓ Γc Δc Γ Δ B}{σ : Sub Γc Δc}(σP : LSub {ℓ} σ Γ Δ) → LSub {ℓ} (wk σ) (Γ ▶S B) Δ
+LwkS Lε = Lε
+LwkS (σP ,P α) = LwkS σP ,P α
+
+LwkSᵃsL : ∀{ℓ Γc Δc Γ Δ B}{γc}{γ : _ᵃC {ℓ} Γ γc}{β}{σ : Sub Γc Δc} → (σP : LSub σ Γ Δ) → (LwkS {B = B} σP ᵃsL) {γc , β} γ  ≡ (σP ᵃsL) γ
+LwkSᵃsL Lε = refl
+LwkSᵃsL (σP ,P α) = ,≡ (LwkSᵃsL σP) refl
+{-# REWRITE LwkSᵃsL #-}
 
 LwkP : ∀{ℓ Γc Δc Γ Δ A}{σ : Sub Γc Δc}(σP : LSub {ℓ} σ Γ Δ) → LSub {ℓ} σ (Γ ▶P A) Δ
 LwkP Lε        = Lε
@@ -114,5 +150,3 @@ L∘ᵃsL : ∀{ℓ Γc Δc Ωc}{Γ Δ Ω}{γc}{γ : _ᵃC {ℓ} Γ γc}{δ : Su
 L∘ᵃsL Lε σP        = refl
 L∘ᵃsL (δP ,P α) σP = ,≡ (L∘ᵃsL δP σP) refl
 {-# REWRITE L∘ᵃsL #-}
-
-

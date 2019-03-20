@@ -32,11 +32,29 @@ data Con (Γc : SCon) : Set₁ where
   ∙    : Con Γc
   _▶P_ : Con Γc → (B : TyP Γc) → Con Γc
 
+-- Non dependent, recursive functions
 _⇒̂S_ : Set → TyS → TyS
 T ⇒̂S A = Π̂S T (λ _ → A)
 
 _⇒̂P_ : ∀{Γc} → Set → TyP Γc → TyP Γc
 T ⇒̂P A = Π̂P T (λ _ → A)
+
+-- ▶S
+vz : ∀{Γc}{A} → Tm (Γc ▶c A) A
+vz = var vvz
+
+vs : ∀{Γc}{A}{B} → Tm Γc A → Tm (Γc ▶c B) A
+vs (var x)  = var (vvs x)
+vs (t $S α) = vs t $S α
+
+Twk : ∀{Γc}{B} → TyP Γc → TyP (Γc ▶c B)
+Twk (El a) = El (vs a)
+Twk (Π̂P T B) = Π̂P T λ τ → Twk (B τ)
+Twk (a ⇒P A) = vs a ⇒P Twk A
+
+_▶S_ : ∀{Γc}(Γ : Con Γc)(B : TyS) → Con (Γc ▶c B)
+∙ ▶S B        = ∙
+(Γ ▶P A) ▶S B = (Γ ▶S B) ▶P Twk A
 
 -- Substitution calculus
 data Sub : SCon → SCon → Set₁ where
@@ -53,13 +71,6 @@ El u     [ δ ]T = El (u [ δ ]t)
 var vvz      [ δ , t ]t = t
 var (vvs a)  [ δ , t ]t = var a [ δ ]t
 (a $S α)     [ δ ]t     = (a [ δ ]t) $S α
-
-vz : ∀{Γc}{A} → Tm (Γc ▶c A) A
-vz = var vvz
-
-vs : ∀{Γc}{A}{B} → Tm Γc A → Tm (Γc ▶c B) A
-vs (var x)  = var (vvs x)
-vs (t $S α) = vs t $S α
 
 vs[,]t : ∀{Γ}{Δ}{A B}(s : Tm Δ A)(t : Tm Γ B)(δ : Sub Γ Δ) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
 vs[,]t (var vvz) t δ     = refl
