@@ -4,54 +4,33 @@ module IF where
 
 open import Lib hiding (id; _∘_)
 
---{-# BUILTIN REWRITE _≡_ #-}
+infixl 3 _▶c_ _▶P_
+infixr 5 _$S_ _⇒P_
 
-data SCon : Set₁
-data TyS : Set₁
-
-infixl 3 _▶c_
-infixl 3 _▶S_
-infixl 3 _▶P_
-infixr 5 _$S_
-infixr 5 _⇒P_
-
-
-data SCon where
-  ∙c   : SCon
-  _▶c_ : SCon → TyS → SCon
-
-data TyS where
+data TyS : Set₁ where
   U  : TyS
   Π̂S : (T : Set) → (T → TyS) → TyS
 
-data TyP : SCon → Set₁
-data Var : SCon → TyS → Set₁
-data Tm : SCon → TyS → Set₁
+data SCon : Set₁ where
+  ∙c   : SCon
+  _▶c_ : SCon → TyS → SCon
 
-data TyP where
-  Π̂P   : ∀{Γc}(T : Set) → (T → TyP Γc) → TyP Γc
-  El   : ∀{Γc} → Tm Γc U → TyP Γc
-  _⇒P_ : ∀{Γc} → Tm Γc U → TyP Γc → TyP Γc
+data Var : SCon → TyS → Set₁ where
+  vvz : ∀{Γc}{B} → Var (Γc ▶c B) B
+  vvs : ∀{Γc}{B}{B'} → Var Γc B → Var (Γc ▶c B') B
 
-data Var where
-  vvz : ∀{Γc}{A} → Var (Γc ▶c A) A
-  vvs : ∀{Γc}{A}{B} → Var Γc A → Var (Γc ▶c B) A
-
-data Tm where
+data Tm : SCon → TyS → Set₁ where
   var  : ∀{Γc}{A} → Var Γc A → Tm Γc A
   _$S_ : ∀{Γc}{T}{B} → Tm Γc (Π̂S T B) → (α : T) → Tm Γc (B α)
 
-vz : ∀{Γc}{A} → Tm (Γc ▶c A) A
-vz = var vvz
+data TyP : SCon → Set₁ where
+  El   : ∀{Γc} → Tm Γc U → TyP Γc
+  Π̂P   : ∀{Γc}(T : Set) → (T → TyP Γc) → TyP Γc
+  _⇒P_ : ∀{Γc} → Tm Γc U → TyP Γc → TyP Γc
 
-vs : ∀{Γc}{A}{B} → Tm Γc A → Tm (Γc ▶c B) A
-vs (var x)  = var (vvs x)
-vs (t $S α) = vs t $S α
-
-data Con : SCon → Set₁ where
-  ∙    : Con ∙c
-  _▶S_ : ∀{Γc} → Con Γc → (A : TyS) → Con (Γc ▶c A)
-  _▶P_ : ∀{Γc} → Con Γc → TyP Γc → Con Γc
+data Con (Γc : SCon) : Set₁ where
+  ∙    : Con Γc
+  _▶P_ : Con Γc → (B : TyP Γc) → Con Γc
 
 _⇒̂S_ : Set → TyS → TyS
 T ⇒̂S A = Π̂S T (λ _ → A)
@@ -74,6 +53,13 @@ El u     [ δ ]T = El (u [ δ ]t)
 var vvz      [ δ , t ]t = t
 var (vvs a)  [ δ , t ]t = var a [ δ ]t
 (a $S α)     [ δ ]t     = (a [ δ ]t) $S α
+
+vz : ∀{Γc}{A} → Tm (Γc ▶c A) A
+vz = var vvz
+
+vs : ∀{Γc}{A}{B} → Tm Γc A → Tm (Γc ▶c B) A
+vs (var x)  = var (vvs x)
+vs (t $S α) = vs t $S α
 
 vs[,]t : ∀{Γ}{Δ}{A B}(s : Tm Δ A)(t : Tm Γ B)(δ : Sub Γ Δ) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
 vs[,]t (var vvz) t δ     = refl
