@@ -95,6 +95,11 @@ _ᵃsL : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc}{Δ : Con Δc}(σP : LS
 _ᵃsL Lε γ                            = lift tt
 _ᵃsL (σP ,P α) γ                     = (σP ᵃsL) γ , α γ
 
+,SᵃsL : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ}{σP : LSub {ℓ} σ Γ Δ}{B}{b : Tm Γc B}{γc}{γ : _ᵃC {ℓ} Γ γc} → ((σP ,S b) ᵃsL) γ ≡ (σP ᵃsL) γ
+,SᵃsL {Δ = ∙} {Lε} = refl
+,SᵃsL {Δ = Δ ▶P B} {σP ,P α} = ,≡ ,SᵃsL refl
+{-# REWRITE ,SᵃsL #-}
+
 Lπ₁S : ∀{ℓ Γc Δc Γ Δ B}{σ : Sub Γc (Δc ▶c B)}(σP : LSub {ℓ} σ Γ (Δ ▶S B)) → LSub {ℓ} (π₁ σ) Γ Δ
 Lπ₁S {Δ = ∙} Lε = Lε
 Lπ₁S {Δ = Δ ▶P B} (σP ,P α) = Lπ₁S σP ,P α
