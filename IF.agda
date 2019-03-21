@@ -16,21 +16,26 @@ data SCon : Set₁ where
   _▶c_ : SCon → TyS → SCon
 
 data Var : SCon → TyS → Set₁ where
-  vvz : ∀{Γc}{B} → Var (Γc ▶c B) B
-  vvs : ∀{Γc}{B}{B'} → Var Γc B → Var (Γc ▶c B') B
+  vvz : ∀{Γc B} → Var (Γc ▶c B) B
+  vvs : ∀{Γc B B'} → Var Γc B → Var (Γc ▶c B') B
 
-data Tm : SCon → TyS → Set₁ where
-  var  : ∀{Γc}{A} → Var Γc A → Tm Γc A
-  _$S_ : ∀{Γc}{T}{B} → Tm Γc (Π̂S T B) → (α : T) → Tm Γc (B α)
+data Tm (Γc : SCon) : TyS → Set₁ where
+  var  : ∀{A} → Var Γc A → Tm Γc A
+  _$S_ : ∀{T B} → Tm Γc (Π̂S T B) → (α : T) → Tm Γc (B α)
 
-data TyP : SCon → Set₁ where
-  El   : ∀{Γc} → Tm Γc U → TyP Γc
-  Π̂P   : ∀{Γc}(T : Set) → (T → TyP Γc) → TyP Γc
-  _⇒P_ : ∀{Γc} → Tm Γc U → TyP Γc → TyP Γc
+data TyP (Γc : SCon) : Set₁ where
+  El   : Tm Γc U → TyP Γc
+  Π̂P   : (T : Set) → (T → TyP Γc) → TyP Γc
+  _⇒P_ : Tm Γc U → TyP Γc → TyP Γc
 
 data Con (Γc : SCon) : Set₁ where
   ∙    : Con Γc
   _▶P_ : Con Γc → (B : TyP Γc) → Con Γc
+
+-- No terms in the empty context
+Tm∙c : ∀{B} → Tm ∙c B → ⊥
+Tm∙c (var ())
+Tm∙c (t $S α) = Tm∙c t
 
 -- Non dependent, recursive functions
 _⇒̂S_ : Set → TyS → TyS
@@ -48,12 +53,12 @@ vs (var x)  = var (vvs x)
 vs (t $S α) = vs t $S α
 
 Twk : ∀{Γc}{B} → TyP Γc → TyP (Γc ▶c B)
-Twk (El a) = El (vs a)
+Twk (El a)   = El (vs a)
 Twk (Π̂P T B) = Π̂P T λ τ → Twk (B τ)
 Twk (a ⇒P A) = vs a ⇒P Twk A
 
 _▶S_ : ∀{Γc}(Γ : Con Γc)(B : TyS) → Con (Γc ▶c B)
-∙ ▶S B        = ∙
+∙        ▶S B = ∙
 (Γ ▶P A) ▶S B = (Γ ▶S B) ▶P Twk A
 
 -- Substitution calculus
