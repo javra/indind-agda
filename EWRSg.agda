@@ -148,10 +148,11 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
     module Γ = Con Γ
     module a = TmS a
 
-ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
-ΠS {Γ} a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
-                      w   = λ {γc} γ T → S.Π̂S ((a.E ᵃt) γc) λ α → B.w (γ , α) T ;
-                      R   = λ {γᴬ} T πᴬ → S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R T (πᴬ αᴬ) ;
+-- Internal function type
+ΠS : {Γ : Con} (a : TmS Γ U) (B : TyS (Γ ▶P El a)) → TyS Γ
+ΠS {Γ} a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
+                      w   = λ {γc} γ πᴱ → S.Π̂S ((a.E ᵃt) γc) λ α → B.w (γ , α) πᴱ ;
+                      R   = λ {γᴬ} πᴱ πᴬ → S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R πᴱ (πᴬ αᴬ) ;
                       sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
                                            coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
                                                (B.sg (γ , α₁) (δ , α₂) πc (π α₁)) }
@@ -160,8 +161,8 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
     module a = TmS a
     module B = TyS B
 
-ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
-ΠP a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
+ΠP : {Γ : Con} (a : TmS Γ U) (B : TyP (Γ ▶P El a)) → TyP Γ
+ΠP a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
                   E   = a.E S.⇒P B.E ;
                   w   = λ {γc} γ β → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , τ) (β τ) ;
                   R   = λ {γc} γ {γᴬ} π πᴬ → S.Π̂P (a.ᴬ γᴬ)
@@ -204,6 +205,38 @@ appP {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
   where
     module a = TmS a
     module B = TyP B
+    module t = TmP t
+
+--External function type
+Π̂S : {Γ : Con} (T : Set) (B : T → TyS Γ) → TyS Γ
+Π̂S T B = record { ᴬ   = λ γᴬ → (τ : T) → TyS.ᴬ (B τ) γᴬ ;
+                  w   = λ γ πᴱ → S.Π̂S T λ τ → TyS.w (B τ) γ πᴱ ;
+                  R   = λ πᴱ πᴬ → S.Π̂S T λ τ → TyS.R (B τ) πᴱ (πᴬ τ) ;
+                  sg  = λ γ δ πᴱ πᴬ τ → TyS.sg (B τ) γ δ πᴱ (πᴬ τ) }
+
+Π̂P : {Γ : Con} (T : Set) (B : T → TyP Γ) → TyP Γ
+Π̂P T B = record { ᴬ = λ γᴬ → (τ : T) → TyP.ᴬ (B τ) γᴬ;
+                  E = S.Π̂P T λ τ → TyP.E (B τ) ;
+                  w = λ γ πᴱ → S.Π̂P T λ τ → TyP.w (B τ) γ (πᴱ τ) ;
+                  R = λ γ πᴱ πᴬ → S.Π̂P T λ τ → TyP.R (B τ) γ (πᴱ τ) (πᴬ τ) ;
+                  sg = λ γ δ πᴱ πᴬ τ → TyP.sg (B τ) γ δ (πᴱ τ) (πᴬ τ) }
+
+âppS : {Γ : Con} {T : Set} {B : T → TyS Γ} (t : TmS Γ (Π̂S T B)) (τ : T) → TmS Γ (B τ)
+âppS {Γ}{T}{B} t τ = record { ᴬ = λ γᴬ → t.ᴬ γᴬ τ ;
+                              E = t.E ;
+                              w = λ γ → t.w γ S.$S τ ;
+                              R = λ γ γᴬ → t.R γ γᴬ S.$S τ ;
+                              sg = λ γ δ → happly (t.sg γ δ) τ }
+  where
+    module t = TmS t
+
+âppP : {Γ : Con} {T : Set} {B : T → TyP Γ} (t : TmP Γ (Π̂P T B)) (τ : T) → TmP Γ (B τ)
+âppP {Γ}{T}{B} t τ = record { ᴬ = λ γᴬ → t.ᴬ γᴬ τ ;
+                              E = λ γ → t.E γ τ ;
+                              w = λ δ → t.w δ τ ;
+                              R = λ γ γᴬ δc δ → t.R γ γᴬ δc δ τ ;
+                              sg = λ γ δ → happly (t.sg γ δ) τ }
+  where
     module t = TmP t
 
 _[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
