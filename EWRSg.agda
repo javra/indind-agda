@@ -429,3 +429,38 @@ vsP {k} t = t [ wk {k} ]tP
 vs : ∀{k l Γ}{A : Ty Γ k}{B : Ty Γ l} → Tm Γ A → Tm (Γ ▶ B) (A [ wk {l} ]T)
 vs {P}{l} t = vsP {l} t
 vs {S}{l} t = vsS {l} t
+
+-- It's kind of amazing that this works
+<_>S : ∀{Γ}{A : TyS Γ} → TmS Γ A → Sub Γ (Γ ▶S A)
+< t >S = id ,tS t
+infix 4 <_>S
+
+<_>P : ∀{Γ}{A : TyP Γ} → TmP Γ A → Sub Γ (Γ ▶P A)
+< t >P = record
+           { ᴬ = λ γᴬ → γᴬ , t.ᴬ γᴬ
+           ; Ec = S.id
+           ; E = λ γc → Lid ,P λ γ → t.E γ
+           ; wc = λ γ → S.id
+           ; w = λ γ δ → Lid ,P λ δ' → t.w δ'
+           ; Rc = λ γ γᴬ → S.id
+           ; R = λ γ {γᴬ} δ → Lid ,P λ δ' → t.R γ γᴬ _ δ'
+           ; sg = λ γ δ → ,≡ refl (t.sg γ δ)
+           }
+  where
+    module t = TmP t
+infix 4 <_>P
+
+<_> : ∀{k Γ}{A : Ty Γ k} → Tm Γ A → Sub Γ (Γ ▶ A)
+<_> {P} = <_>P
+<_> {S} = <_>S
+infix 4 <_>
+
+atS : ∀{Γ a}{B : TyS (Γ ▶P El a)}(t : TmS Γ (ΠS a B))(u : TmP Γ (El a)) → TmS Γ (B [ < u >P ]TS)
+atS {Γ}{a}{B} t u = appS {Γ}{a}{B} t [ < u >P ]tS
+
+atP : ∀{Γ a}{B : TyP (Γ ▶P El a)}(t : TmP Γ (ΠP a B))(u : TmP Γ (El a)) → TmP Γ (B [ < u >P ]TP)
+atP {Γ}{a}{B} t u = appP {Γ}{a}{B} t [ < u >P ]tP
+
+{-_^_ : ∀ {k}{Γ Δ : Con}(σ : Sub Γ Δ)(A : Ty Δ k) → Sub (Γ ▶ (A [ σ ]T)) (Δ ▶ A)
+_^_ {k}{Γ} {Δ} σ A = {!!} --σ ∘ wk , ? --coe (Tm _ & [][]T) (vz {k}{Γ}{A [ σ ]T})
+infixl 5 _^_-}
