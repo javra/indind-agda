@@ -94,3 +94,15 @@ postulate
   app[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}{B : Ty (Δ ▶ El a) k}{t : Tm Δ (Π a B)}
           → tr2 (λ A → Tm (Γ ▶ A)) El[] refl (app t [ σ ^ El a ]t)
           ≡ app (tr (Tm _) Π[] (t [ σ ]t))
+
+
+-- External functions
+------------------------------------------------------------------------------
+postulate
+  Π̂ : ∀{k Γ}(T : Set)(B : T → Ty Γ k) → Ty Γ k
+  Π̂[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{T : Set}{B : T → Ty Δ k}
+        → (Π̂ T B) [ σ ]T ≡ Π̂ T λ τ → B τ [ σ ]T
+
+  âpp : ∀{k Γ T}{B : T → Ty Γ k}(f : Tm Γ (Π̂ T B))(τ : T) → Tm Γ (B τ)
+  âpp[] : ∀{k Γ Δ}{σ : Sub Γ Δ}{T}{B : T → Ty Δ k}{f : Tm Δ (Π̂ T B)}{τ : T}
+          → âpp {B = λ τ → B τ [ σ ]T} (tr (Tm Γ) Π̂[] (f [ σ ]t)) τ ≡ (âpp f τ) [ σ ]t
