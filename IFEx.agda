@@ -21,8 +21,22 @@ ft (var vvz)     i = ivz i
 ft (var (vvs t)) i = ivs (ft (var t) i)
 ft (t $S α)      i = ft t (iΠ̂S α i)
 
+data iP {ℓ}{Γc}(fCΓ : ic Γc → Set ℓ) : TyP Γc → Set ℓ  where
+  iEl : ∀{a} → iP fCΓ (El a)
+  iΠ̂P : ∀{T B}(α : T) → iP {ℓ} fCΓ (B α) → iP fCΓ (Π̂P T B)
+  i⇒P : ∀{a B} → fCΓ (ft a iU) → iP {ℓ} fCΓ B → iP fCΓ (a ⇒P B)
+
+iSP : ∀{ℓ Γc A fCΓ} → iP {ℓ} fCΓ A → ic Γc
+iSP (iEl {a = a}) = ft a iU
+iSP (iΠ̂P _ ι)     = iSP ι
+iSP (i⇒P _ ι)     = iSP ι
+
 -- Both curC and curS are equivalences of types, I think
 -- These operations are transformations on arbitrary algebras
+-- For sort types  (is B → Set)                            ≃ (B ᵃS)
+-- For sort ctxts  (ic Δc → Set)                           ≃ (Δc ᵃc)
+-- For contexts    (certain sections of (f : ic Δc → Set)) ≃ (Δ ᵃC) "f"
+-- For point types (???)                                   ≃ (A ᵃP) 
 curS : ∀{ℓ}{B}(f : iS B → Set ℓ) → _ᵃS {ℓ} B
 curS {ℓ}{U} f      = f iU
 curS {ℓ}{Π̂S T B} f = λ α → curS {ℓ} λ i → f (iΠ̂S α i)
@@ -31,76 +45,57 @@ curc : ∀{ℓ}{Δc}(f : ic Δc → Set ℓ) → _ᵃc {ℓ} Δc
 curc {ℓ}{∙c}      f = lift tt
 curc {ℓ}{Δc ▶c B} f = curc (λ i → f (ivs i)) , curS λ i → f (ivz i)
 
-curC : ∀{ℓ}{Δc}(f : Con Δc → ic Δc → Set ℓ)(iP : Con Δc → TyP Δc → Set ℓ)(iSP : ∀{Γ A} → iP Γ A → ic Δc)
-  (fz : ∀{Γ A}(ιP : iP (Γ ▶P A) A) → iP Γ A → f (Γ ▶P A) (iSP ιP))
-  (fs : ∀{Γ A ι} → f Γ ι → f (Γ ▶P A) ι)
+curP : ∀{ℓ Δc}(f : Con Δc → ic Δc → Set ℓ)
+  (fz : ∀{Γ A}(ιP : iP (f (Γ ▶P A)) A) → f (Γ ▶P A) (iSP ιP))(fs : ∀{Γ A ι} → f Γ ι → f (Γ ▶P A) ι)
+  → ∀ Γ A → (φ : (ιP : iP (f (Γ ▶P A)) A) → f (Γ ▶P A) (iSP ιP)) → (A ᵃP) (curc (f Γ))
+curP f fz fs Γ (El a) φ = {!!}
+curP f fz fs Γ (Π̂P T B) φ = {!!}
+curP f fz fs Γ (a ⇒P A) φ = λ α → curP f fz fs Γ A λ ιP → {!!}
+
+{-
+fsfoo : ∀{ℓ Δc}(f : Con Δc → ic Δc → Set ℓ)(fs : ∀{Γ A ι} → f Γ ι → f (Γ ▶P A) ι)
+  → (Δ : Con Δc) → (A₀ A₁ : TyP Δc) → (ι : ic Δc) → f (Δ ▶P A₁) ι → f (Δ ▶P A₀ ▶P A₁) ι
+fsfoo f fs Δ A₀ (El a) ι x = {!!}
+fsfoo f fs Δ A₀ (Π̂P T A) ι x = {!!}
+fsfoo f fs Δ A₀ (a ⇒P A₁) ι x = {!!}
+
+curC : ∀{ℓ Δc}(f : Con Δc → ic Δc → Set ℓ)(iP : Con Δc → TyP Δc → Set ℓ)(iSP : ∀{Γ A} → iP Γ A → ic Δc)
+  (fz : ∀{Γ A} ιP → f (Γ ▶P A) (iSP ιP))(fs : ∀{Γ A ι} → f Γ ι → f (Γ ▶P A) ι)
+  (iEl : ∀{Γ a} → iP Γ (El a))(iΠ̂P : ∀{Γ T B}(α : T)→ iP Γ (B α) → iP Γ (Π̂P T B))
+  (i⇒P : ∀{Γ a B} → f Γ (ft a iU) → iP (Γ ▶P El a) B → iP Γ (a ⇒P B))
   → (Γ : Con Δc) → _ᵃC Γ (curc (f Γ))
-curP : ∀{ℓ}{Δc}(f : Con Δc → ic Δc → Set ℓ)(iP : Con Δc → TyP Δc → Set ℓ)(iSP : ∀{Γ A} → iP Γ A → ic Δc)
-  (fz : ∀{Γ A}(ιP : iP (Γ ▶P A) A) → iP Γ A → f (Γ ▶P A) (iSP ιP))
-  (fs : ∀{Γ A ι} → f Γ ι → f (Γ ▶P A) ι)
-  → (Γ : Con Δc) → (A : TyP Δc) → _ᵃP A (curc (f (Γ ▶P A)))
+curC f iP iSP fz fs iEl iΠ̂P i⇒P ∙        = lift tt
+curC f iP iSP fz fs iEl iΠ̂P i⇒P (Γ ▶P A) = {!!} {-curC (λ Δ ι → f (Δ ▶P A) ι) iP iSP
+                                             (λ ιP → fs (fz ιP)) {!!}
+                                             iEl iΠ̂P (λ x ιP → i⇒P {!!} ιP) Γ ,
+                                           curP f iP iSP fz fs Γ A {!!}-}
+-}
 
-curC {Δc = ∙c} f iP iSP fz fs ∙ = lift tt
-curC {Δc = ∙c} f iP iSP fz fs (Γ ▶P El x) = {!!}
-curC {Δc = ∙c} f iP iSP fz fs (Γ ▶P Π̂P T x) = {!!}
-curC {Δc = ∙c} f iP iSP fz fs (Γ ▶P x ⇒P B) = {!!}
-curC {Δc = Δc ▶c x} f iP iSP fz fs Γ = {!!}
+data f {ℓ}{Γc} : Con Γc → ic Γc → Set ℓ  where
+  fz : ∀{Γ : Con Γc}{A}(ι : iP {ℓ} (f (Γ ▶P A)) A) → f (Γ ▶P A) (iSP ι)
+  fs : ∀{Γ : Con Γc}{A i} → f {ℓ} Γ i → f (Γ ▶P A) i
 
-{-curP {Δc = ∙c} f iP iSP fz fs Γ (El a) = ⊥-elim (Tm∙c a)
-curP {Δc = ∙c} f iP iSP fz fs Γ (Π̂P T B) = λ τ → curP f iP iSP fz fs Γ (B τ)
-curP {Δc = ∙c} f iP iSP fz fs Γ (A ⇒P B) = λ α → curP f iP iSP fz fs Γ B
-curP {Δc = Δc ▶c B} f iP iSP fz fs Γ (El a) = {!!}
-curP {Δc = Δc ▶c B} f iP iSP fz fs Γ (Π̂P T C) = {!!}
-curP {Δc = Δc ▶c B} f iP iSP fz fs Γ (a ⇒P A) = λ α → curP {_}{Δc} (λ Δ ι → f (Δ ▶S B) (ivs ι)) {!!} {!!} {!!} {!!} {!!} {!!}-}
+concᵃ : ∀{ℓ}{Δc}(Δ : Con Δc) → _ᵃc {ℓ} Δc
+concᵃ Δ = curc (f Δ)
 
-curP f iP iSP fz fs Γ (El a) = {!!}
-curP f iP iSP fz fs Γ (Π̂P T B) = {!!}
-curP f iP iSP fz fs Γ (a ⇒P A) = λ α → curP (λ Δ ι → f {!!} {!!}) {!!} {!!} {!!} {!!} Γ A
-
---Defining the initial algebra
---iP are the indices (LHS) of a point constructor
---fC Γc Γ ι contains the points for index ι for context Γ
---iSP gives the index of the point constructor result, given its input
-data iP {ℓ}{Γc} : ∀(Γ : Con Γc) → TyP Γc → Set ℓ
-data fC {ℓ : Level} (Γc : SCon) : Con Γc → ic Γc → Set ℓ
-
-iSP : ∀{ℓ : Level}{Γc : SCon}{Γ : Con Γc}{A : TyP Γc} → iP {ℓ} Γ A → ic Γc
-
-data fC {ℓ : Level} (Γc : SCon) where
-  fPz : ∀{Γ : Con Γc}{A}(ι : iP {ℓ} (Γ ▶P A) A) → fC Γc (Γ ▶P A) (iSP ι)
-  fPs : ∀{Γ : Con Γc}{A i} → fC {ℓ} Γc Γ i → fC Γc (Γ ▶P A) i
-
-data iP {ℓ}{Γc} where
-  iEl : ∀{Γ a} → iP Γ (El a)
-  iΠ̂P : ∀{Γ T B}(α : T) → iP {ℓ} Γ (B α) → iP Γ (Π̂P T B)
-  i⇒P : ∀{Γ a B} → fC {ℓ} Γc Γ (ft a iU) → iP {ℓ} (Γ ▶P El a) B → iP Γ (a ⇒P B)
-
-iSP (iEl {a = a})         = ft a iU
-iSP (iΠ̂P {T = T} {B} x ι) = iSP ι
-iSP (i⇒P x ι)             = iSP ι
+conᵃ : ∀{ℓ}{Δc}(Δ : Con Δc) → _ᵃC {ℓ} Δ (concᵃ Δ)
+conᵃ Δ = {!!} -- curC fC iP iSP fPz fPs iEl iΠ̂P i⇒P Δ
 
 --some examples
 nat : Set
-nat = fC (∙c ▶c U) (∙ ▶P El vz ▶P vz ⇒P El vz) (ivz iU)
+nat = f {_} {∙c ▶c U} (∙ ▶P El vz ▶P vz ⇒P El vz) (ivz iU)
 
 nzero : nat
-nzero = fPs (fPz iEl)
+nzero = fs (fz iEl)
 
 nsucc : nat → nat
-nsucc = λ n → fPz (i⇒P n iEl)
+nsucc = λ n → fz (i⇒P n iEl)
 
 vec : Set → nat → Set
-vec A = λ n → fC (∙c ▶c Π̂S nat (λ _ → U)) (∙ ▶P El (vz $S nzero) ▶P Π̂P A λ a → (Π̂P nat λ m → (vz $S m) ⇒P El (vz $S nsucc m))) (ivz (iΠ̂S n iU))
+vec A = λ n → f {_} {∙c ▶c Π̂S nat (λ _ → U)} (∙ ▶P El (vz $S nzero) ▶P Π̂P A λ a → (Π̂P nat λ m → (vz $S m) ⇒P El (vz $S nsucc m))) (ivz (iΠ̂S n iU))
 
 vzero : {A : Set} → vec A nzero
-vzero = fPs (fPz iEl)
+vzero = fs (fz iEl)
 
 vcons : ∀ {A : Set} a n → vec A n → vec A (nsucc n)
-vcons a n v = fPz (iΠ̂P a (iΠ̂P n (i⇒P v iEl)))
-
-concᵃ : ∀{ℓ}{Δc}(Δ : Con Δc) → _ᵃc {ℓ} Δc
-concᵃ Δ = curc (fC _ Δ)
-
-conᵃ : ∀{ℓ}{Δc}(Δ : Con Δc) → _ᵃC {ℓ} Δ (concᵃ Δ)
-conᵃ ∙ = lift tt
-conᵃ (Δ ▶P A) = {!!} , {!!} -- morally fPs (conᵃ Δ) , fPz (conPᵃ Δ A)
+vcons a n v = fz (iΠ̂P a (iΠ̂P n (i⇒P v iEl)))
