@@ -5,7 +5,7 @@ module Test1 (C : Set) (Cw : C → Set)
  where
 
 open import II using (PS; P; S)
-open import EWRSgRec
+open import EWRSg
 open import Lib
 
 Γ : Con
@@ -20,7 +20,8 @@ open import Lib
 -}
 
 Γwc : _
-Γwc = Con.wc Γ (lift tt , C , T)
+Γwc = Con.wc Γ {lift tt , C , T}
+               (lift tt , n)
 
 Γw : _
 Γw = Con.w Γ {lift tt , C , T}

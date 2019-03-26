@@ -1,7 +1,7 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
 open import II using (PS; P; S)
-open import EWRSgRec
+open import EWRSg
 open import Lib
 
 module Test2
@@ -23,7 +23,8 @@ module Test2
 -}
 
 Γwc : _
-Γwc = Con.wc Γ (lift tt , C , T)
+Γwc = Con.wc Γ {lift tt , C , T}
+               (lift tt , e)
 
 Γw  : _
 Γw  = Con.w Γ {lift tt , C , T}
