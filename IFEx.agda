@@ -64,37 +64,30 @@ conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
 conᵃ Γ = conᵃ' Γ Γ id idP
 
 --some examples
+Γnat : Con (∙c ▶c U)
+Γnat = ∙ ▶P vz ⇒P El vz ▶P El vz
+
 nat : Set₁
-nat = TmP {∙c ▶c U} (∙ ▶P vz ⇒P El vz ▶P El vz) (El vz)
+nat = ₂ (concᵃ Γnat)
 
 nzero : nat
-nzero = vPz
+nzero = ₂ (conᵃ Γnat)
 
 nsucc : nat → nat
-nsucc = λ n → vPs vPz $P n
+nsucc = ₂ (₁ (conᵃ Γnat))
 
 postulate N : Set
 postulate Nz  : N
 postulate Ns  : N → N
 
+Γvec : Set → Con (∙c ▶c Π̂S N (λ _ → U))
+Γvec A = ∙ ▶P El (vz $S Nz) ▶P (Π̂P A (λ a → Π̂P N λ m → (vz $S m) ⇒P El (vz $S Ns m)))
+
 vec : Set → N → Set₁
-vec A = λ n → TmP {∙c ▶c Π̂S N (λ _ → U)}
-  (∙ ▶P El (vz $S Nz) ▶P (Π̂P A (λ a → Π̂P N λ m → (vz $S m) ⇒P El (vz $S Ns m)))) (El (vz $S n))
+vec A = ₂ (concᵃ (Γvec A))
 
 vzero : {A : Set} → vec A Nz
-vzero = vPs vPz
+vzero = ₂ (₁ (conᵃ (Γvec _)))
 
 vcons : ∀{A : Set}(a : A) n → vec A n → vec A (Ns n)
-vcons a n v = ((vPz $̂P a) $̂P n) $P v
-
-Γc : SCon
-Γc = ∙c ▶c U ▶c U
-
-Γ : Con Γc
-Γ = ∙ ▶P El (vs (vz)) ▶P El vz
-
-SΓc : Γc ᵃc
-SΓc = concᵃ Γ
-
-SΓ : (Γ ᵃC) SΓc
-SΓ = conᵃ Γ
+vcons = ₂ (conᵃ (Γvec _))
