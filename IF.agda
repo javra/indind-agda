@@ -82,12 +82,6 @@ vs[,]t (var vvz) t δ     = refl
 vs[,]t (var (vvs x)) t δ = refl
 vs[,]t (s $S α) t δ      = happly2 _$S_ (vs[,]t s t δ) α
 
-π₁ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Sub Γc Δc
-π₁ (δ , t) = δ
-
-π₂ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Tm Γc B
-π₂ (δ , t) = t
-
 _∘_ : ∀{Γc}{Δc}{Ωc} → Sub Ωc Δc → Sub Γc Ωc → Sub Γc Δc
 ε        ∘ γc = ε
 (δc , x) ∘ γc = (δc ∘ γc) , (x [ γc ]t)
@@ -108,6 +102,12 @@ id {Γ ▶c B} = wk id , vz
 idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
 idl ε       = refl
 idl (δ , x) = (λ δ₁ → δ₁ , x) & (wkβ ◾ idl δ)
+
+π₁ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Sub Γc Δc
+π₁ (δ , t) = δ
+
+π₂ : ∀{Γc}{Δc}{B} → Sub Γc (Δc ▶c B) → Tm Γc B
+π₂ (δ , t) = t
 
 _^_ : ∀{Γ Δ} → Sub Γ Δ → (B : TyS) → Sub (Γ ▶c B) (Δ ▶c B)
 δ ^ B = wk δ , vz
@@ -141,6 +141,8 @@ id^ = refl
 [id]t (var vvz)     = refl
 [id]t (var (vvs t)) = [wk] id (var t) ◾ vs & [id]t (var t)
 [id]t (t $S α)      = happly2 _$S_ ([id]t t) _
+{-# REWRITE [id]T #-}
+{-# REWRITE [id]t #-}
 
 idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
 idr ε       = refl
