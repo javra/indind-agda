@@ -5,62 +5,62 @@ open import Lib hiding (id; _∘_)
 open import IF
 open import IFA
 
-data VarP {Γc} : Con Γc → TyP Γc → Set where
+data VarP {ℓ Γc} : Con Γc → TyP Γc → Set (suc ℓ) where
   vvPz : ∀{Γ A} → VarP (Γ ▶P A) A
-  vvPs : ∀{Γ A B} → VarP Γ A → VarP (Γ ▶P B) A
+  vvPs : ∀{Γ A B} → VarP {ℓ} Γ A → VarP (Γ ▶P B) A
 
-data TmP {Γc}(Γ : Con Γc) : TyP Γc → Set₁ where
-  varP : ∀{A} → VarP Γ A → TmP Γ A
-  _$P_ : ∀{a A} → TmP Γ (a ⇒P A) → TmP Γ (El a) → TmP Γ A
-  _$̂P_ : ∀{T A} → TmP Γ (Π̂P T A) → (τ : T) → TmP Γ (A τ)
+data TmP {ℓ Γc}(Γ : Con Γc) : TyP Γc → Set (suc ℓ) where
+  varP : ∀{A} → VarP {ℓ} Γ A → TmP Γ A
+  _$P_ : ∀{a A} → TmP {ℓ} Γ (a ⇒P A) → TmP {ℓ} Γ (El a) → TmP Γ A
+  _$̂P_ : ∀{T A} → TmP {ℓ} Γ (Π̂P T A) → (τ : T) → TmP Γ (A τ)
 
-data SubP {Γc Δc}(σ : Sub Γc Δc) : ∀(Γ : Con Γc)(Δ : Con Δc) → Set₁ where
+data SubP {ℓ Γc Δc}(σ : Sub Γc Δc) : ∀(Γ : Con Γc)(Δ : Con Δc) → Set (suc ℓ) where
   εP   : ∀{Γ} → SubP σ Γ ∙
-  _,P_ : ∀{Γ Δ A} → SubP σ Γ Δ → TmP Γ (A [ σ ]T) → SubP σ Γ (Δ ▶P A)
+  _,P_ : ∀{Γ Δ A} → SubP {ℓ} σ Γ Δ → TmP {ℓ} Γ (A [ σ ]T) → SubP σ Γ (Δ ▶P A)
 
-vPz : ∀{Γc Γ A} → TmP {Γc} (Γ ▶P A) A
+vPz : ∀{ℓ Γc Γ A} → TmP {ℓ}{Γc} (Γ ▶P A) A
 vPz = varP vvPz
 
-vPs : ∀{Γc Γ A B} → TmP {Γc} Γ A → TmP (Γ ▶P B) A
+vPs : ∀{ℓ Γc Γ A B} → TmP {ℓ}{Γc} Γ A → TmP (Γ ▶P B) A
 vPs (varP x) = varP (vvPs x)
 vPs (f $P t) = vPs f $P vPs t
 vPs (f $̂P τ) = vPs f $̂P τ
 
-wkP : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ A} → SubP σ Γ Δ → SubP σ (Γ ▶P A) Δ
+wkP : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ Δ A} → SubP {ℓ} σ Γ Δ → SubP {ℓ} σ (Γ ▶P A) Δ
 wkP εP        = εP
 wkP (σP ,P t) = wkP σP ,P vPs t
 
-idP : ∀{Γc}{Γ : Con Γc} → SubP id Γ Γ
+idP : ∀{ℓ Γc}{Γ : Con Γc} → SubP {ℓ} id Γ Γ
 idP {Γ = ∙}      = εP
 idP {Γ = Γ ▶P B} = wkP idP ,P vPz
 
-conSᵃ' : ∀{Ωc}(Ω : Con Ωc){B}(t : Tm Ωc B) → _ᵃS {suc zero} B
+conSᵃ' : ∀{ℓ Ωc}(Ω : Con Ωc){B}(t : Tm Ωc B) → _ᵃS {suc ℓ} B
 conSᵃ' Ω {U}      t     = TmP Ω (El t)
 conSᵃ' Ω {Π̂S T B} t     = λ τ → conSᵃ' Ω (t $S τ)
 
-concᵃ' : ∀{Ωc}(Ω : Con Ωc)(Γc : SCon)(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
+concᵃ' : ∀{ℓ Ωc}(Ω : Con Ωc)(Γc : SCon)(σ : Sub Ωc Γc) → _ᵃc {suc ℓ} Γc
 concᵃ' Ω ∙c        ε       = lift tt
 concᵃ' Ω (Γc ▶c B) (σ , t) = concᵃ' Ω Γc σ , conSᵃ' Ω t
 
-contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → (t ᵃt) (concᵃ' Ω Γc σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
+contᵃ' : ∀{ℓ Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → (t ᵃt) (concᵃ' Ω Γc σ) ≡ conSᵃ'{ℓ} Ω {B} (t [ σ ]t)
 contᵃ' Ω            ε           t                   = ⊥-elim (Tm∙c t)
 contᵃ' Ω            (σ , s)     (var vvz)           = refl
 contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
 contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
 
-conPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T)) → (A ᵃP) (concᵃ' Ω Γc σ)
+conPᵃ' : ∀{ℓ Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T)) → (A ᵃP) (concᵃ' {ℓ} Ω Γc σ)
 conPᵃ' Ω Γ σ {El a}   tP = coe (contᵃ' Ω σ a ⁻¹) tP
 conPᵃ' Ω Γ σ {Π̂P T B} tP = λ τ → conPᵃ' Ω Γ σ {B τ} (tP $̂P τ)
 conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P coe (contᵃ' Ω σ a) α)
 
-conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(σP : SubP σ Ω Γ) → (Γ ᵃC) (concᵃ' Ω Γc σ)
+conᵃ' : ∀{ℓ Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(σP : SubP {ℓ} σ Ω Γ) → (Γ ᵃC) (concᵃ' {ℓ} Ω Γc σ)
 conᵃ' Ω ∙        σ εP        = lift tt
 conᵃ' Ω (Γ ▶P A) σ (σP ,P t) = conᵃ' Ω Γ σ σP , conPᵃ' Ω Γ σ {A} t
 
-concᵃ : ∀{Γc}(Γ : Con Γc) → _ᵃc {suc zero} Γc
-concᵃ {Γc} Γ = concᵃ' Γ Γc id
+concᵃ : ∀{ℓ Γc}(Γ : Con Γc) → _ᵃc {suc ℓ} Γc
+concᵃ {ℓ}{Γc} Γ = concᵃ' Γ Γc id
 
-conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
+conᵃ : ∀{ℓ Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ {ℓ} Γ)
 conᵃ Γ = conᵃ' Γ Γ id idP
 
 --some examples

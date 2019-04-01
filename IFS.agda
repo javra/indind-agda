@@ -11,7 +11,7 @@ open import IFD
 ˢS (Π̂S T B) π πᵈ = (α : T) → ˢS (B α) (π α) (πᵈ α)
 
 ˢc : ∀{ℓ' ℓ}(Γc : SCon){γc : _ᵃc {ℓ} Γc} → ᵈc {ℓ'} Γc γc → Set (ℓ' ⊔ ℓ)
-ˢc ∙c        γcᵈ         = Lift ⊤
+ˢc ∙c        γcᵈ         = Lift _ ⊤
 ˢc (Γc ▶c B) (γcᵈ , αcᵈ) = ˢc Γc γcᵈ × ˢS B _ αcᵈ
 
 ˢt : ∀{ℓ' ℓ}{Γc : SCon}{B : TyS}(t : Tm Γc B){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ) → ˢS B ((t ᵃt) γc) (ᵈt t γc γcᵈ)
@@ -25,7 +25,7 @@ open import IFD
 ˢP (t ⇒P A) {γc} γcˢ α αᵈ = (x : (t ᵃt) γc) → ˢP A γcˢ (α x) (αᵈ x (ˢt t γcˢ x))
 
 ˢC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ){γ : (Γ ᵃC) γc}(γᵈ : ᵈC Γ γcᵈ γ) → Set (suc ℓ' ⊔ ℓ)
-ˢC ∙        γcˢ γᵈ                 = Lift ⊤
+ˢC ∙        γcˢ γᵈ                 = Lift _ ⊤
 ˢC (Γ ▶P A) γcˢ         (γᵈ , αᵈ)  = Σ (ˢC Γ γcˢ γᵈ) λ γˢ → ˢP A γcˢ _ αᵈ
 
 ˢs : ∀{ℓ' ℓ}{Γc Δc}(σ : Sub Γc Δc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc) → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γc γcᵈ)
