@@ -42,14 +42,16 @@ concᵃ' : ∀{Ωc}(Ω : Con Ωc)(Γc : SCon)(σ : Sub Ωc Γc) → _ᵃc {suc z
 concᵃ' Ω ∙c        ε       = lift tt
 concᵃ' Ω (Γc ▶c B) (σ , t) = concᵃ' Ω Γc σ , conSᵃ' Ω t
 
-contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(a : Tm Γc U) → (a ᵃt) (concᵃ' Ω Γc σ) ≡ TmP Ω (El (a [ σ ]t))
-contᵃ' Ω Γ ε       a = ⊥-elim (Tm∙c a)
-contᵃ' Ω Γ (σ , t) a = {!!}
+contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → (t ᵃt) (concᵃ' Ω Γc σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
+contᵃ' Ω            ε           t                   = ⊥-elim (Tm∙c t)
+contᵃ' Ω            (σ , s)     (var vvz)           = refl
+contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
+contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
 
 conPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T)) → (A ᵃP) (concᵃ' Ω Γc σ)
-conPᵃ' Ω Γ σ {El a}   tP = coe (contᵃ' Ω Γ σ a ⁻¹) tP
+conPᵃ' Ω Γ σ {El a}   tP = coe (contᵃ' Ω σ a ⁻¹) tP
 conPᵃ' Ω Γ σ {Π̂P T B} tP = λ τ → conPᵃ' Ω Γ σ {B τ} (tP $̂P τ)
-conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P coe (contᵃ' Ω Γ σ a) α)
+conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P coe (contᵃ' Ω σ a) α)
 
 conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(σP : SubP σ Ω Γ) → (Γ ᵃC) (concᵃ' Ω Γc σ)
 conᵃ' Ω ∙        σ εP        = lift tt
@@ -96,8 +98,3 @@ SΓc = concᵃ Γ
 
 SΓ : (Γ ᵃC) SΓc
 SΓ = conᵃ Γ
-
---TmP (∙ ▶P El (var (vvs vvz)) ▶P El (var vvz)) (El (var vvz))
---TmP (∙ ▶P El (var (vvs vvz)) ▶P El (var vvz)) (El (var vvz)) ✓
---TmP (∙ ▶P El (var (vvs vvz)) ▶P El (var vvz)) (El (var (vvs vvz)))
---TmP (∙ ▶P El (var (vvs vvz)) ▶P El (var vvz)) (El (var (vvs vvz))) ✓
