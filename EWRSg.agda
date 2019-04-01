@@ -92,7 +92,7 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
     sg  : ∀{γc}(γ : _){δc}(δ : _) → ᴬ (Γ.sg γc γ δc δ) ≡ Δ.sg ((Ec ᵃs) γc) ((E γc ᵃsL) γ) ((wc γ ᵃs) δc) ((w γ δ ᵃsL) δ)
 
 ∙ : Con
-∙ = record { ᴬ  = Lift ⊤ ;
+∙ = record { ᴬ  = Lift _ ⊤ ;
              Ec = S.∙c ;
              E  = S.∙ ;
              wc = λ _ → S.∙c ;

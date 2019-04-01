@@ -9,7 +9,7 @@ _ᵃS {ℓ} U        = Set ℓ
 _ᵃS {ℓ} (Π̂S T A) = (α : T) → _ᵃS {ℓ} (A α)
 
 _ᵃc : ∀{ℓ} → SCon → Set (suc ℓ)
-∙c ᵃc            = Lift ⊤
+∙c ᵃc            = Lift _ ⊤
 _ᵃc {ℓ} (Γ ▶c A) = (_ᵃc {ℓ} Γ) × _ᵃS {ℓ} A
 
 _ᵃt : ∀{ℓ}{Γ : SCon}{A : TyS} → Tm Γ A → _ᵃc {ℓ} Γ → _ᵃS {ℓ} A
@@ -23,7 +23,7 @@ _ᵃP : ∀{ℓ}{Γc} → TyP Γc → (γ : _ᵃc {ℓ} Γc) → Set ℓ
 ((a ⇒P B) ᵃP) γ = (a ᵃt) γ → (B ᵃP) γ
 
 _ᵃC : ∀{ℓ}{Γc} → Con Γc → _ᵃc {ℓ} Γc → Set (suc ℓ)
-(∙ ᵃC) γ              = Lift ⊤
+(∙ ᵃC) γ              = Lift _ ⊤
 ((Γ ▶P A) ᵃC) γ       = (Γ ᵃC) γ × (A ᵃP) γ
 
 _ᵃs : ∀{ℓ}{Γc Δc} → Sub Γc Δc → _ᵃc {ℓ} Γc → _ᵃc {ℓ} Δc
