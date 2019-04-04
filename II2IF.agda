@@ -4,10 +4,9 @@ open import EWRSg
 open import IFA
 open import IFD
 open import IFS
+open import IFEx using (concᵃ; conᵃ)
 
 module II2IF
-  (concᵃ  : ∀{ℓ}{Δc}(Δ : s.Con Δc) → _ᵃc {ℓ} Δc)
-  (conᵃ   : ∀{ℓ}{Δc}(Δ : s.Con Δc) → _ᵃC {ℓ} Δ (concᵃ Δ))
   (elimcᵃ : ∀{ℓ ℓ'}{Δc}(Δ : s.Con Δc){δcᵈ}(δᵈ : ᵈC {ℓ'} Δ δcᵈ (conᵃ {ℓ} Δ)) → ˢc Δc δcᵈ)
   (elimᵃ  : ∀{ℓ ℓ'}{Δc}(Δ : s.Con Δc){δcᵈ}(δᵈ : ᵈC {ℓ'} Δ δcᵈ (conᵃ {ℓ} Δ)) → ˢC Δ (elimcᵃ Δ δᵈ) δᵈ) where
 

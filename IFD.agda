@@ -7,32 +7,33 @@ open import IFA
 
 ᵈS : ∀{ℓ' ℓ}(B : TyS)(α : _ᵃS {ℓ} B) → Set (suc ℓ' ⊔ ℓ)
 ᵈS {ℓ'} U        α = α → Set ℓ'
-ᵈS {ℓ'} (Π̂S T B) π = (x : T) → ᵈS {ℓ'} (B x) (π x)
+ᵈS {ℓ'} (Π̂S T B) π = (τ : T) → ᵈS {ℓ'} (B τ) (π τ)
 
 ᵈc : ∀{ℓ' ℓ}(Γc : SCon)(γc : _ᵃc {ℓ} Γc) → Set (suc ℓ' ⊔ ℓ)
 ᵈc ∙c             γc       = Lift _ ⊤
 ᵈc {ℓ'} (Γc ▶c B) (γc , α) = ᵈc {ℓ'} Γc γc × ᵈS {ℓ'} B α
 
-ᵈt : ∀{ℓ'}{ℓ}{Γc : SCon}{B : TyS}(t : Tm Γc B)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈS {ℓ'} B ((t ᵃt) γc)
-ᵈt (var vvz)     (γc , α) (γcᵈ , αᵈ) = αᵈ
-ᵈt (var (vvs t)) (γc , α) (γcᵈ , αᴾ) = ᵈt (var t) γc γcᵈ
-ᵈt (t $S α)      γc       γcᵈ        = ᵈt t γc γcᵈ α
+ᵈt : ∀{ℓ' ℓ Γc B}(t : Tm Γc B){γc : _ᵃc {ℓ} Γc} → ᵈc {ℓ'} Γc γc → ᵈS {ℓ'} B ((t ᵃt) γc)
+ᵈt (var vvz)     (γcᵈ , αᵈ) = αᵈ
+ᵈt (var (vvs t)) (γcᵈ , αᵈ) = ᵈt (var t) γcᵈ
+ᵈt (t $S α)      γcᵈ        = ᵈt t γcᵈ α
 
 ᵈP : ∀{ℓ' ℓ}{Γc}(A : TyP Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(α : (A ᵃP) γc) → Set (ℓ' ⊔ ℓ)
-ᵈP {ℓ'}    (Π̂P T B)      γcᵈ π = (α : T) → ᵈP {ℓ'} (B α) γcᵈ (π α)
-ᵈP {ℓ'}{ℓ} (El a)   {γc} γcᵈ α = Lift (ℓ' ⊔ ℓ) (ᵈt a γc γcᵈ α)
-ᵈP {ℓ'}    (t ⇒P A) {γc} γcᵈ π = (α : (t ᵃt) γc) (αᵈ : ᵈt t γc γcᵈ α) → ᵈP A γcᵈ (π α)
+ᵈP {ℓ'}{ℓ} (El a)   γcᵈ α = Lift (ℓ' ⊔ ℓ) (ᵈt a γcᵈ α)
+ᵈP {ℓ'}    (Π̂P T A) γcᵈ π = (τ : T) → ᵈP {ℓ'} (A τ) γcᵈ (π τ)
+ᵈP {ℓ'}    (a ⇒P A) γcᵈ π = (α : (a ᵃt) _) (αᵈ : ᵈt a γcᵈ α) → ᵈP A γcᵈ (π α)
 
 ᵈC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(γ : (Γ ᵃC) γc) → Set (suc ℓ' ⊔ ℓ)
-ᵈC      ∙        γcᵈ        γ       = Lift _ ⊤
-ᵈC {ℓ'} (Γ ▶P A) γcᵈ        (γ , α) = (ᵈC Γ γcᵈ γ) × (ᵈP A γcᵈ α)
+ᵈC ∙        γcᵈ γ       = Lift _ ⊤
+ᵈC (Γ ▶P A) γcᵈ (γ , α) = (ᵈC Γ γcᵈ γ) × (ᵈP A γcᵈ α)
 
 ᵈs : ∀{ℓ' ℓ Γc Δc}(σ : Sub Γc Δc)(γc : _ᵃc {ℓ} Γc) → ᵈc {ℓ'} Γc γc → ᵈc {ℓ'} Δc ((σ ᵃs) γc)
 ᵈs ε       γc γcᵈ = lift tt
-ᵈs (σ , t) γc γcᵈ = ᵈs σ γc γcᵈ , ᵈt t γc γcᵈ
+ᵈs (σ , t) γc γcᵈ = ᵈs σ γc γcᵈ , ᵈt t γcᵈ
 
 []Tᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(α : _) → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γc γcᵈ) α
-[]tᵈ : ∀{ℓ' ℓ Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈt (a [ σ ]t) γc γcᵈ ≡ ᵈt a ((σ ᵃs) γc) (ᵈs σ γc γcᵈ)
+[]tᵈ : ∀{ℓ' ℓ Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
+         → ᵈt (a [ σ ]t) γcᵈ ≡ ᵈt a (ᵈs σ γc γcᵈ)
 
 []Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
 []Tᵈ {A = El a} α   = Lift _ & happly ([]tᵈ {a = a}) α
@@ -44,7 +45,8 @@ open import IFA
 {-# REWRITE []Tᵈ #-}
 {-# REWRITE []tᵈ #-}
 
-vs,ᵈ : ∀{ℓ' ℓ Γc B B'}{x : Tm Γc B}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{α}{αᵈ : ᵈS {ℓ'}{ℓ} B' α} → ᵈt (vs x) (γc , α) (γcᵈ , αᵈ) ≡ ᵈt x γc γcᵈ
+vs,ᵈ : ∀{ℓ' ℓ Γc B B'}{x : Tm Γc B}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{α}{αᵈ : ᵈS {ℓ'}{ℓ} B' α}
+         → ᵈt (vs x) (γcᵈ , αᵈ) ≡ ᵈt x γcᵈ
 vs,ᵈ {x = var x}  = refl
 vs,ᵈ {x = x $S α} = happly (vs,ᵈ {x = x}) α
 {-# REWRITE vs,ᵈ #-}
@@ -68,7 +70,8 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 π₁ᵈ {σ = σ , x} = refl
 {-# REWRITE π₁ᵈ #-}
 
-π₂ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈt (π₂ σ) γc γcᵈ ≡ ₂ (ᵈs σ γc γcᵈ)
+π₂ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
+        → ᵈt (π₂ σ) γcᵈ ≡ ₂ (ᵈs σ γc γcᵈ)
 π₂ᵈ {σ = σ , x} = refl
 {-# REWRITE π₂ᵈ #-}
 

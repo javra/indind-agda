@@ -6,40 +6,40 @@ open import IF
 
 _ᵃS : ∀{ℓ} → TyS → Set (suc ℓ)
 _ᵃS {ℓ} U        = Set ℓ
-_ᵃS {ℓ} (Π̂S T A) = (α : T) → _ᵃS {ℓ} (A α)
+_ᵃS {ℓ} (Π̂S T B) = (τ : T) → _ᵃS {ℓ} (B τ)
 
 _ᵃc : ∀{ℓ} → SCon → Set (suc ℓ)
-∙c ᵃc            = Lift _ ⊤
-_ᵃc {ℓ} (Γ ▶c A) = (_ᵃc {ℓ} Γ) × _ᵃS {ℓ} A
+∙c ᵃc             = Lift _ ⊤
+_ᵃc {ℓ} (Γc ▶c B) = (_ᵃc {ℓ} Γc) × _ᵃS {ℓ} B
 
-_ᵃt : ∀{ℓ}{Γ : SCon}{A : TyS} → Tm Γ A → _ᵃc {ℓ} Γ → _ᵃS {ℓ} A
+_ᵃt : ∀{ℓ Γc B} → Tm Γc B → _ᵃc {ℓ} Γc → _ᵃS {ℓ} B
 (var vvz ᵃt)     (γ , α) = α
 (var (vvs t) ᵃt) (γ , α) = (var t ᵃt) γ
 ((t $S α) ᵃt)    γ       = (t ᵃt) γ α
 
-_ᵃP : ∀{ℓ}{Γc} → TyP Γc → (γ : _ᵃc {ℓ} Γc) → Set ℓ
-(Π̂P T A ᵃP) γ   = (α : T) → ((A α) ᵃP) γ
-(El a ᵃP) γ     = (a ᵃt) γ
-((a ⇒P B) ᵃP) γ = (a ᵃt) γ → (B ᵃP) γ
+_ᵃP : ∀{ℓ Γc} → TyP Γc → _ᵃc {ℓ} Γc → Set ℓ
+(El a ᵃP)     γ = (a ᵃt) γ
+(Π̂P T A ᵃP)   γ = (τ : T) → ((A τ) ᵃP) γ
+((a ⇒P A) ᵃP) γ = (a ᵃt) γ → (A ᵃP) γ
 
-_ᵃC : ∀{ℓ}{Γc} → Con Γc → _ᵃc {ℓ} Γc → Set (suc ℓ)
-(∙ ᵃC) γ              = Lift _ ⊤
-((Γ ▶P A) ᵃC) γ       = (Γ ᵃC) γ × (A ᵃP) γ
+_ᵃC : ∀{ℓ Γc} → Con Γc → _ᵃc {ℓ} Γc → Set (suc ℓ)
+(∙ ᵃC)        γ = Lift _ ⊤
+((Γ ▶P A) ᵃC) γ = (Γ ᵃC) γ × (A ᵃP) γ
 
 _ᵃs : ∀{ℓ}{Γc Δc} → Sub Γc Δc → _ᵃc {ℓ} Γc → _ᵃc {ℓ} Δc
 (ε ᵃs) γ       = lift tt
 ((σ , t) ᵃs) γ = (σ ᵃs) γ , (t ᵃt) γ
 
-[]Tᵃ : ∀{ℓ}{Γc Δc A}{δ : Sub Γc Δc} → (γc : _ᵃc {ℓ} Γc) → ((A [ δ ]T) ᵃP) γc ≡ (A ᵃP) ((δ ᵃs) γc)
-[]tᵃ : ∀{ℓ}{Γc Δc A}{a : Tm Δc A}{δ : Sub Γc Δc} → (γc : _ᵃc {ℓ} Γc) → ((a [ δ ]t) ᵃt) γc ≡ (a ᵃt) ((δ ᵃs) γc)
+[]Tᵃ : ∀{ℓ Γc Δc A}{σ : Sub Γc Δc} → (γc : _ᵃc {ℓ} Γc) → ((A [ σ ]T) ᵃP) γc ≡ (A ᵃP) ((σ ᵃs) γc)
+[]tᵃ : ∀{ℓ Γc Δc B}{t : Tm Δc B}{σ : Sub Γc Δc} → (γc : _ᵃc {ℓ} Γc) → ((t [ σ ]t) ᵃt) γc ≡ (t ᵃt) ((σ ᵃs) γc)
 
-[]Tᵃ {A = Π̂P T x} γc = Π≡ refl λ α → []Tᵃ {A = x α} γc
-[]Tᵃ {A = El x}   γc = []tᵃ {a = x} γc
-[]Tᵃ {A = x ⇒P A} γc = Π≡ ([]tᵃ {a = x} γc) λ α → []Tᵃ {A = A} γc
+[]Tᵃ {A = El a}   γc = []tᵃ {t = a} γc
+[]Tᵃ {A = Π̂P T A} γc = Π≡ refl λ τ → []Tᵃ {A = A τ} γc
+[]Tᵃ {A = a ⇒P A} γc = Π≡ ([]tᵃ {t = a} γc) λ α → []Tᵃ {A = A} γc
 
-[]tᵃ {a = var vvz}    {δ , x} γc = refl
-[]tᵃ {a = var (vvs a)}{δ , x} γc = []tᵃ {a = var a} γc
-[]tᵃ {a = a $S α}     {δ}     γc = happly ([]tᵃ {a = a} {δ = δ} γc) α
+[]tᵃ {t = var vvz}    {σ , x} γc = refl
+[]tᵃ {t = var (vvs a)}{σ , x} γc = []tᵃ {t = var a} γc
+[]tᵃ {t = t $S α}     {σ}     γc = happly ([]tᵃ {t = t} γc) α
 {-# REWRITE []Tᵃ #-}
 {-# REWRITE []tᵃ #-}
 
