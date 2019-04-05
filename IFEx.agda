@@ -4,6 +4,8 @@ module IFEx where
 open import Lib hiding (id; _∘_)
 open import IF
 open import IFA
+open import IFD
+open import IFS
 
 data VarP {ℓ Γc} : Con Γc → TyP Γc → Set (suc ℓ) where
   vvPz : ∀{Γ A} → VarP (Γ ▶P A) A
@@ -63,6 +65,26 @@ concᵃ {ℓ}{Γc} Γ = concᵃ' Γ Γc id
 conᵃ : ∀{ℓ Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ {ℓ} Γ)
 conᵃ Γ = conᵃ' Γ Γ id idP
 
+elimSᵃ' : ∀{ℓ ℓ' Ωc}(Ω : Con Ωc){B}{t : Tm Ωc B}(αᵈ : ᵈS {ℓ'} B (conSᵃ' {ℓ} Ω t)) → ˢS B αᵈ
+elimSᵃ' Ω {U}      {t} αᵈ x = {!!}
+elimSᵃ' Ω {Π̂S T B} {t} αᵈ τ = elimSᵃ' Ω {B τ} {t $S τ} (αᵈ τ)
+
+elimcᵃ' : ∀{ℓ ℓ' Ωc}(Ω : Con Ωc){Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){γcᵈ}
+  (γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ' {ℓ} Ω Γ σ σP)) → ˢc Γc γcᵈ
+elimcᵃ' Ω {∙c} Γ {ε} σP γᵈ = lift tt
+elimcᵃ' Ω {Γc ▶c B} Γ {σ , t} σP {γcᵈ , αᵈ} γᵈ = elimcᵃ' Ω {!!} {!!} {!!} , {!!}
+
+elimᵃ' : ∀{ℓ ℓ' Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ)
+  {γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ' {ℓ} Ω Γ σ σP))
+  → ˢC Γ (elimcᵃ' Ω Γ σP γᵈ) γᵈ
+elimᵃ' = {!!}
+
+elimcᵃ : ∀{ℓ ℓ' Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ {ℓ} Γ)) → ˢc Γc γcᵈ
+elimcᵃ Γ γᵈ = elimcᵃ' Γ Γ idP γᵈ
+
+elimᵃ : ∀{ℓ ℓ'}{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ {ℓ} Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
+elimᵃ Γ γᵈ = elimᵃ' Γ Γ idP γᵈ
+
 --some examples
 Γnat : Con (∙c ▶c U)
 Γnat = ∙ ▶P vz ⇒P El vz ▶P El vz
@@ -75,6 +97,9 @@ nzero = ₂ (conᵃ Γnat)
 
 nsucc : nat → nat
 nsucc = ₂ (₁ (conᵃ Γnat))
+
+nrec : ∀(P : nat → Set₁)(pz : P nzero)(ps : ∀ n → P n → P (nsucc n)) → ∀ n → P n
+nrec P pz ps n = {!!}
 
 postulate N : Set
 postulate Nz  : N
