@@ -6,29 +6,28 @@ open import IF
 open import IFA
 open import IFD
 
-ˢS : ∀{ℓ' ℓ}(B : TyS){α : _ᵃS {ℓ} B} → ᵈS {ℓ'} B α → Set (ℓ' ⊔ ℓ)
-ˢS U        {α} αᵈ = (x : α) → αᵈ x
-ˢS (Π̂S T B)     πᵈ = (τ : T) → ˢS (B τ) (πᵈ τ)
+ˢS : ∀{ℓ' ℓ} B {α} → ᵈS {ℓ'}{ℓ} B α → Set (ℓ' ⊔ ℓ)
+ˢS U        αᵈ = ∀ x → αᵈ x
+ˢS (Π̂S T B) πᵈ = (τ : T) → ˢS (B τ) (πᵈ τ)
 
-ˢc : ∀{ℓ' ℓ}(Γc : SCon){γc : _ᵃc {ℓ} Γc} → ᵈc {ℓ'} Γc γc → Set (ℓ' ⊔ ℓ)
+ˢc : ∀{ℓ' ℓ} Γc {γc} → ᵈc {ℓ'}{ℓ} Γc γc → Set (ℓ' ⊔ ℓ)
 ˢc ∙c        γcᵈ         = Lift _ ⊤
 ˢc (Γc ▶c B) (γcᵈ , αcᵈ) = ˢc Γc γcᵈ × ˢS B αcᵈ
 
-ˢt : ∀{ℓ' ℓ}{Γc : SCon}{B : TyS}(t : Tm Γc B){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ)
-     → ˢS B (ᵈt t γcᵈ)
+ˢt : ∀{ℓ' ℓ Γc B} t {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ˢc Γc γcᵈ → ˢS B (ᵈt t γcᵈ)
 ˢt (var vvz)     (γcˢ , αcˢ) = αcˢ
 ˢt (var (vvs t)) (γcˢ , αcˢ) = ˢt (var t) γcˢ
-ˢt (t $S α)      γcˢ         = ˢt t γcˢ α
+ˢt (f $S τ)      γcˢ         = ˢt f γcˢ τ
 
-ˢP : ∀{ℓ' ℓ}{Γc : SCon}(A : TyP Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ)(α : (A ᵃP) γc)(αᵈ : ᵈP A γcᵈ α) → Set (ℓ' ⊔ ℓ)
-ˢP (Π̂P T A)      γcˢ π πᵈ = (τ : T) → ˢP (A τ) γcˢ (π τ) (πᵈ τ)
-ˢP (El a)        γcˢ α αᵈ = lift (ˢt a γcˢ α) ≡ αᵈ
-ˢP (t ⇒P A) {γc} γcˢ α αᵈ = (x : (t ᵃt) γc) → ˢP A γcˢ (α x) (αᵈ x (ˢt t γcˢ x))
+ˢP : ∀{ℓ' ℓ Γc} A {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γcˢ : ˢc Γc γcᵈ){α} → ᵈP A γcᵈ α → Set (ℓ' ⊔ ℓ)
+ˢP (El a)        γcˢ {α} αᵈ = lift (ˢt a γcˢ α) ≡ αᵈ
+ˢP (Π̂P T A)      γcˢ     πᵈ = (τ : T) → ˢP (A τ) γcˢ (πᵈ τ)
+ˢP (a ⇒P A) {γc} γcˢ     πᵈ = (α : (a ᵃt) γc) → ˢP A γcˢ (πᵈ (ˢt a γcˢ α))
 
-ˢC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}{γcᵈ : ᵈc {ℓ'} Γc γc}(γcˢ : ˢc Γc γcᵈ){γ : (Γ ᵃC) γc}(γᵈ : ᵈC Γ γcᵈ γ) → Set (suc ℓ' ⊔ ℓ)
+ˢC : ∀{ℓ' ℓ Γc} Γ {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γcˢ : ˢc Γc γcᵈ){γ} → ᵈC Γ γcᵈ γ → Set (suc ℓ' ⊔ ℓ)
 ˢC ∙        γcˢ γᵈ        = Lift _ ⊤
-ˢC (Γ ▶P A) γcˢ (γᵈ , αᵈ) = Σ (ˢC Γ γcˢ γᵈ) λ γˢ → ˢP A γcˢ _ αᵈ
+ˢC (Γ ▶P A) γcˢ (γᵈ , αᵈ) = ˢC Γ γcˢ γᵈ × ˢP A γcˢ αᵈ
 
-ˢs : ∀{ℓ' ℓ}{Γc Δc}(σ : Sub Γc Δc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc) → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γc γcᵈ)
-ˢs ε γcᵈ γcˢ       = lift tt
-ˢs (σ , t) γcᵈ γcˢ = ˢs σ γcᵈ γcˢ , ˢt t γcˢ
+ˢs : ∀{ℓ' ℓ Γc Δc} σ {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γc γcᵈ)
+ˢs ε       γcˢ = lift tt
+ˢs (σ , t) γcˢ = ˢs σ γcˢ , ˢt t γcˢ

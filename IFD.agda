@@ -21,7 +21,7 @@ open import IFA
 ᵈP : ∀{ℓ' ℓ}{Γc}(A : TyP Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(α : (A ᵃP) γc) → Set (ℓ' ⊔ ℓ)
 ᵈP {ℓ'}{ℓ} (El a)   γcᵈ α = Lift (ℓ' ⊔ ℓ) (ᵈt a γcᵈ α)
 ᵈP {ℓ'}    (Π̂P T A) γcᵈ π = (τ : T) → ᵈP {ℓ'} (A τ) γcᵈ (π τ)
-ᵈP {ℓ'}    (a ⇒P A) γcᵈ π = (α : (a ᵃt) _) (αᵈ : ᵈt a γcᵈ α) → ᵈP A γcᵈ (π α)
+ᵈP {ℓ'}    (a ⇒P A) γcᵈ π = {α : (a ᵃt) _} (αᵈ : ᵈt a γcᵈ α) → ᵈP A γcᵈ (π α)
 
 ᵈC : ∀{ℓ' ℓ}{Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(γ : (Γ ᵃC) γc) → Set (suc ℓ' ⊔ ℓ)
 ᵈC ∙        γcᵈ γ       = Lift _ ⊤
@@ -37,7 +37,7 @@ open import IFA
 
 []Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
 []Tᵈ {A = El a} α   = Lift _ & happly ([]tᵈ {a = a}) α
-[]Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
+[]Tᵈ {A = t ⇒P A} π = Π≡i refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
 
 []tᵈ {a = var vvz}    {σ , t} = refl
 []tᵈ {a = var (vvs a)}{σ , t} = []tᵈ {a = var a}
