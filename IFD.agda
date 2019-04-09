@@ -78,6 +78,38 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 π₂ᵈ {σ = σ , x} = refl
 {-# REWRITE π₂ᵈ #-}
 
+ᵈtP : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A}(tP : TmP Γ A){γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{γ}
+       → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈP {ℓ'}{ℓ} A γcᵈ ((tP ᵃtP) γ)
+ᵈtP (varP vvzP)     (γᵈ , αᵈ) = αᵈ
+ᵈtP (varP (vvsP x)) (γᵈ , αᵈ) = ᵈtP (varP x) γᵈ
+ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ (lower (ᵈtP sP γᵈ))
+ᵈtP (tP $̂P τ)       γᵈ        = ᵈtP tP γᵈ τ
+
+ᵈsP : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{σ}(σP : SubP σ Γ Δ){γc}{γcᵈ : ᵈc Γc γc}{γ}
+       → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈC {ℓ'}{ℓ} Δ (ᵈs σ γcᵈ) ((σP ᵃsP) γ)
+ᵈsP εP         γᵈ = lift tt
+ᵈsP (σP ,P tP) γᵈ = ᵈsP σP γᵈ , ᵈtP tP γᵈ
+
+vsP,ᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A A'}(tP : TmP Γ A)
+         {γc}{γ}{γcᵈ : ᵈc Γc γc}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A' γcᵈ α}
+         → ᵈtP (vsP {A' = A'} tP) (γᵈ , αᵈ) ≡ ᵈtP tP γᵈ
+vsP,ᵈ (varP x)   = refl
+vsP,ᵈ {A' = A'}(tP $P sP) {γc} {γ} {γcᵈ} {γᵈ} {α} {αᵈ} = vsP,ᵈ {!!} ⊗ vsP,ᵈ sP
+vsP,ᵈ (tP $̂P τ)  = happly (vsP,ᵈ tP) τ
+
+wkP,ᵈ : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ}(σP : SubP σ Γ Δ)
+         {γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A γcᵈ α}
+         → ᵈsP (wkP {A = A} σP) (γᵈ , αᵈ) ≡ ᵈsP σP γᵈ
+wkP,ᵈ εP = refl
+wkP,ᵈ (σP ,P x) = ,≡ (wkP,ᵈ σP) {!!}
+
+idPᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}
+        → ᵈsP idP γᵈ ≡ γᵈ
+idPᵈ {Γ = ∙} {γᵈ = lift tt} = refl
+idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ {!!} refl
+
+
+--TODO this should also all be obsolete
 data dLSub {ℓ' ℓ} : ∀{Γc Δc}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δc}(σP : LSub {ℓ} σ Γ Δ) → Set (suc (ℓ' ⊔ ℓ)) where
   dLε   : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc} → dLSub σ {Γ = Γ} Lε
   _,dP_ : ∀{Γc Δc σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP){A : TyP Δc}

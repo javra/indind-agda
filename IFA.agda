@@ -100,7 +100,7 @@ vsP,ᵃ {tP = tP $P sP} = vsP,ᵃ {tP = tP} ⊗ vsP,ᵃ {tP = sP}
 vsP,ᵃ {tP = tP $̂P τ}  = happly (vsP,ᵃ {tP = tP}) τ
 {-# REWRITE vsP,ᵃ #-}
 
-wkP,ᵃ : ∀{ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ : Sub Γc Δc}(σP : SubP σ Γ Δ){γc}{γ : (Γ ᵃC) γc}
+wkP,ᵃ : ∀{ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ}(σP : SubP σ Γ Δ){γc}{γ : (Γ ᵃC) γc}
          {α : _ᵃP {ℓ} A γc} → _ᵃsP {ℓ} (wkP {A = A} σP) (γ , α) ≡ (σP ᵃsP) γ 
 wkP,ᵃ εP         = refl
 wkP,ᵃ (σP ,P tP) = ,≡ (wkP,ᵃ σP) refl
