@@ -72,7 +72,7 @@ idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ {Γc = Γc} γc) refl
 {-# REWRITE π₂ᵃ #-}
 
 Twkᵃ : ∀{ℓ Γc}{B A γc T} → _ᵃP {ℓ} (Twk {Γc = Γc}{B = B} A) (γc , T) ≡ _ᵃP A γc
-Twkᵃ {A = El x} = refl
+Twkᵃ {A = El x}   = refl
 Twkᵃ {A = Π̂P T B} = Π≡ refl λ τ → Twkᵃ {A = B τ}
 Twkᵃ {A = a ⇒P A} = Π≡ refl λ α → Twkᵃ {A = A}
 {-# REWRITE Twkᵃ #-}
@@ -82,6 +82,20 @@ Twkᵃ {A = a ⇒P A} = Π≡ refl λ α → Twkᵃ {A = A}
 ▶Sᵃ {Γ = Γ ▶P B} = (λ A → A × (B ᵃP) _) & ▶Sᵃ {Γ = Γ}
 {-# REWRITE ▶Sᵃ #-}
 
+_ᵃtP : ∀{ℓ Γc}{Γ : Con Γc}{A}(tP : TmP Γ A){γc}(γ : _ᵃC {ℓ} Γ γc) → _ᵃP {ℓ} A γc
+(varP vvzP ᵃtP)     (γ , α) = α
+(varP (vvsP x) ᵃtP) (γ , α) = (varP x ᵃtP) γ
+((tP $P sP) ᵃtP)    γ       = (tP ᵃtP) γ ((sP ᵃtP) γ)
+((tP $̂P τ) ᵃtP)     γ       = (tP ᵃtP) γ τ
+
+_ᵃsP : ∀{ℓ}{Γc Δc}{σ : Sub Γc Δc}{Γ Δ}(σP : SubP σ Γ Δ){γc}
+         → _ᵃC {ℓ} Γ γc → _ᵃC {ℓ} Δ ((σ ᵃs) γc)
+(εP ᵃsP) γ         = lift tt
+((σP ,P tP) ᵃsP) γ = (σP ᵃsP) γ , (tP ᵃtP) γ
+
+
+
+-- LSub should have been made obsolete by the point substitutions
 data LSub {ℓ} : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set (suc ℓ) where
   Lε   : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc} → LSub σ Γ ∙
   _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {A : TyP Δc} → (α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc))

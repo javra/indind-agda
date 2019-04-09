@@ -30,7 +30,7 @@ data TyP (Γc : SCon) : Set₁ where
 
 data Con (Γc : SCon) : Set₁ where
   ∙    : Con Γc
-  _▶P_ : Con Γc → (B : TyP Γc) → Con Γc
+  _▶P_ : Con Γc → (A : TyP Γc) → Con Γc
 
 -- No terms in the empty context
 Tm∙c : ∀{B} → Tm ∙c B → ⊥
@@ -77,10 +77,17 @@ var vvz      [ δ , t ]t = t
 var (vvs a)  [ δ , t ]t = var a [ δ ]t
 (a $S α)     [ δ ]t     = (a [ δ ]t) $S α
 
-vs[,]t : ∀{Γ}{Δ}{A B}(s : Tm Δ A)(t : Tm Γ B)(δ : Sub Γ Δ) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
+vs[,]t : ∀{Γc Δc A B}(s : Tm Δc A)(t : Tm Γc B)(δ : Sub Γc Δc) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
 vs[,]t (var vvz) t δ     = refl
 vs[,]t (var (vvs x)) t δ = refl
 vs[,]t (s $S α) t δ      = happly2 _$S_ (vs[,]t s t δ) α
+{-# REWRITE vs[,]t #-}
+
+Twk[,]T : ∀{Γc Δc A B}{σ : Sub Γc Δc}{t} → Twk {B = B} A [ σ , t ]T ≡ (A [ σ ]T)
+Twk[,]T {A = El a}   = refl
+Twk[,]T {A = Π̂P T B} = Π̂P T & ext λ τ → Twk[,]T
+Twk[,]T {A = a ⇒P A} = _⇒P_ (a [ _ ]t) & Twk[,]T
+{-# REWRITE Twk[,]T #-}
 
 _∘_ : ∀{Γc}{Δc}{Ωc} → Sub Ωc Δc → Sub Γc Ωc → Sub Γc Δc
 ε        ∘ γc = ε
@@ -181,3 +188,37 @@ $S[] = refl
 
 ⇒P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{a : Tm Δ U}{A : TyP Δ} → (a ⇒P A) [ δ ]T ≡ (a [ δ ]t) ⇒P (A [ δ ]T)
 ⇒P[] = refl
+
+-- Point substitution calculus
+data VarP {Γc} : Con Γc → TyP Γc → Set₁ where
+  vvzP : ∀{Γ A} → VarP (Γ ▶P A) A
+  vvsP : ∀{Γ A B} → VarP Γ A → VarP (Γ ▶P B) A
+
+data TmP {Γc}(Γ : Con Γc) : TyP Γc → Set₁ where
+  varP : ∀{A} → VarP Γ A → TmP Γ A
+  _$P_ : ∀{a A} → TmP Γ (a ⇒P A) → TmP Γ (El a) → TmP Γ A
+  _$̂P_ : ∀{T A} → TmP Γ (Π̂P T A) → (τ : T) → TmP Γ (A τ)
+
+data SubP {Γc Δc}(σ : Sub Γc Δc) : ∀(Γ : Con Γc)(Δ : Con Δc) → Set₁ where
+  εP   : ∀{Γ} → SubP σ Γ ∙
+  _,P_ : ∀{Γ Δ A} → SubP σ Γ Δ → TmP Γ (A [ σ ]T) → SubP σ Γ (Δ ▶P A)
+
+vzP : ∀{Γc Γ A} → TmP {Γc} (Γ ▶P A) A
+vzP = varP vvzP
+
+vsP : ∀{Γc Γ A B} → TmP {Γc} Γ A → TmP (Γ ▶P B) A
+vsP (varP x) = varP (vvsP x)
+vsP (f $P t) = vsP f $P vsP t
+vsP (f $̂P τ) = vsP f $̂P τ
+
+wkP : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ A} → SubP σ Γ Δ → SubP σ (Γ ▶P A) Δ
+wkP εP        = εP
+wkP (σP ,P t) = wkP σP ,P vsP t
+
+idP : ∀{Γc}{Γ : Con Γc} → SubP id Γ Γ
+idP {Γ = ∙}      = εP
+idP {Γ = Γ ▶P A} = wkP idP ,P vzP
+
+_,S_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ}(σP : SubP σ Γ Δ){B}(t : Tm Γc B) → SubP (σ , t) Γ (Δ ▶S B)
+_,S_ {Δ = ∙}      σP         t = εP --Lε
+_,S_ {Δ = Δ ▶P A} (σP ,P tP) t = (σP ,S t) ,P tP
