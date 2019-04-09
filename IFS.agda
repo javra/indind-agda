@@ -28,6 +28,6 @@ open import IFD
 ˢC ∙        γcˢ γᵈ        = Lift _ ⊤
 ˢC (Γ ▶P A) γcˢ (γᵈ , αᵈ) = ˢC Γ γcˢ γᵈ × ˢP A γcˢ αᵈ
 
-ˢs : ∀{ℓ' ℓ Γc Δc} σ {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γc γcᵈ)
+ˢs : ∀{ℓ' ℓ Γc Δc} σ {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γcᵈ)
 ˢs ε       γcˢ = lift tt
 ˢs (σ , t) γcˢ = ˢs σ γcˢ , ˢt t γcˢ
