@@ -91,7 +91,7 @@ Twk[,]T {A = a ⇒P A} = _⇒P_ (a [ _ ]t) & Twk[,]T
 
 _∘_ : ∀{Γc}{Δc}{Ωc} → Sub Ωc Δc → Sub Γc Ωc → Sub Γc Δc
 ε        ∘ γc = ε
-(δc , x) ∘ γc = (δc ∘ γc) , (x [ γc ]t)
+(δc , t) ∘ γc = (δc ∘ γc) , (t [ γc ]t)
 
 wk : ∀{Γc}{Δc}{B} → Sub Γc Δc → Sub (Γc ▶c B) Δc
 wk ε        = ε
@@ -206,7 +206,7 @@ data SubP {Γc Δc}(σ : Sub Γc Δc) : ∀(Γ : Con Γc)(Δ : Con Δc) → Set�
 vzP : ∀{Γc Γ A} → TmP {Γc} (Γ ▶P A) A
 vzP = varP vvzP
 
-vsP : ∀{Γc Γ A B} → TmP {Γc} Γ A → TmP (Γ ▶P B) A
+vsP : ∀{Γc Γ A A'} → TmP {Γc} Γ A → TmP (Γ ▶P A') A
 vsP (varP x) = varP (vvsP x)
 vsP (f $P t) = vsP f $P vsP t
 vsP (f $̂P τ) = vsP f $̂P τ
@@ -219,6 +219,14 @@ idP : ∀{Γc}{Γ : Con Γc} → SubP id Γ Γ
 idP {Γ = ∙}      = εP
 idP {Γ = Γ ▶P A} = wkP idP ,P vzP
 
+{-∘P : ∀{Γc Δc Σc}{Γ : Con Γc}{Δ : Con Δc}{Σ : Con Σc}
+      {σ}(σP : SubP σ Δ Σ){δ}(δP : SubP δ Γ Δ) → SubP (σ ∘ δ) Γ Σ
+∘P εP δP = εP
+∘P {σ = σ} (σP ,P tP) δP = {!!} ,P {!!}-}
+
 _,S_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ}(σP : SubP σ Γ Δ){B}(t : Tm Γc B) → SubP (σ , t) Γ (Δ ▶S B)
-_,S_ {Δ = ∙}      σP         t = εP --Lε
+_,S_ {Δ = ∙}      σP         t = εP
 _,S_ {Δ = Δ ▶P A} (σP ,P tP) t = (σP ,S t) ,P tP
+
+
+--TODO complete calculus here
