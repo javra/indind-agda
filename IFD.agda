@@ -21,7 +21,7 @@ open import IFA
 ᵈP : ∀{ℓ' ℓ Γc}(A : TyP Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(α : (A ᵃP) γc) → Set (ℓ' ⊔ ℓ)
 ᵈP {ℓ'}{ℓ} (El a)   γcᵈ α = Lift (ℓ' ⊔ ℓ) (ᵈt a γcᵈ α)
 ᵈP {ℓ'}    (Π̂P T A) γcᵈ π = (τ : T) → ᵈP {ℓ'} (A τ) γcᵈ (π τ)
-ᵈP {ℓ'}    (a ⇒P A) γcᵈ π = {α : (a ᵃt) _} (αᵈ : ᵈt a γcᵈ α) → ᵈP A γcᵈ (π α)
+ᵈP {ℓ'}    (a ⇒P A) γcᵈ π = (α : (a ᵃt) _) (αᵈ : ᵈt a γcᵈ α) → ᵈP A γcᵈ (π α)
 
 ᵈC : ∀{ℓ' ℓ Γc}(Γ : Con Γc){γc : _ᵃc {ℓ} Γc}(γcᵈ : ᵈc {ℓ'} Γc γc)(γ : (Γ ᵃC) γc) → Set (suc ℓ' ⊔ ℓ)
 ᵈC ∙        γcᵈ γ       = Lift _ ⊤
@@ -38,7 +38,7 @@ open import IFA
 
 []Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
 []Tᵈ {A = El a}   α = Lift _ & happly ([]tᵈ {a = a}) α
-[]Tᵈ {A = t ⇒P A} π = Π≡i refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
+[]Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
 
 []tᵈ {a = var vvz}    {σ , t} = refl
 []tᵈ {a = var (vvs a)}{σ , t} = []tᵈ {a = var a}
@@ -82,7 +82,7 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
        → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈP {ℓ'}{ℓ} A γcᵈ ((tP ᵃtP) γ)
 ᵈtP (varP vvzP)     (γᵈ , αᵈ) = αᵈ
 ᵈtP (varP (vvsP x)) (γᵈ , αᵈ) = ᵈtP (varP x) γᵈ
-ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ (lower (ᵈtP sP γᵈ))
+ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ _ (lower (ᵈtP sP γᵈ))
 ᵈtP (tP $̂P τ)       γᵈ        = ᵈtP tP γᵈ τ
 
 ᵈsP : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{σ}(σP : SubP σ Γ Δ){γc}{γcᵈ : ᵈc Γc γc}{γ}
@@ -90,24 +90,26 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 ᵈsP εP         γᵈ = lift tt
 ᵈsP (σP ,P tP) γᵈ = ᵈsP σP γᵈ , ᵈtP tP γᵈ
 
-vsP,ᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A A'}(tP : TmP Γ A)
-         {γc}{γ}{γcᵈ : ᵈc Γc γc}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A' γcᵈ α}
+vsP,ᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A A'}
+         {γc}{γ}{α}{γcᵈ : ᵈc Γc γc}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{αᵈ : ᵈP A' γcᵈ α}(tP : TmP Γ A)
          → ᵈtP (vsP {A' = A'} tP) (γᵈ , αᵈ) ≡ ᵈtP tP γᵈ
 vsP,ᵈ (varP x)   = refl
-vsP,ᵈ {A' = A'}(tP $P sP) {γc} {γ} {γcᵈ} {γᵈ} {α} {αᵈ} = {!!}
+vsP,ᵈ (tP $P sP) = happly (vsP,ᵈ tP) _ ⊗ lower & vsP,ᵈ sP
 vsP,ᵈ (tP $̂P τ)  = happly (vsP,ᵈ tP) τ
+{-# REWRITE vsP,ᵈ #-}
 
 wkP,ᵈ : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ}(σP : SubP σ Γ Δ)
          {γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A γcᵈ α}
          → ᵈsP (wkP {A = A} σP) (γᵈ , αᵈ) ≡ ᵈsP σP γᵈ
-wkP,ᵈ εP = refl
-wkP,ᵈ (σP ,P x) = ,≡ (wkP,ᵈ σP) {!!}
+wkP,ᵈ εP        = refl
+wkP,ᵈ (σP ,P x) = ,≡ (wkP,ᵈ σP) refl
+{-# REWRITE wkP,ᵈ #-}
 
 idPᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}
         → ᵈsP idP γᵈ ≡ γᵈ
-idPᵈ {Γ = ∙} {γᵈ = lift tt} = refl
-idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ {!!} refl
-
+idPᵈ {Γ = ∙} {γᵈ = lift tt}      = refl
+idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ idPᵈ refl
+{-# REWRITE idPᵈ #-}
 
 --TODO this should also all be obsolete
 data dLSub {ℓ' ℓ} : ∀{Γc Δc}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δc}(σP : LSub {ℓ} σ Γ Δ) → Set (suc (ℓ' ⊔ ℓ)) where
