@@ -332,11 +332,11 @@ _[_]t {S} = _[_]tS
 _,tS_  : ∀{Γ Δ}(σ : Sub Γ Δ){A : TyS Δ} → TmS Γ (A [ σ ]TS) → Sub Γ (Δ ▶S A)
 σ ,tS t = record { ᴬ   = λ γ → σ.ᴬ γ , t.ᴬ γ ;
                    Ec  = σ.Ec S., t.E ;
-                   E   = λ γ → σ.E γ ,S t.E;
+                   E   = λ γ → σ.E γ ,SL t.E;
                    wc  = λ γ → σ.wc γ S., t.w γ ;
-                   w   = λ γ δ → σ.w γ δ ,S t.w γ ;
+                   w   = λ γ δ → σ.w γ δ ,SL t.w γ ;
                    Rc  = λ γ γᴬ → σ.Rc γ γᴬ S., t.R γ γᴬ ;
-                   R   = λ γ {γᴬ} δ → σ.R γ δ ,S t.R γ γᴬ ;
+                   R   = λ γ {γᴬ} δ → σ.R γ δ ,SL t.R γ γᴬ ;
                    sg  = λ γ δ → ,≡ (σ.sg γ δ) (coe≡ (t.sg γ δ)) }
   where
     module σ = Sub σ

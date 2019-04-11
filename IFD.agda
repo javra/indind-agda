@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --rewriting --allow-unsolved-meta #-}
 module IFD where
 
 open import Lib hiding (id; _∘_)
@@ -94,7 +94,7 @@ vsP,ᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A A'}(tP : TmP Γ A)
          {γc}{γ}{γcᵈ : ᵈc Γc γc}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A' γcᵈ α}
          → ᵈtP (vsP {A' = A'} tP) (γᵈ , αᵈ) ≡ ᵈtP tP γᵈ
 vsP,ᵈ (varP x)   = refl
-vsP,ᵈ {A' = A'}(tP $P sP) {γc} {γ} {γcᵈ} {γᵈ} {α} {αᵈ} = vsP,ᵈ {!!} ⊗ vsP,ᵈ sP
+vsP,ᵈ {A' = A'}(tP $P sP) {γc} {γ} {γcᵈ} {γᵈ} {α} {αᵈ} = {!!}
 vsP,ᵈ (tP $̂P τ)  = happly (vsP,ᵈ tP) τ
 
 wkP,ᵈ : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ}(σP : SubP σ Γ Δ)

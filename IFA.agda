@@ -121,8 +121,8 @@ idPᵃ {Γ = Γ ▶P A} (γ , α)   = ,≡ (idPᵃ {Γ = Γ} γ) refl
 -- TODO LSub should have been made obsolete by the point substitutions
 data LSub {ℓ} : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set (suc ℓ) where
   Lε   : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc} → LSub σ Γ ∙
-  _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {A : TyP Δc} → (α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc))
-            → LSub σ Γ (Δ ▶P A)
+  _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ}(σP : LSub {ℓ} σ Γ Δ){A}
+          (α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc)) → LSub σ Γ (Δ ▶P A)
 
 _,SL_ : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {B : TyS} → (b : Tm Γc B) → LSub {ℓ} (σ , b) Γ (Δ ▶S B)
 _,SL_ {Δ = ∙}      σP        b = Lε
