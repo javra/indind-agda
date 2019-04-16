@@ -6,6 +6,9 @@ open import Lib hiding (id; _∘_)
 
 infixl 3 _▶c_ _▶P_
 infixr 5 _$S_ _⇒P_
+infixl 7 _[_]T
+infixl 8 _[_]tP
+infixl 8 _[_]t
 
 data TyS : Set₁ where
   U  : TyS
@@ -71,7 +74,6 @@ _[_]C : ∀{Γc Δc} → Con Δc → Sub Γc Δc → Con Γc
 ∙        [ σ ]C = ∙
 (Γ ▶P A) [ σ ]C = (Γ [ σ ]C) ▶P (A [ σ ]T)
 
-
 vs[,]t : ∀{Γc Δc A B}(s : Tm Δc A)(t : Tm Γc B)(δ : Sub Γc Δc) → (vs s) [ δ , t ]t ≡ (s [ δ ]t)
 vs[,]t (var vvz) t δ     = refl
 vs[,]t (var (vvs x)) t δ = refl
@@ -122,17 +124,16 @@ id^ = refl
 πβ : ∀{Γ Δ B}{δ : Sub Γ (Δ ▶c B)} → (π₁ δ , π₂ δ) ≡ δ
 πβ {δ = δ , x} = refl
 
-[wk] : ∀{Γ Δ B B'}(δ : Sub Γ Δ) → (t : Tm Δ B) → t [ wk {B = B'} δ ]t ≡ vs (t [ δ ]t)
-[wk] ε       (var ())
-[wk] ε       (t $S α)       = happly2 _$S_ ([wk] ε t) _
-[wk] (δ , x) (var vvz)      = refl
-[wk] (δ , x) (var (vvs t))  = [wk] δ (var t)
-[wk] (δ , x) (t $S α)       = happly2 _$S_ ([wk] (δ , x) t) _
-{-# REWRITE [wk] #-}
+[wk]t : ∀{Γ Δ B B'}(δ : Sub Γ Δ) → (t : Tm Δ B) → t [ wk {B = B'} δ ]t ≡ vs (t [ δ ]t)
+[wk]t ε       (var ())
+[wk]t (δ , x) (var vvz)      = refl
+[wk]t (δ , x) (var (vvs t))  = [wk]t δ (var t)
+[wk]t δ       (t $S α)       = happly2 _$S_ ([wk]t δ t) _
+{-# REWRITE [wk]t #-}
 
 [id]t : ∀{Γ}{B} → (t : Tm Γ B) → t [ id ]t ≡ t
 [id]t (var vvz)     = refl
-[id]t (var (vvs t)) = [wk] id (var t) ◾ vs & [id]t (var t)
+[id]t (var (vvs t)) = vs & [id]t (var t)
 [id]t (t $S α)      = happly2 _$S_ ([id]t t) _
 {-# REWRITE [id]t #-}
 
@@ -223,5 +224,35 @@ idP {Γ = Γ ▶P A} = wkP idP ,P vzP
 _,S_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ}(σP : SubP σ Γ Δ){B}(t : Tm Γc B) → SubP (σ , t) Γ (Δ ▶S B)
 _,S_ {Δ = ∙}      σP                t = εP
 _,S_ {σ = σ}{Δ = Δ ▶P A} (σP ,P tP) t = (σP ,S t) ,P tP -- coe (TmP _ & [][]T A (σ , t) (wk id)) tP
+
+_[_]tP : ∀{Δc}{Δ : Con Δc}{A}(tP : TmP Δ A){Γc}{Γ : Con Γc}{σ}(σP : SubP σ Γ Δ) → TmP Γ (A [ σ ]T)
+varP vvzP     [ σP ,P tP ]tP = tP
+varP (vvsP v) [ σP ,P tP ]tP = varP v [ σP ]tP
+(tP $P sP)    [ σP ]tP       = (tP [ σP ]tP) $P (sP [ σP ]tP)
+(tP $̂P τ)     [ σP ]tP       = (tP [ σP ]tP) $̂P τ
+
+-- no point terms in the empty point context
+TmP∙ : ∀{Γc A} → TmP {Γc} ∙ A → ⊥
+TmP∙ (varP ())
+TmP∙ (tP $P sP) = TmP∙ tP
+TmP∙ (tP $̂P τ)  = TmP∙ tP
+
+[wkP]tP : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ A A'}(σP : SubP σ Γ Δ)(tP : TmP Δ A)
+            → tP [ wkP {A = A'} σP ]tP ≡ vsP (tP [ σP ]tP)
+[wkP]tP εP         tP              = ⊥-elim (TmP∙ tP)
+[wkP]tP (σP ,P tP) (varP vvzP)     = refl
+[wkP]tP (σP ,P tP) (varP (vvsP v)) = [wkP]tP σP (varP v)
+[wkP]tP (σP ,P _)  (tP $P sP)      = happly2 _$P_ ([wkP]tP _ tP) _
+                                     ◾ (_$P_ (vsP (tP [ _ ]tP))) & [wkP]tP _ sP
+[wkP]tP (σP ,P _)  (tP $̂P τ)       = happly2 _$̂P_ ([wkP]tP _ tP) τ
+{-# REWRITE [wkP]tP #-}
+
+[idP]tP : ∀{Γc}{Γ : Con Γc}{A}{tP : TmP Γ A} → tP [ idP ]tP ≡ tP
+[idP]tP {tP = varP vvzP}     = refl
+[idP]tP {tP = varP (vvsP v)} = vsP & [idP]tP {tP = varP v}
+[idP]tP {tP = tP $P sP}      = happly2 _$P_ ([idP]tP {tP = tP}) _
+                               ◾ _$P_ tP & [idP]tP
+[idP]tP {tP = tP $̂P τ}       = happly2 _$̂P_ [idP]tP τ
+{-# REWRITE [idP]tP #-}
 
 --TODO complete calculus here
