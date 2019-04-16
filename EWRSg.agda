@@ -101,17 +101,17 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
              R  = λ _ _ → S.∙ }
 
 _▶S_ : (Γ : Con) → TyS Γ → Con
-Γ ▶S A = record { ᴬ   = Σ Γ.ᴬ A.ᴬ ;
+Γ ▶S B = record { ᴬ   = Σ Γ.ᴬ B.ᴬ ;
                   Ec  = Γ.Ec S.▶c S.U ;
                   E   = Γ.E S.▶S S.U ;
-                  wc  = λ { {γc , T} γ → Γ.wc γ S.▶c A.w γ T };
-                  w   = λ { {γc , T} γ → Γ.w γ S.▶S A.w γ T } ;
-                  Rc  = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.Rc γ γᴬ S.▶c A.R T αᴬ } ;
-                  R   = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.R γ γᴬ S.▶S A.R T αᴬ } ;
-                  sg  = λ { (γc , α) γ (δc , ω) δ → Γ.sg γc γ δc δ , A.sg γ δ α ω } }
+                  wc  = λ { {γc , T} γ → Γ.wc γ S.▶c B.w γ T };
+                  w   = λ { {γc , T} γ → Γ.w γ S.▶S B.w γ T } ;
+                  Rc  = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.Rc γ γᴬ S.▶c B.R T αᴬ } ;
+                  R   = λ { {γc , T} γ (γᴬ , αᴬ) → Γ.R γ γᴬ S.▶S B.R T αᴬ } ;
+                  sg  = λ { (γc , α) γ (δc , ω) δ → Γ.sg γc γ δc δ , B.sg γ δ α ω } }
   where
     module Γ = Con Γ
-    module A = TyS A
+    module B = TyS B
 
 _▶P_ : (Γ : Con) → TyP Γ → Con
 Γ ▶P A = record { ᴬ   = Σ Γ.ᴬ A.ᴬ ;

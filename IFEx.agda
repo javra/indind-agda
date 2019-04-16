@@ -17,21 +17,31 @@ concᵃ' Ω (Γc ▶c B) (σ , t) = concᵃ' Ω Γc σ , conSᵃ' Ω t
 
 contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
            → (t ᵃt) (concᵃ' Ω Γc σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
-contᵃ' Ω            ε           t                   = ⊥-elim (Tm∙c t)
-contᵃ' Ω            (σ , s)     (var vvz)           = refl
-contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
-contᵃ' Ω {Γc ▶c B'} (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
+contᵃ' Ω ε           t                   = ⊥-elim (Tm∙c t)
+contᵃ' Ω (σ , s)     (var vvz)           = refl
+contᵃ' Ω (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
+contᵃ' Ω (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
+{-# REWRITE contᵃ' #-}
 
 conPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T))
            → (A ᵃP) (concᵃ' Ω Γc σ)
-conPᵃ' Ω Γ σ {El a}   tP = coe (contᵃ' Ω σ a ⁻¹) tP
+conPᵃ' Ω Γ σ {El a}   tP = tP
 conPᵃ' Ω Γ σ {Π̂P T B} tP = λ τ → conPᵃ' Ω Γ σ {B τ} (tP $̂P τ)
-conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P coe (contᵃ' Ω σ a) α)
+conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P α)
 
 conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(σP : SubP σ Ω Γ)
           → (Γ ᵃC) (concᵃ' Ω Γc σ)
 conᵃ' Ω ∙        σ εP        = lift tt
 conᵃ' Ω (Γ ▶P A) σ (σP ,P t) = conᵃ' Ω Γ σ σP , conPᵃ' Ω Γ σ {A} t
+
+contPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){A}(tP : TmP Γ A)
+            → (tP ᵃtP) (conᵃ' Ω Γ σ σP) ≡ conPᵃ' Ω Γ σ {A} (tP [ σP ]tP)
+contPᵃ' Ω ∙        εP         tP              = ⊥-elim (TmP∙ tP)
+contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP vvzP)     = refl
+contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP (vvsP v)) = contPᵃ' Ω Γ σP (varP v)
+contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $P tP₁)     = contPᵃ' Ω _ _ tP ⊗ contPᵃ' Ω _ _ tP₁
+contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' Ω _ _ tP) τ
+{-# REWRITE contPᵃ' #-}
 
 concᵃ : ∀{Γc}(Γ : Con Γc) → _ᵃc {suc zero} Γc
 concᵃ {Γc} Γ = concᵃ' Γ Γc id
@@ -42,7 +52,7 @@ conᵃ Γ = conᵃ' Γ Γ id idP
 elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
             {Γc}{Γ : Con Γc}{σ}(σP : SubP σ Ω Γ){B}(t : Tm Ωc B)
             → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {σ = σ} σP {U}      t = λ α → {!!} -- (coe (contᵃ' Ω id t) α)
+elimSᵃ' Ω ωᵈ {σ = σ} σP {U}      t = λ α → lower (ᵈtP {suc zero} α ωᵈ)
 elimSᵃ' Ω ωᵈ         σP {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ σP {B τ} (t $S τ)
 
 elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))

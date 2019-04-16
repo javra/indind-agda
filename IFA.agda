@@ -70,13 +70,13 @@ idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ {Γc = Γc} γc) refl
 π₂ᵃ : ∀{ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃt {ℓ} (π₂ σ) γc ≡ ₂ ((σ ᵃs) γc)
 π₂ᵃ {σ = σ , x} = refl
 {-# REWRITE π₂ᵃ #-}
-
+{-
 Twkᵃ : ∀{ℓ Γc}{B A γc T} → _ᵃP {ℓ} (Twk {Γc = Γc}{B = B} A) (γc , T) ≡ _ᵃP A γc
 Twkᵃ {A = El x}   = refl
 Twkᵃ {A = Π̂P T B} = Π≡ refl λ τ → Twkᵃ {A = B τ}
 Twkᵃ {A = a ⇒P A} = Π≡ refl λ α → Twkᵃ {A = A}
 {-# REWRITE Twkᵃ #-}
-
+-}
 ▶Sᵃ : ∀{ℓ Γc}{Γ : Con Γc}{B γc T} → _ᵃC {ℓ} (Γ ▶S B) (γc , T) ≡ _ᵃC Γ γc
 ▶Sᵃ {Γ = ∙} = refl
 ▶Sᵃ {Γ = Γ ▶P B} = (λ A → A × (B ᵃP) _) & ▶Sᵃ {Γ = Γ}
