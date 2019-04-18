@@ -50,28 +50,33 @@ conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
 conᵃ Γ = conᵃ' Γ Γ id idP
 
 elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-            {Γc}{Γ : Con Γc}{σ}(σP : SubP σ Ω Γ){B}(t : Tm Ωc B)
-            → ˢS B (ᵈt t ωcᵈ)
+            {Γc}{Γ : Con Γc}{σ}(σP : SubP σ Ω Γ){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
 elimSᵃ' Ω ωᵈ {σ = σ} σP {U}      t = λ α → lower (ᵈtP {suc zero} α ωᵈ)
 elimSᵃ' Ω ωᵈ         σP {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ σP {B τ} (t $S τ)
 
-elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-           {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ)
-             → ˢc Γc (ᵈs σ ωcᵈ)
-elimcᵃ' Ω ωᵈ {∙c} Γ σP = lift tt
-elimcᵃ' Ω ωᵈ {Γc ▶c B} Γ σP = elimcᵃ' Ω ωᵈ {Γc} {!!} {!!} , {!!} --elimSᵃ' Ω {!!} {!!}
-{-
-elimᵃ' : ∀{ℓ ℓ' Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ)
-  {γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ' {ℓ} Ω Γ σ σP))
-  → ˢC Γ (elimcᵃ' Ω Γ σP γᵈ) γᵈ
-elimᵃ' Ω ∙ εP γᵈ = lift tt
-elimᵃ' Ω (Γ ▶P A) (σP ,P tP) (γᵈ , αᵈ) = {!!} , {!!}
+elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω))
+           {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢc Γc (ᵈs σ ωcᵈ)
+elimᵃ' :  ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
+            {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ Γ σP) (ᵈsP σP ωᵈ)
 
-elimcᵃ : ∀{ℓ ℓ' Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ {ℓ} Γ)) → ˢc Γc γcᵈ
-elimcᵃ Γ γᵈ = elimcᵃ' Γ Γ idP γᵈ
+elimcᵃ' Ω ωᵈ Γ {ε}     σP = lift tt
+elimcᵃ' Ω ωᵈ Γ {σ , t} σP = elimcᵃ' Ω ωᵈ {!!} {σ} {!!} , elimSᵃ' Ω ωᵈ {σ = σ} {!!} t
 
-elimᵃ : ∀{ℓ ℓ'}{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC {ℓ'} Γ γcᵈ (conᵃ {ℓ} Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
-elimᵃ Γ γᵈ = elimᵃ' Γ Γ idP γᵈ
+elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
+           {Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){A}(tP : TmP Ω (A [ σ ]T))
+           → ˢP A (elimcᵃ' Ω ωᵈ Γ σP) (ᵈtP tP ωᵈ)
+elimPᵃ' Ω ωᵈ Γ σP {El a}   tP = {!!}
+elimPᵃ' Ω ωᵈ Γ σP {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ Γ σP {A τ} (tP $̂P τ)
+elimPᵃ' Ω ωᵈ Γ σP {a ⇒P A} tP = λ α → {!!}
+
+elimᵃ' Ω ωᵈ ∙ εP = lift tt
+elimᵃ' Ω ωᵈ (Γ ▶P A) (σP ,P tP) = {!!} , {!!}
+
+elimcᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢc Γc γcᵈ
+elimcᵃ Γ γᵈ = elimcᵃ' Γ γᵈ Γ idP
+
+elimᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
+elimᵃ Γ γᵈ = elimᵃ' Γ γᵈ Γ idP
 
 --some examples
 Γnat : Con (∙c ▶c U)
@@ -86,8 +91,8 @@ nzero = ₂ (conᵃ Γnat)
 nsucc : nat → nat
 nsucc = ₂ (₁ (conᵃ Γnat))
 
-nrec : ∀(P : nat → Set₁)(pz : P nzero)(ps : ∀ n → P n → P (nsucc n)) → ∀ n → P n
-nrec P pz ps n = {!!}
+nrec : ∀(P : nat → Set₁)(ps : ∀ n → P n → P (nsucc n))(pz : P nzero) → ∀ n → P n
+nrec P ps pz n = elimSᵃ' Γnat (lift tt , (λ m p → lift (ps m p)) , lift pz) idP vz n
 
 postulate N : Set
 postulate Nz  : N
@@ -104,4 +109,4 @@ vzero = ₂ (₁ (conᵃ (Γvec _)))
 
 vcons : ∀{A : Set}(a : A) n → vec A n → vec A (Ns n)
 vcons = ₂ (conᵃ (Γvec _))
--}
+

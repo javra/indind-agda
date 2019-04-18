@@ -146,7 +146,7 @@ id^ = refl
 idr : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → δ ∘ id ≡ δ
 idr ε       = refl
 idr (δ , x) = _,_ & idr δ ⊗ [id]t x
---{-# REWRITE idr #-}
+{-# REWRITE idr #-}
 
 [][]t : ∀{Γ Δ Ω B}(t : Tm Ω B)(δ : Sub Γ Δ)(γ : Sub Δ Ω) → t [ γ ]t [ δ ]t ≡ t [ γ ∘ δ ]t
 [][]t (t $S α)      δ ε       = happly2 _$S_ ([][]t t δ ε) _
@@ -254,5 +254,6 @@ TmP∙ (tP $̂P τ)  = TmP∙ tP
                                ◾ _$P_ tP & [idP]tP
 [idP]tP {tP = tP $̂P τ}       = happly2 _$̂P_ [idP]tP τ
 {-# REWRITE [idP]tP #-}
+
 
 --TODO complete calculus here
