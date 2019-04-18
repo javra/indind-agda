@@ -53,26 +53,24 @@ elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){B
 elimSᵃ' Ω ωᵈ {U}      t = λ α → lower (ᵈtP {suc zero} α ωᵈ)
 elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
 
-elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω))
-           {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢc Γc (ᵈs σ ωcᵈ)
-elimᵃ' :  ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-            {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ Γ σP) (ᵈsP σP ωᵈ)
-
-elimcᵃ' Ω ωᵈ Γ {ε}     σP = lift tt
-elimcᵃ' Ω ωᵈ Γ {σ , t} σP = elimcᵃ' Ω ωᵈ {!!} {σ} {!!} , elimSᵃ' Ω ωᵈ t
+elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
+elimcᵃ' Ω ωᵈ ε       = lift tt
+elimcᵃ' Ω ωᵈ (σ , t) = elimcᵃ' Ω ωᵈ σ , elimSᵃ' Ω ωᵈ t
 
 elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
            {Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){A}(tP : TmP Ω (A [ σ ]T))
-           → ˢP A (elimcᵃ' Ω ωᵈ Γ σP) (ᵈtP tP ωᵈ)
+           → ˢP A (elimcᵃ' Ω ωᵈ σ) (ᵈtP tP ωᵈ)
 elimPᵃ' Ω ωᵈ Γ σP {El a}   tP = {!!}
 elimPᵃ' Ω ωᵈ Γ σP {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ Γ σP {A τ} (tP $̂P τ)
 elimPᵃ' Ω ωᵈ Γ σP {a ⇒P A} tP = λ α → {!!}
 
+elimᵃ' :  ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
+            {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ σ) (ᵈsP σP ωᵈ)
 elimᵃ' Ω ωᵈ ∙ εP = lift tt
 elimᵃ' Ω ωᵈ (Γ ▶P A) (σP ,P tP) = {!!} , {!!}
 
 elimcᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢc Γc γcᵈ
-elimcᵃ Γ γᵈ = elimcᵃ' Γ γᵈ Γ idP
+elimcᵃ Γ γᵈ = elimcᵃ' Γ γᵈ id
 
 elimᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
 elimᵃ Γ γᵈ = elimᵃ' Γ γᵈ Γ idP
