@@ -49,10 +49,9 @@ concᵃ {Γc} Γ = concᵃ' Γ Γc id
 conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
 conᵃ Γ = conᵃ' Γ Γ id idP
 
-elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-            {Γc}{Γ : Con Γc}{σ}(σP : SubP σ Ω Γ){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {σ = σ} σP {U}      t = λ α → lower (ᵈtP {suc zero} α ωᵈ)
-elimSᵃ' Ω ωᵈ         σP {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ σP {B τ} (t $S τ)
+elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
+elimSᵃ' Ω ωᵈ {U}      t = λ α → lower (ᵈtP {suc zero} α ωᵈ)
+elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
 
 elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω))
            {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢc Γc (ᵈs σ ωcᵈ)
@@ -60,7 +59,7 @@ elimᵃ' :  ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
             {Γc : SCon}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ Γ σP) (ᵈsP σP ωᵈ)
 
 elimcᵃ' Ω ωᵈ Γ {ε}     σP = lift tt
-elimcᵃ' Ω ωᵈ Γ {σ , t} σP = elimcᵃ' Ω ωᵈ {!!} {σ} {!!} , elimSᵃ' Ω ωᵈ {σ = σ} {!!} t
+elimcᵃ' Ω ωᵈ Γ {σ , t} σP = elimcᵃ' Ω ωᵈ {!!} {σ} {!!} , elimSᵃ' Ω ωᵈ t
 
 elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
            {Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){A}(tP : TmP Ω (A [ σ ]T))
@@ -92,7 +91,27 @@ nsucc : nat → nat
 nsucc = ₂ (₁ (conᵃ Γnat))
 
 nrec : ∀(P : nat → Set₁)(ps : ∀ n → P n → P (nsucc n))(pz : P nzero) → ∀ n → P n
-nrec P ps pz n = elimSᵃ' Γnat (lift tt , (λ m p → lift (ps m p)) , lift pz) idP vz n
+nrec P ps pz = elimSᵃ' Γnat (_ , (λ m p → lift (ps m p)) , lift pz) vz
+
+Γuu : Con (∙c ▶c U ▶c U)
+Γuu = ∙ ▶P El (vs vz) ▶P El vz
+
+uu1 : Set₁
+uu1 = ₂ (₁ (concᵃ Γuu))
+
+uu2 : Set₁
+uu2 = ₂ (concᵃ Γuu)
+
+st1 : uu1
+st1 = ₂ (₁ (conᵃ Γuu))
+
+st2 : uu2
+st2 = ₂ (conᵃ Γuu)
+
+uurec : ∀(P : uu1 → Set₁)(Q : uu2 → Set₁)(p : P st1)(q : Q st2) →
+         ˢc (∙c ▶c U ▶c U) (_ , P , Q)
+uurec P Q p q = _ , elimSᵃ' Γuu {_ , P , Q} (_ , lift p , lift q) (vs vz)
+                  , elimSᵃ' Γuu {_ , P , Q} (_ , lift p , lift q) vz
 
 postulate N : Set
 postulate Nz  : N
@@ -109,4 +128,3 @@ vzero = ₂ (₁ (conᵃ (Γvec _)))
 
 vcons : ∀{A : Set}(a : A) n → vec A n → vec A (Ns n)
 vcons = ₂ (conᵃ (Γvec _))
-
