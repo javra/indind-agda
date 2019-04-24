@@ -31,20 +31,19 @@ open import IFA
 ᵈs ε       γcᵈ = lift tt
 ᵈs (σ , t) γcᵈ = ᵈs σ γcᵈ , ᵈt t γcᵈ
 
+[]tᵈ : ∀{ℓ' ℓ Γc Δc A}(a : Tm Δc A){σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
+         → ᵈt (a [ σ ]t) γcᵈ ≡ ᵈt a (ᵈs σ γcᵈ)
+[]tᵈ (var vvz)     {σ , t} = refl
+[]tᵈ (var (vvs a)) {σ , t} = []tᵈ (var a)
+[]tᵈ (a $S α)      {σ}     = happly ([]tᵈ a {σ = σ}) α
+--{-# REWRITE []tᵈ #-}
+
 []Tᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(α : _)
          → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γcᵈ) α
-[]tᵈ : ∀{ℓ' ℓ Γc Δc A}{a : Tm Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
-         → ᵈt (a [ σ ]t) γcᵈ ≡ ᵈt a (ᵈs σ γcᵈ)
-
 []Tᵈ {A = Π̂P T x} π = Π≡ refl λ α → []Tᵈ {A = x α} (π α)
-[]Tᵈ {A = El a}   α = Lift _ & happly ([]tᵈ {a = a}) α
-[]Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ (happly ([]tᵈ {a = t}) α) λ τ → []Tᵈ {A = A} (π α)
-
-[]tᵈ {a = var vvz}    {σ , t} = refl
-[]tᵈ {a = var (vvs a)}{σ , t} = []tᵈ {a = var a}
-[]tᵈ {a = a $S α}     {σ}     = happly ([]tᵈ {a = a} {σ = σ}) α
+[]Tᵈ {A = El a}   α = Lift _ & happly ([]tᵈ a) α
+[]Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ (happly ([]tᵈ t) α) λ τ → []Tᵈ {A = A} (π α)
 {-# REWRITE []Tᵈ #-}
-{-# REWRITE []tᵈ #-}
 
 vs,ᵈ : ∀{ℓ' ℓ Γc B B'}{x : Tm Γc B}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{α}{αᵈ : ᵈS {ℓ'}{ℓ} B' α}
          → ᵈt (vs x) (γcᵈ , αᵈ) ≡ ᵈt x γcᵈ
@@ -66,7 +65,7 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 ∘ᵈ : ∀{ℓ' ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
        → ᵈs (σ ∘ δ) γcᵈ ≡ ᵈs σ (ᵈs δ γcᵈ)
 ∘ᵈ {σ = ε}        = refl
-∘ᵈ {σ = σ , x}{δ} = ,≡ (∘ᵈ {σ = σ}{δ = δ}) refl
+∘ᵈ {σ = σ , t}{δ} = ,≡ (∘ᵈ {σ = σ}{δ = δ}) ([]tᵈ t {δ})
 {-# REWRITE ∘ᵈ #-}
 
 π₁ᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈs (π₁ σ) γcᵈ ≡ ₁ (ᵈs σ γcᵈ)
