@@ -55,12 +55,12 @@ wk,ᵃ {σ = σ , x} = ,≡ wk,ᵃ refl
 
 idᵃ : ∀{ℓ Γc} → (γc : _ᵃc {ℓ} Γc) → (id ᵃs) γc ≡ γc
 idᵃ {ℓ}{∙c}      γc       = refl
-idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ {Γc = Γc} γc) refl
+idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ γc) refl
 {-# REWRITE idᵃ #-}
 
 ∘ᵃ : ∀{ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → _ᵃs {ℓ} (σ ∘ δ) γc ≡ (σ ᵃs) ((δ ᵃs) γc)
 ∘ᵃ {σ = ε}                      = refl
-∘ᵃ {σ = σ , x} {δ = δ}{γc = γc} = happly2 _,_ (∘ᵃ {σ = σ} {δ = δ}) ((x ᵃt) ((δ ᵃs) γc))
+∘ᵃ {σ = σ , t} {δ = δ}{γc = γc} = happly2 _,_ (∘ᵃ {σ = σ} {δ = δ}) ((t ᵃt) ((δ ᵃs) γc))
 {-# REWRITE ∘ᵃ #-}
 
 π₁ᵃ : ∀{ℓ Γc Δc A}{σ : Sub Γc (Δc ▶c A)}{γc} → _ᵃs {ℓ} (π₁ σ) γc ≡ ₁ ((σ ᵃs) γc)
@@ -119,10 +119,9 @@ idPᵃ {Γ = Γ ▶P A} (γ , α)   = ,≡ (idPᵃ {Γ = Γ} γ) refl
 --TODO define ∘Pᵃ, π₁Pᵃ, π₂Pᵃ
 
 -- TODO LSub should have been made obsolete by the point substitutions
-data LSub {ℓ} : ∀{Γc Δc} → (σ : Sub Γc Δc) → (Γ : Con Γc) → (Δ : Con Δc) → Set (suc ℓ) where
-  Lε   : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ : Con Γc} → LSub σ Γ ∙
-  _,P_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ}(σP : LSub {ℓ} σ Γ Δ){A}
-          (α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc)) → LSub σ Γ (Δ ▶P A)
+data LSub {ℓ Γc Δc}(σ : Sub Γc Δc)(Γ : Con Γc) : Con Δc → Set (suc ℓ) where
+  Lε   : LSub σ Γ ∙
+  _,P_ : ∀{Δ A} → LSub {ℓ} σ Γ Δ → (∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc)) → LSub σ Γ (Δ ▶P A)
 
 _,SL_ : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Γ}{Δ} → (σP : LSub {ℓ} σ Γ Δ) → {B : TyS} → (b : Tm Γc B) → LSub {ℓ} (σ , b) Γ (Δ ▶S B)
 _,SL_ {Δ = ∙}      σP        b = Lε

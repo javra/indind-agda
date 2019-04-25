@@ -196,7 +196,7 @@ data TmP {Γc}(Γ : Con Γc) : TyP Γc → Set₁ where
   _$P_ : ∀{a A} → TmP Γ (a ⇒P A) → TmP Γ (El a) → TmP Γ A
   _$̂P_ : ∀{T A} → TmP Γ (Π̂P T A) → (τ : T) → TmP Γ (A τ)
 
-data SubP {Γc Δc}(σ : Sub Γc Δc) : ∀(Γ : Con Γc)(Δ : Con Δc) → Set₁ where
+data SubP {Γc Δc}(σ : Sub Γc Δc) : Con Γc → Con Δc → Set₁ where
   εP   : ∀{Γ} → SubP σ Γ ∙
   _,P_ : ∀{Γ Δ A} → SubP σ Γ Δ → TmP Γ (A [ σ ]T) → SubP σ Γ (Δ ▶P A)
 

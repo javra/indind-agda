@@ -21,37 +21,39 @@ contᵃ' Ω ε           t                   = ⊥-elim (Tm∙c t)
 contᵃ' Ω (σ , s)     (var vvz)           = refl
 contᵃ' Ω (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
 contᵃ' Ω (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
-{-# REWRITE contᵃ' #-}
+--{-# REWRITE contᵃ' #
 
-conPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T))
-           → (A ᵃP) (concᵃ' Ω Γc σ)
-conPᵃ' Ω Γ σ {El a}   tP = tP
-conPᵃ' Ω Γ σ {Π̂P T B} tP = λ τ → conPᵃ' Ω Γ σ {B τ} (tP $̂P τ)
-conPᵃ' Ω Γ σ {a ⇒P A} tP = λ α → conPᵃ' Ω Γ σ {A} (tP $P α)
+conPᵃ' : ∀{Ωc}(Ω : Con Ωc){A}(tP : TmP Ω A) → (A ᵃP) (concᵃ' Ω Ωc id)
+conPᵃ' Ω {El a} tP = coe (contᵃ' Ω id a ⁻¹) tP
+conPᵃ' Ω {Π̂P T A} tP = λ τ → conPᵃ' Ω {A τ} (tP $̂P τ)
+conPᵃ' Ω {a ⇒P A} tP = λ α → conPᵃ' Ω {A} (tP $P coe (contᵃ' Ω id a) α)
 
-conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc)(σ : Sub Ωc Γc)(σP : SubP σ Ω Γ)
-          → (Γ ᵃC) (concᵃ' Ω Γc σ)
-conᵃ' Ω ∙        σ εP        = lift tt
-conᵃ' Ω (Γ ▶P A) σ (σP ,P t) = conᵃ' Ω Γ σ σP , conPᵃ' Ω Γ σ {A} t
+conᵃ' : ∀{Ωc}(Ω Γ : Con Ωc)(σP : SubP id Ω Γ) → (Γ ᵃC) (concᵃ' Ω Ωc id)
+conᵃ' Ω ∙        εP        = lift tt
+conᵃ' Ω (Γ ▶P A) (σP ,P t) = conᵃ' Ω Γ σP , conPᵃ' Ω {A} t
 
-contPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ){A}(tP : TmP Γ A)
-            → (tP ᵃtP) (conᵃ' Ω Γ σ σP) ≡ conPᵃ' Ω Γ σ {A} (tP [ σP ]tP)
+contPᵃ' : ∀{Ωc}(Ω Γ : Con Ωc)(σP : SubP id Ω Γ){A}(tP : TmP Γ A)
+            → (tP ᵃtP) (conᵃ' Ω Γ σP) ≡ conPᵃ' Ω {A} (tP [ σP ]tP)
 contPᵃ' Ω ∙        εP         tP              = ⊥-elim (TmP∙ tP)
 contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP vvzP)     = refl
 contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP (vvsP v)) = contPᵃ' Ω Γ σP (varP v)
-contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $P tP₁)     = contPᵃ' Ω _ _ tP ⊗ contPᵃ' Ω _ _ tP₁
+contPᵃ' Ω (Γ ▶P A) (σP ,P sP)  {A'} (_$P_ {a} tP tP₁)     = contPᵃ' Ω (Γ ▶P A) (σP ,P sP) tP
+                                                  ⊗ contPᵃ' Ω (Γ ▶P A) (σP ,P sP) tP₁
+                                                ◾ conPᵃ' Ω {A'}
+                                                  & coecoe⁻¹' _ _
 contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' Ω _ _ tP) τ
 
 concᵃ : ∀{Γc}(Γ : Con Γc) → _ᵃc {suc zero} Γc
 concᵃ {Γc} Γ = concᵃ' Γ Γc id
 
 conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
-conᵃ Γ = conᵃ' Γ Γ id idP
-
+conᵃ Γ = conᵃ' Γ Γ idP
+{-
 elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {U}      t = λ α → coe (ᵈt t _ & contPᵃ' Ω Ω idP α) (lower (ᵈtP {suc zero} α ωᵈ))
+elimSᵃ' Ω ωᵈ {U}      t = λ α → coe (ᵈt t _ & contPᵃ' Ω Ω idP {!!})
+                                 (lower (ᵈtP {suc zero} (coe (contᵃ' Ω id t) α) ωᵈ))
 elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
-
+{-
 elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
 elimcᵃ' Ω ωᵈ ε       = lift tt
 elimcᵃ' Ω ωᵈ (σ , t) = elimcᵃ' Ω ωᵈ σ , elimSᵃ' Ω ωᵈ t
@@ -131,3 +133,5 @@ vzero = ₂ (₁ (conᵃ (Γvec _)))
 
 vcons : ∀{A : Set}(a : A) n → vec A n → vec A (Ns n)
 vcons = ₂ (conᵃ (Γvec _))
+-}
+-}

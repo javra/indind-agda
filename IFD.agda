@@ -116,7 +116,7 @@ data dLSub {ℓ' ℓ} : ∀{Γc Δc}(σ : Sub Γc Δc){Γ : Con Γc}{Δ : Con Δ
   _,dP_ : ∀{Γc Δc σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP){A : TyP Δc}
           → {α : ∀{γc} → _ᵃC {ℓ} Γ γc → (A ᵃP) ((σ ᵃs) γc)}
           → (αᵈ : ∀{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γ : _ᵃC {ℓ} Γ γc) → ᵈC Γ γcᵈ γ → ᵈP A {(σ ᵃs) γc} (ᵈs σ γcᵈ) (α γ))
-          → dLSub σ (_,P_ σP {A} α)
+          → dLSub σ (_,P_ σP α)
 
 ᵈsL : ∀{ℓ' ℓ Γc Δc}{σ}{Γ : Con Γc}{Δ : Con Δc}{σP : LSub σ Γ Δ}(σdP : dLSub {ℓ'}{ℓ} σ σP)
        {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(γ : (Γ ᵃC) γc)
