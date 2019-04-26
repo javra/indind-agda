@@ -196,9 +196,9 @@ data TmP {Γc}(Γ : Con Γc) : TyP Γc → Set₁ where
   _$P_ : ∀{a A} → TmP Γ (a ⇒P A) → TmP Γ (El a) → TmP Γ A
   _$̂P_ : ∀{T A} → TmP Γ (Π̂P T A) → (τ : T) → TmP Γ (A τ)
 
-data SubP {Γc Δc}(σ : Sub Γc Δc) : Con Γc → Con Δc → Set₁ where
-  εP   : ∀{Γ} → SubP σ Γ ∙
-  _,P_ : ∀{Γ Δ A} → SubP σ Γ Δ → TmP Γ (A [ σ ]T) → SubP σ Γ (Δ ▶P A)
+data SubP {Γc} : Con Γc → Con Γc → Set₁ where
+  εP   : ∀{Γ} → SubP Γ ∙
+  _,P_ : ∀{Γ Δ A} → SubP Γ Δ → TmP Γ A → SubP Γ (Δ ▶P A)
 
 vzP : ∀{Γc Γ A} → TmP {Γc} (Γ ▶P A) A
 vzP = varP vvzP
@@ -208,11 +208,11 @@ vsP (varP x) = varP (vvsP x)
 vsP (f $P t) = vsP f $P vsP t
 vsP (f $̂P τ) = vsP f $̂P τ
 
-wkP : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ A} → SubP σ Γ Δ → SubP σ (Γ ▶P A) Δ
+wkP : ∀{Γc}{Γ Δ : Con Γc}{A} → SubP Γ Δ → SubP (Γ ▶P A) Δ
 wkP εP        = εP
 wkP (σP ,P t) = wkP σP ,P vsP t
 
-idP : ∀{Γc}{Γ : Con Γc} → SubP id Γ Γ
+idP : ∀{Γc}{Γ : Con Γc} → SubP Γ Γ
 idP {Γ = ∙}      = εP
 idP {Γ = Γ ▶P A} = wkP idP ,P vzP
 
@@ -221,11 +221,12 @@ idP {Γ = Γ ▶P A} = wkP idP ,P vzP
 ∘P εP δP = εP
 ∘P {σ = σ} (σP ,P tP) δP = {!!} ,P {!!}-}
 
-_,S_ : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ}(σP : SubP σ Γ Δ){B}(t : Tm Γc B) → SubP (σ , t) Γ (Δ ▶S B)
+{-_,S_ : ∀{Γc}{Γ Δ : Con Γc}(σP : SubP Γ Δ){B}(t : Tm Γc B) → SubP  Γ (Δ ▶S B)
 _,S_ {Δ = ∙}      σP                t = εP
-_,S_ {σ = σ}{Δ = Δ ▶P A} (σP ,P tP) t = (σP ,S t) ,P tP -- coe (TmP _ & [][]T A (σ , t) (wk id)) tP
+_,S_ {Δ = Δ ▶P A} (σP ,P tP) t = (σP ,S t) ,P tP -- coe (TmP _ & [][]T A (σ , t) (wk id)) tP
+-}
 
-_[_]tP : ∀{Δc}{Δ : Con Δc}{A}(tP : TmP Δ A){Γc}{Γ : Con Γc}{σ}(σP : SubP σ Γ Δ) → TmP Γ (A [ σ ]T)
+_[_]tP : ∀{Γc}{Γ Δ : Con Γc}{A}(tP : TmP Δ A)(σP : SubP Γ Δ) → TmP Γ A
 varP vvzP     [ σP ,P tP ]tP = tP
 varP (vvsP v) [ σP ,P tP ]tP = varP v [ σP ]tP
 (tP $P sP)    [ σP ]tP       = (tP [ σP ]tP) $P (sP [ σP ]tP)
@@ -237,7 +238,7 @@ TmP∙ (varP ())
 TmP∙ (tP $P sP) = TmP∙ tP
 TmP∙ (tP $̂P τ)  = TmP∙ tP
 
-[wkP]tP : ∀{Γc Δc}{σ : Sub Γc Δc}{Γ Δ A A'}(σP : SubP σ Γ Δ)(tP : TmP Δ A)
+[wkP]tP : ∀{Γc}{Γ Δ : Con Γc}{A A'}(σP : SubP Γ Δ)(tP : TmP Δ A)
             → tP [ wkP {A = A'} σP ]tP ≡ vsP (tP [ σP ]tP)
 [wkP]tP εP         tP              = ⊥-elim (TmP∙ tP)
 [wkP]tP (σP ,P tP) (varP vvzP)     = refl

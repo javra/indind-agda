@@ -36,7 +36,7 @@ open import IFA
 []tᵈ (var vvz)     {σ , t} = refl
 []tᵈ (var (vvs a)) {σ , t} = []tᵈ (var a)
 []tᵈ (a $S α)      {σ}     = happly ([]tᵈ a {σ = σ}) α
---{-# REWRITE []tᵈ #-}
+{-# REWRITE []tᵈ #-}
 
 []Tᵈ : ∀{ℓ' ℓ Γc Δc A}{σ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(α : _)
          → ᵈP (A [ σ ]T) γcᵈ α ≡ ᵈP A (ᵈs σ γcᵈ) α
@@ -84,10 +84,21 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
 ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ _ (lower (ᵈtP sP γᵈ))
 ᵈtP (tP $̂P τ)       γᵈ        = ᵈtP tP γᵈ τ
 
-ᵈsP : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{σ}(σP : SubP σ Γ Δ){γc}{γcᵈ : ᵈc Γc γc}{γ}
-       → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈC {ℓ'}{ℓ} Δ (ᵈs σ γcᵈ) ((σP ᵃsP) γ)
+ᵈsP : ∀{ℓ' ℓ Γc}{Γ Δ : Con Γc}(σP : SubP Γ Δ){γc}{γcᵈ : ᵈc Γc γc}{γ}
+       → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈC {ℓ'}{ℓ} Δ γcᵈ ((σP ᵃsP) γ)
 ᵈsP εP         γᵈ = lift tt
 ᵈsP (σP ,P tP) γᵈ = ᵈsP σP γᵈ , ᵈtP tP γᵈ
+
+[]ᵈtP : ∀{ℓ' ℓ Γc}{Γ Δ : Con Γc}{σP : SubP Γ Δ}
+         {A}{tP : TmP Δ A}{γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}
+        → ᵈtP  (tP [ σP ]tP) γᵈ ≡ ᵈtP tP (ᵈsP σP γᵈ)
+[]ᵈtP {σP = εP}       {tP = varP ()}
+[]ᵈtP {σP = σP ,P sP} {tP = varP vvzP} = refl
+[]ᵈtP {σP = σP ,P sP} {tP = varP (vvsP x)} = []ᵈtP {σP = σP} {tP = varP x}
+[]ᵈtP {σP = σP} {tP = tP $P sP} {γ = γ} = happly ([]ᵈtP {tP = tP}) ((sP ᵃtP) ((σP ᵃsP) γ))
+                                          ⊗ lower & []ᵈtP {tP = sP}
+[]ᵈtP {σP = σP} {tP = tP $̂P τ} = happly ([]ᵈtP {σP = σP} {tP = tP}) τ
+{-# REWRITE []ᵈtP #-}
 
 vsP,ᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{A A'}
          {γc}{γ}{α}{γcᵈ : ᵈc Γc γc}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{αᵈ : ᵈP A' γcᵈ α}(tP : TmP Γ A)
@@ -97,7 +108,7 @@ vsP,ᵈ (tP $P sP) = happly (vsP,ᵈ tP) _ ⊗ lower & vsP,ᵈ sP
 vsP,ᵈ (tP $̂P τ)  = happly (vsP,ᵈ tP) τ
 {-# REWRITE vsP,ᵈ #-}
 
-wkP,ᵈ : ∀{ℓ' ℓ Γc Δc}{Γ : Con Γc}{Δ : Con Δc}{A}{σ}(σP : SubP σ Γ Δ)
+wkP,ᵈ : ∀{ℓ' ℓ Γc}{Γ Δ : Con Γc}{A}(σP : SubP Γ Δ)
          {γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}{α}{αᵈ : ᵈP A γcᵈ α}
          → ᵈsP (wkP {A = A} σP) (γᵈ , αᵈ) ≡ ᵈsP σP γᵈ
 wkP,ᵈ εP        = refl
