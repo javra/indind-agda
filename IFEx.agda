@@ -57,32 +57,32 @@ elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
 elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
 elimcᵃ' Ω ωᵈ ε       = lift tt
 elimcᵃ' Ω ωᵈ (σ , t) = elimcᵃ' Ω ωᵈ σ , elimSᵃ' Ω ωᵈ t
-{-
+
 elimtᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
-          → elimSᵃ' Ω ωᵈ (t [ σ ]t) ≡ coe ((ˢS B) & ([]tᵈ t {σ} ⁻¹)) (ˢt t (elimcᵃ' Ω ωᵈ σ))
+          → elimSᵃ' Ω ωᵈ (t [ σ ]t) ≡ ˢt t (elimcᵃ' Ω ωᵈ σ)
 elimtᵃ' Ω ωᵈ ε (var ())
 elimtᵃ' Ω ωᵈ (σ , t) (var vvz)     = refl
 elimtᵃ' Ω ωᵈ (σ , t) (var (vvs v)) = elimtᵃ' Ω ωᵈ σ (var v)
-elimtᵃ' Ω ωᵈ σ (_$S_ {T} {B} t α) = {!!}
+elimtᵃ' Ω ωᵈ σ (t $S τ)  =  happly (elimtᵃ' Ω ωᵈ σ t) τ
 
 elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-           {Γc}(σ : Sub Ωc Γc){A}(tP : TmP Ω (A [ σ ]T))
-           → ˢP A (elimcᵃ' Ω ωᵈ σ) (ᵈtP tP ωᵈ)
-elimPᵃ' Ω ωᵈ σ {El a}   tP = {!!} --elimtᵃ' Ω ωᵈ σ a
-elimPᵃ' Ω ωᵈ σ {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ σ {A τ} (tP $̂P τ)
-elimPᵃ' Ω ωᵈ σ {a ⇒P A} tP = λ α → {!!}
+           {A}(tP : TmP Ω A)
+           → ˢP A (elimcᵃ' Ω ωᵈ id) (ᵈtP tP ωᵈ)
+elimPᵃ' Ω ωᵈ {El a}   tP = {!!} --elimtᵃ' Ω ωᵈ σ a
+elimPᵃ' Ω ωᵈ {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ {A τ} (tP $̂P τ)
+elimPᵃ' Ω ωᵈ {a ⇒P A} tP = λ α → {!!}
 
-elimᵃ' :  ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-           {Γc}(Γ : Con Γc){σ}(σP : SubP σ Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ σ) (ᵈsP σP ωᵈ)
-elimᵃ' Ω ωᵈ ∙        εP         = lift tt
-elimᵃ' Ω ωᵈ (Γ ▶P A) (σP ,P tP) = elimᵃ' Ω ωᵈ Γ σP , elimPᵃ' Ω ωᵈ _ tP
+elimᵃ' :  ∀{Ωc}(Ω Γ : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
+           (σP : SubP Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ id) (ᵈsP σP ωᵈ)
+elimᵃ' Ω ∙        ωᵈ εP         = lift tt
+elimᵃ' Ω (Γ ▶P A) ωᵈ (σP ,P tP) = elimᵃ' Ω Γ ωᵈ σP , elimPᵃ' Ω ωᵈ tP
 
 elimcᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢc Γc γcᵈ
 elimcᵃ Γ γᵈ = elimcᵃ' Γ γᵈ id
 
 elimᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
-elimᵃ Γ γᵈ = elimᵃ' Γ γᵈ Γ idP
-
+elimᵃ Γ γᵈ = elimᵃ' Γ Γ γᵈ idP
+{-
 --some examples
 Γnat : Con (∙c ▶c U)
 Γnat = ∙ ▶P vz ⇒P El vz ▶P El vz

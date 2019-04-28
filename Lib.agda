@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
 module Lib where
 
@@ -243,6 +243,11 @@ coe≡ : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : 
   → a ≡ coe q b
   → coe p a ≡ b
 coe≡ {p = refl}{q = refl} r = r
+
+coe& : ∀{ℓ}{X : Set ℓ}{A B : X → Set ℓ}(f : (x : X) → A x)
+        (p : ((x : X) → A x) ≡ ((x : X) → B x))(x : X)(q : A x ≡ B x)
+       → (coe p f) x ≡ coe q (f x)
+coe& f p x q = {!!}
 
 aptot : ∀{ℓ}{A : Set ℓ}{B : A → Set}(f : (x : A) → B x){a₀ a₁ : A}(a₂ : a₀ ≡ a₁)
     → _≡_ {A = Σ Set λ X → X} (B a₀ , f a₀) (B a₁ , f a₁)
