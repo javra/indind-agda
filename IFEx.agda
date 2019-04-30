@@ -11,46 +11,46 @@ conSᵃ' : ∀{Ωc}(Ω : Con Ωc){B}(t : Tm Ωc B) → _ᵃS {suc zero} B
 conSᵃ' Ω {U}      t     = TmP Ω (El t)
 conSᵃ' Ω {Π̂S T B} t     = λ τ → conSᵃ' Ω (t $S τ)
 
-concᵃ' : ∀{Ωc}(Ω : Con Ωc)(Γc : SCon)(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
-concᵃ' Ω ∙c        ε       = lift tt
-concᵃ' Ω (Γc ▶c B) (σ , t) = concᵃ' Ω Γc σ , conSᵃ' Ω t
+concᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
+concᵃ' Ω ε       = lift tt
+concᵃ' Ω (σ , t) = concᵃ' Ω σ , conSᵃ' Ω t
 
 contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
-           → (t ᵃt) (concᵃ' Ω Γc σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
-contᵃ' Ω ε           t                   = ⊥-elim (Tm∙c t)
-contᵃ' Ω (σ , s)     (var vvz)           = refl
-contᵃ' Ω (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
-contᵃ' Ω (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
+           → (t ᵃt) (concᵃ' Ω σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
+contᵃ' Ω ε       t             = ⊥-elim (Tm∙c t)
+contᵃ' Ω (σ , s) (var vvz)     = refl
+contᵃ' Ω (σ , s) (var (vvs x)) = contᵃ' Ω σ (var x)
+contᵃ' Ω (σ , s) (t $S τ)      = happly (contᵃ' Ω (σ , s) t) τ
 
-conPᵃ' : ∀{Ωc}(Ω : Con Ωc){A}(tP : TmP Ω A) → (A ᵃP) (concᵃ' Ω Ωc id)
-conPᵃ' Ω {El a} tP = coe (contᵃ' Ω id a ⁻¹) tP
-conPᵃ' Ω {Π̂P T A} tP = λ τ → conPᵃ' Ω {A τ} (tP $̂P τ)
+conPᵃ' : ∀{Ωc}(Ω : Con Ωc){A}(tP : TmP Ω A) → (A ᵃP) (concᵃ' Ω id)
+conPᵃ' Ω {El a}   tP = coe (contᵃ' Ω id a ⁻¹) tP
 conPᵃ' Ω {a ⇒P A} tP = λ α → conPᵃ' Ω {A} (tP $P coe (contᵃ' Ω id a) α)
+conPᵃ' Ω {Π̂P T A} tP = λ τ → conPᵃ' Ω {A τ} (tP $̂P τ)
 
-conᵃ' : ∀{Ωc}(Ω Γ : Con Ωc)(σP : SubP Ω Γ) → (Γ ᵃC) (concᵃ' Ω Ωc id)
-conᵃ' Ω ∙        εP        = lift tt
-conᵃ' Ω (Γ ▶P A) (σP ,P t) = conᵃ' Ω Γ σP , conPᵃ' Ω {A} t
+conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γ}(σP : SubP Ω Γ) → (Γ ᵃC) (concᵃ' Ω id)
+conᵃ' Ω εP        = lift tt
+conᵃ' Ω (σP ,P t) = conᵃ' Ω σP , conPᵃ' Ω t
 
-contPᵃ' : ∀{Ωc}(Ω Γ : Con Ωc)(σP : SubP Ω Γ){A}(tP : TmP Γ A)
-            → (tP ᵃtP) (conᵃ' Ω Γ σP) ≡ conPᵃ' Ω {A} (tP [ σP ]tP)
-contPᵃ' Ω ∙        εP         tP              = ⊥-elim (TmP∙ tP)
-contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP vvzP)     = refl
-contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (varP (vvsP v)) = contPᵃ' Ω Γ σP (varP v)
-contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $P uP)      = contPᵃ' Ω (Γ ▶P A) (σP ,P sP) tP
-                                                  ⊗ contPᵃ' Ω (Γ ▶P A) (σP ,P sP) uP
-                                                ◾ conPᵃ' Ω & (_$P_ (tP [ σP ,P sP ]tP)
-                                                  & coecoe⁻¹ (contᵃ' Ω id _) (uP [ σP ,P sP ]tP))
-contPᵃ' Ω (Γ ▶P A) (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' Ω _ _ tP) τ
+contPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γ}(σP : SubP Ω Γ){A}(tP : TmP Γ A)
+            → (tP ᵃtP) (conᵃ' Ω σP) ≡ conPᵃ' Ω {A} (tP [ σP ]tP)
+contPᵃ' Ω εP         tP              = ⊥-elim (TmP∙ tP)
+contPᵃ' Ω (σP ,P sP) (varP vvzP)     = refl
+contPᵃ' Ω (σP ,P sP) (varP (vvsP v)) = contPᵃ' Ω σP (varP v)
+contPᵃ' Ω (σP ,P sP) (tP $P uP)      = contPᵃ' Ω (σP ,P sP) tP
+                                         ⊗ contPᵃ' Ω (σP ,P sP) uP
+                                       ◾ conPᵃ' Ω & (_$P_ (tP [ σP ,P sP ]tP)
+                                         & coecoe⁻¹ (contᵃ' Ω id _) (uP [ σP ,P sP ]tP))
+contPᵃ' Ω (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' Ω _ tP) τ
 
 concᵃ : ∀{Γc}(Γ : Con Γc) → _ᵃc {suc zero} Γc
-concᵃ {Γc} Γ = concᵃ' Γ Γc id
+concᵃ {Γc} Γ = concᵃ' Γ id
 
 conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
-conᵃ Γ = conᵃ' Γ Γ idP
+conᵃ Γ = conᵃ' Γ idP
 
 elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω)){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {U}      t = λ α → coe (ᵈt t _ & contPᵃ' Ω Ω idP (coe (contᵃ' Ω id t) α)
-                                  ◾ ᵈt t _ & coecoe⁻¹' (contᵃ' Ω id t) α)
+elimSᵃ' Ω ωᵈ {U}      t = λ α → coe (ᵈt t _ & (contPᵃ' Ω idP (coe (contᵃ' Ω id t) α)
+                                               ◾ coecoe⁻¹' (contᵃ' Ω id t) α))
                                   (ᵈtP {suc zero} {suc zero} (coe (contᵃ' Ω id t) α) ωᵈ)
 elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
 
@@ -68,9 +68,13 @@ elimtᵃ' Ω ωᵈ σ (t $S τ)            = happly (elimtᵃ' Ω ωᵈ σ t) τ
 elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
            {A}(tP : TmP Ω A)
            → ˢP A (elimcᵃ' Ω ωᵈ id) (ᵈtP tP ωᵈ)
-elimPᵃ' Ω ωᵈ {El a}   tP = happly (elimtᵃ' Ω ωᵈ id a) ((tP ᵃtP) (conᵃ Ω)) ⁻¹ ◾ {!!}
+elimPᵃ' Ω ωᵈ {El a}   tP = coe≡' {q = ᵈt a _ & contPᵃ' Ω idP tP ⁻¹}
+                             (apd (ˢt a (elimcᵃ' Ω ωᵈ id)) (contPᵃ' Ω idP tP)
+                              ◾ happly (elimtᵃ' Ω ωᵈ id a) (coe (contᵃ' Ω id a ⁻¹) tP) ⁻¹)
+                           ◾ {!!}
 elimPᵃ' Ω ωᵈ {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ {A τ} (tP $̂P τ)
-elimPᵃ' Ω ωᵈ {a ⇒P A} tP = λ α → {!!}
+elimPᵃ' Ω ωᵈ {a ⇒P A} tP = λ α → coe {!!}
+                                 (elimPᵃ' Ω ωᵈ {A} (tP $P coe (contᵃ' Ω id a) α))
 
 elimᵃ' :  ∀{Ωc}(Ω Γ : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
            (σP : SubP Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ id) (ᵈsP σP ωᵈ)

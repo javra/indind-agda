@@ -81,7 +81,7 @@ idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
        → ᵈC {ℓ'}{ℓ} Γ γcᵈ γ → ᵈP {ℓ'}{ℓ} A γcᵈ ((tP ᵃtP) γ)
 ᵈtP (varP vvzP)     (γᵈ , αᵈ) = αᵈ
 ᵈtP (varP (vvsP x)) (γᵈ , αᵈ) = ᵈtP (varP x) γᵈ
-ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ _ (ᵈtP sP γᵈ)
+ᵈtP (tP $P sP)      γᵈ        = ᵈtP tP γᵈ ((sP ᵃtP) _) (ᵈtP sP γᵈ)
 ᵈtP (tP $̂P τ)       γᵈ        = ᵈtP tP γᵈ τ
 
 ᵈsP : ∀{ℓ' ℓ Γc}{Γ Δ : Con Γc}(σP : SubP Γ Δ){γc}{γcᵈ : ᵈc Γc γc}{γ}

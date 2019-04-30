@@ -244,6 +244,11 @@ coe≡ : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : 
   → coe p a ≡ b
 coe≡ {p = refl}{q = refl} r = r
 
+coe≡' : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b : B}
+  → coe p a ≡ b
+  → a ≡ coe q b
+coe≡' {p = refl}{q = refl} r = r
+
 coe& : ∀{ℓ}{X : Set ℓ}{A B : X → Set ℓ}(f : (x : X) → A x)
         (p : ((x : X) → A x) ≡ ((x : X) → B x))(x : X)(q : A x ≡ B x)
        → (coe p f) x ≡ coe q (f x)
