@@ -7,85 +7,85 @@ open import IFA
 open import IFD
 open import IFS
 
-conSᵃ' : ∀{Ωc}(Ω : Con Ωc){B}(t : Tm Ωc B) → _ᵃS {suc zero} B
-conSᵃ' Ω {U}      t     = TmP Ω (El t)
-conSᵃ' Ω {Π̂S T B} t     = λ τ → conSᵃ' Ω (t $S τ)
+module Constructor {Ωc}(Ω : Con Ωc) where
 
-concᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
-concᵃ' Ω ε       = lift tt
-concᵃ' Ω (σ , t) = concᵃ' Ω σ , conSᵃ' Ω t
+  conSᵃ' : ∀{B}(t : Tm Ωc B) → _ᵃS {suc zero} B
+  conSᵃ' {U}      t     = TmP Ω (El t)
+  conSᵃ' {Π̂S T B} t     = λ τ → conSᵃ' (t $S τ)
 
-contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
-           → (t ᵃt) (concᵃ' Ω σ) ≡ conSᵃ' Ω {B} (t [ σ ]t)
-contᵃ' Ω ε       t             = ⊥-elim (Tm∙c t)
-contᵃ' Ω (σ , s) (var vvz)     = refl
-contᵃ' Ω (σ , s) (var (vvs x)) = contᵃ' Ω σ (var x)
-contᵃ' Ω (σ , s) (t $S τ)      = happly (contᵃ' Ω (σ , s) t) τ
+  concᵃ' : ∀{Γc}(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
+  concᵃ' ε       = lift tt
+  concᵃ' (σ , t) = concᵃ' σ , conSᵃ' t
 
-conPᵃ' : ∀{Ωc}(Ω : Con Ωc){A}(tP : TmP Ω A) → (A ᵃP) (concᵃ' Ω id)
-conPᵃ' Ω {El a}   tP = coe (contᵃ' Ω id a ⁻¹) tP
-conPᵃ' Ω {a ⇒P A} tP = λ α → conPᵃ' Ω {A} (tP $P coe (contᵃ' Ω id a) α)
-conPᵃ' Ω {Π̂P T A} tP = λ τ → conPᵃ' Ω {A τ} (tP $̂P τ)
+  contᵃ' : ∀{Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → (t ᵃt) (concᵃ' σ) ≡ conSᵃ' {B} (t [ σ ]t)
+  contᵃ' ε       t             = ⊥-elim (Tm∙c t)
+  contᵃ' (σ , s) (var vvz)     = refl
+  contᵃ' (σ , s) (var (vvs x)) = contᵃ' σ (var x)
+  contᵃ' (σ , s) (t $S τ)      = happly (contᵃ' (σ , s) t) τ
 
-conᵃ' : ∀{Ωc}(Ω : Con Ωc){Γ}(σP : SubP Ω Γ) → (Γ ᵃC) (concᵃ' Ω id)
-conᵃ' Ω εP        = lift tt
-conᵃ' Ω (σP ,P t) = conᵃ' Ω σP , conPᵃ' Ω t
+  conPᵃ' : ∀{A}(tP : TmP Ω A) → (A ᵃP) (concᵃ' id)
+  conPᵃ' {El a}   tP = coe (contᵃ' id a ⁻¹) tP
+  conPᵃ' {a ⇒P A} tP = λ α → conPᵃ' {A} (tP $P coe (contᵃ' id a) α)
+  conPᵃ' {Π̂P T A} tP = λ τ → conPᵃ' {A τ} (tP $̂P τ)
 
-contPᵃ' : ∀{Ωc}(Ω : Con Ωc){Γ}(σP : SubP Ω Γ){A}(tP : TmP Γ A)
-            → (tP ᵃtP) (conᵃ' Ω σP) ≡ conPᵃ' Ω {A} (tP [ σP ]tP)
-contPᵃ' Ω εP         tP              = ⊥-elim (TmP∙ tP)
-contPᵃ' Ω (σP ,P sP) (varP vvzP)     = refl
-contPᵃ' Ω (σP ,P sP) (varP (vvsP v)) = contPᵃ' Ω σP (varP v)
-contPᵃ' Ω (σP ,P sP) (tP $P uP)      = contPᵃ' Ω (σP ,P sP) tP
-                                         ⊗ contPᵃ' Ω (σP ,P sP) uP
-                                       ◾ conPᵃ' Ω & (_$P_ (tP [ σP ,P sP ]tP)
-                                         & coecoe⁻¹ (contᵃ' Ω id _) (uP [ σP ,P sP ]tP))
-contPᵃ' Ω (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' Ω _ tP) τ
+  conᵃ' : ∀{Γ}(σP : SubP Ω Γ) → (Γ ᵃC) (concᵃ' id)
+  conᵃ' εP        = lift tt
+  conᵃ' (σP ,P t) = conᵃ' σP , conPᵃ' t
 
-concᵃ : ∀{Γc}(Γ : Con Γc) → _ᵃc {suc zero} Γc
-concᵃ {Γc} Γ = concᵃ' Γ id
+  contPᵃ' : ∀{Γ}(σP : SubP Ω Γ){A}(tP : TmP Γ A) → (tP ᵃtP) (conᵃ' σP) ≡ conPᵃ' {A} (tP [ σP ]tP)
+  contPᵃ' εP         tP              = ⊥-elim (TmP∙ tP)
+  contPᵃ' (σP ,P sP) (varP vvzP)     = refl
+  contPᵃ' (σP ,P sP) (varP (vvsP v)) = contPᵃ' σP (varP v)
+  contPᵃ' (σP ,P sP) (tP $P uP)      = contPᵃ' (σP ,P sP) tP
+                                         ⊗ contPᵃ' (σP ,P sP) uP
+                                       ◾ conPᵃ' & (_$P_ (tP [ σP ,P sP ]tP)
+                                         & coecoe⁻¹ (contᵃ' id _) (uP [ σP ,P sP ]tP))
+  contPᵃ' (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' _ tP) τ
 
-conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
-conᵃ Γ = conᵃ' Γ idP
+concᵃ : ∀{Ωc}(Ω : Con Ωc) → _ᵃc {suc zero} Ωc
+concᵃ {Ωc} Ω = Constructor.concᵃ' Ω id
 
-elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω)){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {U}      t = λ α → coe (ᵈt t _ & (contPᵃ' Ω idP (coe (contᵃ' Ω id t) α)
-                                               ◾ coecoe⁻¹' (contᵃ' Ω id t) α))
-                                  (ᵈtP {suc zero} {suc zero} (coe (contᵃ' Ω id t) α) ωᵈ)
-elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
+conᵃ : ∀{Ωc}(Ω : Con Ωc) → (Ω ᵃC) (concᵃ Ω)
+conᵃ Ω = Constructor.conᵃ' Ω idP
 
-elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
-elimcᵃ' Ω ωᵈ ε       = lift tt
-elimcᵃ' Ω ωᵈ (σ , t) = elimcᵃ' Ω ωᵈ σ , elimSᵃ' Ω ωᵈ t
+module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω)) where
 
-elimtᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
-          → elimSᵃ' Ω ωᵈ (t [ σ ]t) ≡ ˢt t (elimcᵃ' Ω ωᵈ σ)
-elimtᵃ' Ω ωᵈ ε (var ())
-elimtᵃ' Ω ωᵈ (σ , t) (var vvz)     = refl
-elimtᵃ' Ω ωᵈ (σ , t) (var (vvs v)) = elimtᵃ' Ω ωᵈ σ (var v)
-elimtᵃ' Ω ωᵈ σ (t $S τ)            = happly (elimtᵃ' Ω ωᵈ σ t) τ
+  open Constructor Ω
 
-elimPᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-           {A}(tP : TmP Ω A)
-           → ˢP A (elimcᵃ' Ω ωᵈ id) (ᵈtP tP ωᵈ)
-elimPᵃ' Ω ωᵈ {El a}   tP = coe≡' {q = ᵈt a _ & contPᵃ' Ω idP tP ⁻¹}
-                             (apd (ˢt a (elimcᵃ' Ω ωᵈ id)) (contPᵃ' Ω idP tP)
-                              ◾ happly (elimtᵃ' Ω ωᵈ id a) (coe (contᵃ' Ω id a ⁻¹) tP) ⁻¹)
-                           ◾ {!!}
-elimPᵃ' Ω ωᵈ {Π̂P T A} tP = λ τ → elimPᵃ' Ω ωᵈ {A τ} (tP $̂P τ)
-elimPᵃ' Ω ωᵈ {a ⇒P A} tP = λ α → coe {!!}
-                                 (elimPᵃ' Ω ωᵈ {A} (tP $P coe (contᵃ' Ω id a) α))
+  elimSᵃ' : ∀{B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
+  elimSᵃ' {U}      t = λ α → coe (ᵈt t _ & (contPᵃ' idP (coe (contᵃ' id t) α)
+                                           ◾ coecoe⁻¹' (contᵃ' id t) α))
+                                 (ᵈtP {suc zero} {suc zero} (coe (contᵃ' id t) α) ωᵈ)
+  elimSᵃ' {Π̂S T B} t = λ τ → elimSᵃ' {B τ} (t $S τ)
 
-elimᵃ' :  ∀{Ωc}(Ω Γ : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω))
-           (σP : SubP Ω Γ) → ˢC Γ (elimcᵃ' Ω ωᵈ id) (ᵈsP σP ωᵈ)
-elimᵃ' Ω ∙        ωᵈ εP         = lift tt
-elimᵃ' Ω (Γ ▶P A) ωᵈ (σP ,P tP) = elimᵃ' Ω Γ ωᵈ σP , elimPᵃ' Ω ωᵈ tP
+  elimcᵃ' : ∀{Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
+  elimcᵃ' ε       = lift tt
+  elimcᵃ' (σ , t) = elimcᵃ' σ , elimSᵃ' t
+
+  elimtᵃ' : ∀{Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → elimSᵃ' (t [ σ ]t) ≡ ˢt t (elimcᵃ' σ)
+  elimtᵃ' ε (var ())
+  elimtᵃ' (σ , t) (var vvz)     = refl
+  elimtᵃ' (σ , t) (var (vvs v)) = elimtᵃ' σ (var v)
+  elimtᵃ' σ (t $S τ)            = happly (elimtᵃ' σ t) τ
+
+  elimPᵃ' : ∀{A}(tP : TmP Ω A) → ˢP A (elimcᵃ' id) (ᵈtP tP ωᵈ)
+  elimPᵃ' {El a}   tP = coe≡' {q = ᵈt a _ & contPᵃ' idP tP ⁻¹}
+                               (apd (ˢt a (elimcᵃ' id)) (contPᵃ' idP tP)
+                                ◾ happly (elimtᵃ' id a) (coe (contᵃ' id a ⁻¹) tP) ⁻¹)
+                             ◾ {!!}
+  elimPᵃ' {Π̂P T A} tP = λ τ → elimPᵃ' {A τ} (tP $̂P τ)
+  elimPᵃ' {a ⇒P A} tP = λ α → coe {!!}
+                                   (elimPᵃ' {A} (tP $P coe (contᵃ' id a) α))
+
+  elimᵃ' : ∀{Γ}(σP : SubP Ω Γ) → ˢC Γ (elimcᵃ' id) (ᵈsP σP ωᵈ)
+  elimᵃ' εP         = lift tt
+  elimᵃ' (σP ,P tP) = elimᵃ' σP , elimPᵃ' tP
 
 elimcᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢc Γc γcᵈ
-elimcᵃ Γ γᵈ = elimcᵃ' Γ γᵈ id
+elimcᵃ Γ γᵈ = Eliminator.elimcᵃ' Γ γᵈ id
 
 elimᵃ : ∀{Γc}(Γ : Con Γc){γcᵈ}(γᵈ : ᵈC Γ γcᵈ (conᵃ Γ)) → ˢC Γ (elimcᵃ Γ γᵈ) γᵈ
-elimᵃ Γ γᵈ = elimᵃ' Γ Γ γᵈ idP
+elimᵃ Γ γᵈ = Eliminator.elimᵃ' Γ γᵈ idP
 {-
 --some examples
 Γnat : Con (∙c ▶c U)
