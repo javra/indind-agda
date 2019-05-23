@@ -43,6 +43,11 @@ _ᵃs : ∀{ℓ}{Γc Δc} → Sub Γc Δc → _ᵃc {ℓ} Γc → _ᵃc {ℓ} Δ
 []Tᵃ {A = a ⇒P A} γc = Π≡ ([]tᵃ {t = a} γc) λ α → []Tᵃ {A = A} γc
 {-# REWRITE []Tᵃ #-}
 
+[]Cᵃ : ∀{ℓ Γc Δc}{σ : Sub Γc Δc}{Δ : Con Δc}{γc : _ᵃc {ℓ} Γc} → ((Δ [ σ ]C) ᵃC) γc ≡ (Δ ᵃC) ((σ ᵃs) γc)
+[]Cᵃ {Δ = ∙}      = refl
+[]Cᵃ {Δ = Δ ▶P A} = ×≡ []Cᵃ refl
+{-# REWRITE []Cᵃ #-}
+
 vs,ᵃ : ∀{ℓ Γc B B'}{x : Tm Γc B}{γc}{α : _ᵃS {ℓ} B'} → (vs x ᵃt) (γc , α) ≡ (x ᵃt) γc
 vs,ᵃ {x = var x}  = refl
 vs,ᵃ {x = x $S α} = happly (vs,ᵃ {x = x}) α
@@ -77,10 +82,6 @@ Twkᵃ {A = Π̂P T B} = Π≡ refl λ τ → Twkᵃ {A = B τ}
 Twkᵃ {A = a ⇒P A} = Π≡ refl λ α → Twkᵃ {A = A}
 {-# REWRITE Twkᵃ #-}
 -}
-▶Sᵃ : ∀{ℓ Γc}{Γ : Con Γc}{B γc T} → _ᵃC {ℓ} (Γ ▶S B) (γc , T) ≡ _ᵃC Γ γc
-▶Sᵃ {Γ = ∙} = refl
-▶Sᵃ {Γ = Γ ▶P B} = (λ A → A × (B ᵃP) _) & ▶Sᵃ {Γ = Γ}
-{-# REWRITE ▶Sᵃ #-}
 
 _ᵃtP : ∀{ℓ Γc}{Γ : Con Γc}{A}(tP : TmP Γ A){γc}(γ : _ᵃC {ℓ} Γ γc) → _ᵃP {ℓ} A γc
 (varP vvzP ᵃtP)     (γ , α) = α

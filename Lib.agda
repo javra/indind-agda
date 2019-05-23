@@ -270,6 +270,15 @@ aptot f refl = refl
       (p : x ≡ y) → (q : ₁ x ≡ ₁ y) → ₂ x ≡[ B & q ]≡ ₂ y
 ,=2 {B = B} {x} {.x} refl refl = refl
 
+Σ≡ : ∀{ℓ ℓ'}
+     {A₀ A₁ : Set ℓ}(A₂ : A₀ ≡ A₁)
+     {B₀ : A₀ → Set ℓ'}{B₁ : A₁ → Set ℓ'}(B₂ : B₀ ≡[ (λ z → z → Set ℓ') & A₂ ]≡ B₁)
+   → Σ A₀ B₀ ≡ Σ A₁ B₁
+Σ≡ refl refl = refl
+
+×≡ : ∀{ℓ ℓ'}{A₀ A₁ : Set ℓ}(A₂ : A₀ ≡ A₁){B₀ B₁ : Set ℓ'}(B₂ : B₀ ≡ B₁)
+  → (A₀ × B₀) ≡ (A₁ × B₁)
+×≡ refl refl = refl
 
 {-
 ,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
@@ -284,12 +293,6 @@ aptot f refl = refl
        (p : a ≡ a')(q : b ≡[ ap B p ]≡ b')
      → ,Σ=1 (,Σ= p q) ≡[ ap (λ r → b ≡[ ap B r ]≡ b') (,Σ=β0 p q) ]≡ q
 ,Σ=β1 refl refl = refl
-
-Σ= : ∀{ℓ ℓ'}
-     {A₀ A₁ : Set ℓ}(A₂ : A₀ ≡ A₁)
-     {B₀ : A₀ → Set ℓ'}{B₁ : A₁ → Set ℓ'}(B₂ : B₀ ≡[ ap (λ z → z → Set ℓ') A₂ ]≡ B₁)
-   → Σ A₀ B₀ ≡ Σ A₁ B₁
-Σ= refl refl = refl
 
 ,Σ=2 : {A : Set}{B : A → Set}{a : A}{b : B a}
        {α : a ≡ a}{β : b ≡[ ap B α ]≡ b}

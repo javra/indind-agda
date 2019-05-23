@@ -53,9 +53,9 @@ module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ 
   open Constructor Ω
 
   elimSᵃ' : ∀{B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-  elimSᵃ' {U}      t = λ α → coe (ᵈt t _ & (contPᵃ' idP (coe (contᵃ' id t) α)
-                                           ◾ coecoe⁻¹' (contᵃ' id t) α))
-                                 (ᵈtP {suc zero} {suc zero} (coe (contᵃ' id t) α) ωᵈ)
+  elimSᵃ' {U}      a = λ α → coe (ᵈt a _ & (contPᵃ' idP (coe (contᵃ' id a) α)
+                                 ◾ coecoe⁻¹' (contᵃ' id a) α))
+                                   (ᵈtP {suc zero} {suc zero} (coe (contᵃ' id a) α) ωᵈ)
   elimSᵃ' {Π̂S T B} t = λ τ → elimSᵃ' {B τ} (t $S τ)
 
   elimcᵃ' : ∀{Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
@@ -69,10 +69,11 @@ module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ 
   elimtᵃ' σ (t $S τ)            = happly (elimtᵃ' σ t) τ
 
   elimPᵃ' : ∀{A}(tP : TmP Ω A) → ˢP A (elimcᵃ' id) (ᵈtP tP ωᵈ)
-  elimPᵃ' {El a}   tP = coe≡' {q = ᵈt a _ & contPᵃ' idP tP ⁻¹}
-                               (apd (ˢt a (elimcᵃ' id)) (contPᵃ' idP tP)
-                                ◾ happly (elimtᵃ' id a) (coe (contᵃ' id a ⁻¹) tP) ⁻¹)
-                             ◾ {!!}
+  elimPᵃ' {El a}   tP = --coe≡' {q = ᵈt a _ & contPᵃ' idP tP ⁻¹}
+                        --       (apd (ˢt a (elimcᵃ' id)) (contPᵃ' idP tP)
+                        --       ◾ happly (elimtᵃ' id a) (coe (contᵃ' id a ⁻¹) tP) ⁻¹)
+                        --     ◾ {!!}
+                        {!!}
   elimPᵃ' {Π̂P T A} tP = λ τ → elimPᵃ' {A τ} (tP $̂P τ)
   elimPᵃ' {a ⇒P A} tP = λ α → coe {!!}
                                    (elimPᵃ' {A} (tP $P coe (contᵃ' id a) α))

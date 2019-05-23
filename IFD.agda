@@ -45,6 +45,12 @@ open import IFA
 []Tᵈ {A = t ⇒P A} π = Π≡ refl λ α → Π≡ refl λ τ → []Tᵈ {A = A} (π α)
 {-# REWRITE []Tᵈ #-}
 
+[]Cᵈ : ∀{ℓ' ℓ Γc Δc}{σ : Sub Γc Δc}{Δ : Con Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}(α : _)
+          → ᵈC (Δ [ σ ]C) γcᵈ α ≡ ᵈC Δ (ᵈs σ γcᵈ) α
+[]Cᵈ {Δ = ∙} α      = refl
+[]Cᵈ {Δ = Δ ▶P A} α = ×≡ ([]Cᵈ (₁ α)) refl
+{-# REWRITE []Cᵈ #-}
+
 vs,ᵈ : ∀{ℓ' ℓ Γc B B'}{x : Tm Γc B}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{α}{αᵈ : ᵈS {ℓ'}{ℓ} B' α}
          → ᵈt (vs x) (γcᵈ , αᵈ) ≡ ᵈt x γcᵈ
 vs,ᵈ {x = var x}  = refl
@@ -116,7 +122,7 @@ wkP,ᵈ (σP ,P x) = ,≡ (wkP,ᵈ σP) refl
 {-# REWRITE wkP,ᵈ #-}
 
 idPᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}
-        → ᵈsP idP γᵈ ≡ γᵈ
+        → ᵈsP {ℓ'}{ℓ}{Γc}{Γ} idP γᵈ ≡ γᵈ
 idPᵈ {Γ = ∙} {γᵈ = lift tt}      = refl
-idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ idPᵈ refl
+idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ (idPᵈ {Γ = Γ}) refl
 {-# REWRITE idPᵈ #-}
