@@ -24,7 +24,7 @@ data Var : SCon → TyS → Set₁ where
 
 data Tm (Γc : SCon) : TyS → Set₁ where
   var  : ∀{A} → Var Γc A → Tm Γc A
-  _$S_ : ∀{T B} → Tm Γc (Π̂S T B) → (α : T) → Tm Γc (B α)
+  _$S_ : ∀{T B} → Tm Γc (Π̂S T B) → (τ : T) → Tm Γc (B τ)
 
 data TyP (Γc : SCon) : Set₁ where
   El   : Tm Γc U → TyP Γc
@@ -33,7 +33,7 @@ data TyP (Γc : SCon) : Set₁ where
 
 data Con (Γc : SCon) : Set₁ where
   ∙    : Con Γc
-  _▶P_ : Con Γc → (A : TyP Γc) → Con Γc
+  _▶P_ : Con Γc → TyP Γc → Con Γc
 
 -- No terms in the empty context
 Tm∙c : ∀{B} → Tm ∙c B → ⊥
