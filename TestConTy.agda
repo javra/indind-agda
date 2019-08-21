@@ -4,7 +4,7 @@ open import II using (PS; P; S)
 open import EWRSg
 open import Lib
 
-module TestConTy where
+module TestConTy (C' : Set) (T' : Set) where
 
 Γ : Con
 Γ = ∙ ▶S U -- Con
@@ -33,35 +33,35 @@ Unit = ΠP (vs{S}{S}{∙ ▶S U} (vz{S})) (El (appS (vz{S}{∙ ▶ U})))
 Γ''' : Con
 Γ''' = Γ'' ▶P Unit [ wk{P}{Γ} ]TP [ wk{P}{Γ'} ]TP --unit
 
-PiΓ : TmS Γ'' U
-PiΓ = vs{S}{P}{Γ'} (vs{S}{P}{Γ} (vs{S}{S}{∙ ▶S U} (vz{S})))
+PiCon : TmS Γ'' U
+PiCon = vs{S}{P}{Γ'} (vs{S}{P}{Γ} (vs{S}{S}{∙ ▶S U} (vz{S})))
 
-PiTy : TmS Γ'' (ΠS PiΓ U)
+PiTy : TmS Γ'' (ΠS PiCon U)
 PiTy = vs{S}{P}{Γ'} (vs{S}{P}{Γ} (vz{S}))
 
-PiA : TmS (Γ'' ▶P El PiΓ) U
+PiA : TmS (Γ'' ▶P El PiCon) U
 PiA = appS PiTy
 
-PiΓACon : TmS (Γ'' ▶P El PiΓ ▶P El PiA) U
-PiΓACon = vs{S}{P}{Γ'' ▶P El PiΓ} (vs{S}{P}{Γ''} PiΓ)
+PiΓACon : TmS (Γ'' ▶P El PiCon ▶P El PiA) U
+PiΓACon = vs{S}{P}{Γ'' ▶P El PiCon} (vs{S}{P}{Γ''} PiCon)
 
-PiΓATy : TmS (Γ'' ▶P El PiΓ ▶P El PiA) (ΠS PiΓACon U)
-PiΓATy = vs{S}{P}{Γ'' ▶P El PiΓ} (vs{S}{P}{Γ''} PiTy)
+PiΓATy : TmS (Γ'' ▶P El PiCon ▶P El PiA) (ΠS PiΓACon U)
+PiΓATy = vs{S}{P}{Γ'' ▶P El PiCon} (vs{S}{P}{Γ''} PiTy)
 
-PiExtΓ : TmP (Γ'' ▶P El PiΓ) (ΠP PiA (El PiΓACon))
+PiExtΓ : TmP (Γ'' ▶P El PiCon) (ΠP PiA (El PiΓACon))
 PiExtΓ = appP (vz{P}{Γ'}{Ext})
 
-PiExtΓA : TmP (Γ'' ▶P El PiΓ ▶P El PiA) (El PiΓACon)
+PiExtΓA : TmP (Γ'' ▶P El PiCon ▶P El PiA) (El PiΓACon)
 PiExtΓA = appP PiExtΓ
 
-PiB : TmS (Γ'' ▶P El PiΓ ▶P El PiA) U
-PiB = atS{Γ'' ▶P El PiΓ ▶P El PiA}{PiΓACon}{U} PiΓATy PiExtΓA
+PiB : TmS (Γ'' ▶P El PiCon ▶P El PiA) U
+PiB = atS{Γ'' ▶P El PiCon ▶P El PiA}{PiΓACon}{U} PiΓATy PiExtΓA
 
-PiRet : TmS (Γ'' ▶P El PiΓ ▶P El PiA ▶P El PiB) U
-PiRet = vs{S}{P}{Γ'' ▶P El PiΓ ▶P El PiA} (vs{S}{P}{Γ'' ▶P El PiΓ} PiA)
+PiRet : TmS (Γ'' ▶P El PiCon ▶P El PiA ▶P El PiB) U
+PiRet = vs{S}{P}{Γ'' ▶P El PiCon ▶P El PiA} (vs{S}{P}{Γ'' ▶P El PiCon} PiA)
 
 Pi : TyP Γ''
-Pi = ΠP PiΓ (ΠP PiA (ΠP PiB (El PiRet)))
+Pi = ΠP PiCon (ΠP PiA (ΠP PiB (El PiRet)))
 
 Γ'''' : Con
 Γ'''' = Γ''' ▶P Pi [ wk{P}{Γ''} ]TP
