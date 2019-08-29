@@ -254,6 +254,14 @@ coe& : ∀{ℓ}{X : Set ℓ}{A B : X → Set ℓ}(f : (x : X) → A x)
        → (coe p f) x ≡ coe q (f x)
 coe& f p x q = {!!}
 
+coehapply2 : ∀{ℓ}{A A' B : Set ℓ}(f : A → B)(q : A ≡ A')
+  → coe(happly2 (λ A B → A → B) q B) f ≡ λ a' → f (coe (q ⁻¹) a')
+coehapply2 {ℓ} {A} {.A} {B} f refl = refl
+
+{- a.ᴹ (a.B.Γ.m γ γᴬ δ ρ ϕ τ) (coe (a.sg γ δ ⁻¹) (α , αʷ)) ≡
+      coe (happly2 (λ γᴬ₁ δᴬ → γᴬ₁ → δᴬ) (a.sg γ δ) (a.ᴬ γᴬ))
+      (a.ᴹ (a.B.Γ.m γ γᴬ δ ρ ϕ τ)) (α , αʷ) -}
+
 aptot : ∀{ℓ}{A : Set ℓ}{B : A → Set}(f : (x : A) → B x){a₀ a₁ : A}(a₂ : a₀ ≡ a₁)
     → _≡_ {A = Σ Set λ X → X} (B a₀ , f a₀) (B a₁ , f a₁)
 aptot f refl = refl
