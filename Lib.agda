@@ -291,6 +291,13 @@ aptot f refl = refl
 irrel : ∀{ℓ}{A : Set ℓ}{a₀ a₁ : A}(p₀ p₁ : a₀ ≡ a₁) → p₀ ≡ p₁
 irrel refl refl = refl
 
+Lift-irrel : ∀{ℓ ℓ'}{A : Set ℓ}{a₀ a₁ : A}(p₀ p₁ : Lift ℓ' (a₀ ≡ a₁)) → p₀ ≡ p₁
+Lift-irrel (lift refl) (lift refl) = refl
+
+≡≡ : ∀{ℓ}{A : Set ℓ}{a₀ a₀' a₁ a₁' : A}(p : a₀ ≡ a₀')(q : a₁ ≡ a₁')
+  → (a₀ ≡ a₁) ≡ (a₀' ≡ a₁')
+≡≡ refl refl = refl
+
 {-
 ,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
       (p : w ≡ w') → ,Σ= (,Σ=0 p) (,Σ=1 p) ≡ p
