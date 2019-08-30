@@ -228,7 +228,7 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
                                           ◾ a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ) & coecoe⁻¹' (a.sg γ δ) αᴬ in
                                 let e = a.f γ γᴬ δ ρ ϕ xᴱ xᴬ xᴬ' xʷ xᴿ (coe (happly2 ((a.R γ γᴬ ᵃt) ρc) e'' xᴱ) xᴿ') in
                                 coe
-                                (Bᴹaux _ _ _ _ _ _ _ _ _ _ _ _ (coecoe⁻¹' (a.sg γ δ) αᴬ) e (Lift-irrel _ _) _
+                                (Bᴹaux _ _ _ _ _ _ (coecoe⁻¹' (a.sg γ δ) αᴬ) e (Lift-irrel _ _) _
                                   (B.ᴬ & ,≡ refl e) (coe-coe _ _ (πᴬ xᴬ) ◾ apd πᴬ e))
                                 (B.m {γc} (γ , xᴱ) (γᴬ , xᴬ) (δ , xʷ) {ρc} (ρ , xᴿ) ϕ τ
                                      π (πᴬ xᴬ) (πʷ xᴱ) (πᴿ xᴬ) (πᶠ xᴱ xᴬ xʷ xᴿ) (πᵗ xᴱ xᴬ xʷ xᴿ)) }
@@ -236,39 +236,46 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
     module Γ = Con Γ
     module a = TmS a
     module B = TyS B
-    Bᴹaux : ∀ γᴬ₀ γᴬ₁ αᴬ₀ αᴬ₀' αᴬ₁ αᴬ₁' (γᴹ : Γ.ᴹ γᴬ₀ γᴬ₁) (αᴹ : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀ ≡ αᴬ₁)) (αᴹ' : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀' ≡ αᴬ₁'))
+    Bᴹaux : ∀ {γᴬ₀ γᴬ₁ αᴬ₀ αᴬ₀' αᴬ₁ αᴬ₁'} (γᴹ : Γ.ᴹ γᴬ₀ γᴬ₁) (αᴹ : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀ ≡ αᴬ₁)) (αᴹ' : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀' ≡ αᴬ₁'))
               (βᴬ₀ : B.ᴬ (γᴬ₀ , αᴬ₀)) (βᴬ₁ : B.ᴬ (γᴬ₁ , αᴬ₁)) (βᴬ₁' : B.ᴬ (γᴬ₁ , αᴬ₁'))
               (αᴬ₀≡ : αᴬ₀ ≡ αᴬ₀') (αᴬ₁≡ : αᴬ₁ ≡ αᴬ₁') (αᴹ≡ : coe (Lift _ & ≡≡ (a.ᴹ γᴹ & αᴬ₀≡) αᴬ₁≡) αᴹ ≡ αᴹ')
               (Bᴬ₀≡ : B.ᴬ (γᴬ₀ , αᴬ₀) ≡ B.ᴬ (γᴬ₀ , αᴬ₀')) (Bᴬ₁≡ : B.ᴬ (γᴬ₁ , αᴬ₁) ≡ B.ᴬ (γᴬ₁ , αᴬ₁')) (βᴬ₁≡ : coe Bᴬ₁≡ βᴬ₁ ≡ βᴬ₁')
               → B.ᴹ (γᴹ , αᴹ) βᴬ₀ βᴬ₁ ≡ B.ᴹ (γᴹ , αᴹ') (coe Bᴬ₀≡ βᴬ₀) βᴬ₁'
-    Bᴹaux γᴬ₀ γᴬ₁ αᴬ₀ .αᴬ₀ αᴬ₁ .αᴬ₁ γᴹ αᴹ .αᴹ βᴬ₀ βᴬ₁ .βᴬ₁ refl refl refl refl refl refl = refl
-
-{-
-{γᴬ = γᴬ₁ : Σ a.B.Γ.ᴬ a.ᴬ} {δᴬ : Σ a.B.Γ.ᴬ a.ᴬ} →
-      Σ (a.B.Γ.ᴹ (₁ γᴬ₁) (₁ δᴬ))
-      (λ γᴹ → Lift (suc zero) (a.ᴹ γᴹ (₂ γᴬ₁) ≡ ₂ δᴬ)) →
-      B.ᴬ γᴬ₁ → B.ᴬ δᴬ → Set
--}
+    Bᴹaux γᴹ αᴹ .αᴹ βᴬ₀ βᴬ₁ .βᴬ₁ refl refl refl refl refl refl = refl
 
 ΠP : {Γ : Con} (a : TmS Γ U) (B : TyP (Γ ▶P El a)) → TyP Γ
-ΠP a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
-                  ᴹ   = λ {γᴬ} γᴹ πᴬ ϕᴬ → (αᴬ : a.ᴬ γᴬ) → B.ᴹ (γᴹ , lift refl) (πᴬ αᴬ) (ϕᴬ (a.ᴹ γᴹ αᴬ)) ;
-                  E   = a.E S.⇒P B.E ;
-                  w   = λ {γc} γ π → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , τ) (π τ) ;
-                  R   = λ {γc} γ {γᴬ} π πᴬ → S.Π̂P (a.ᴬ γᴬ)
-                                               λ αᴬ → S.Π̂P ((a.E ᵃt) γc)
-                                                        λ α → ((a.R γ γᴬ S.$S αᴬ) S.$S α) S.⇒P B.R (γ , α) (π α) (πᴬ αᴬ) ;
-                  sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
-                                       coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
-                                           (B.sg (γ , α₁) (δ , α₂) (πc α₁) (π α₁ α₂)) ;
-                  m   = λ γ γᴬ δ ρ ϕ τ π πᴬ πʷ πᴿ αᴬ
-                          → let (xᴱ , xʷ) = coe (a.sg γ δ) αᴬ in
-                            let (xᴬ , xᴿ) = a.t γ γᴬ δ ρ τ xᴱ xʷ in
-                            coe {!!}
-                              (B.m (γ , xᴱ) (γᴬ , xᴬ) (δ , xʷ) (ρ , xᴿ) ϕ τ (π xᴱ) (πᴬ xᴬ) (πʷ xᴱ xʷ) (πᴿ xᴬ xᴱ xᴿ)) }
+ΠP {Γ} a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
+                      ᴹ   = λ {γᴬ} γᴹ πᴬ ϕᴬ → (αᴬ : a.ᴬ γᴬ) → B.ᴹ (γᴹ , lift refl) (πᴬ αᴬ) (ϕᴬ (a.ᴹ γᴹ αᴬ)) ;
+                      E   = a.E S.⇒P B.E ;
+                      w   = λ {γc} γ π → S.Π̂P ((a.E ᵃt) γc) λ τ → (a.w γ S.$S τ) S.⇒P B.w (γ , τ) (π τ) ;
+                      R   = λ {γc} γ {γᴬ} π πᴬ → S.Π̂P (a.ᴬ γᴬ)
+                                                   λ αᴬ → S.Π̂P ((a.E ᵃt) γc)
+                                                            λ α → ((a.R γ γᴬ S.$S αᴬ) S.$S α) S.⇒P B.R (γ , α) (π α) (πᴬ αᴬ) ;
+                      sg  = λ γ δ πc π α → let (α₁ , α₂) = coe (a.sg γ δ) α in
+                                           coe ((λ x → B.ᴬ (_ , x)) & (coecoe⁻¹' (a.sg γ δ) α))
+                                               (B.sg (γ , α₁) (δ , α₂) (πc α₁) (π α₁ α₂)) ;
+                      m   = λ γ γᴬ δ {ρc} ρ ϕ τ π πᴬ πʷ πᴿ αᴬ
+                              → let (xᴱ , xʷ) = coe (a.sg γ δ) αᴬ in
+                                let (xᴬ , xᴿ) = a.t γ γᴬ δ ρ τ xᴱ xʷ in
+                                let xᴬ' = a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ) αᴬ in
+                                let xᴿ' = coe (happly2 ((a.R γ γᴬ ᵃt) ρc) (happly (a.m γ γᴬ δ ρ ϕ τ) (xᴱ , xʷ)) xᴱ ⁻¹) xᴿ in
+                                let e'' = happly (coehapply2 (a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ)) (a.sg γ δ)) (xᴱ , xʷ)
+                                          ◾ a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ) & coecoe⁻¹' (a.sg γ δ) αᴬ in
+                                let e = a.f γ γᴬ δ ρ ϕ xᴱ xᴬ xᴬ' xʷ xᴿ (coe (happly2 ((a.R γ γᴬ ᵃt) ρc) e'' xᴱ) xᴿ') in
+                                coe (Bᴹaux _ _ _ _ _ _ (coecoe⁻¹' (a.sg γ δ) αᴬ) e
+                                  (Lift-irrel _ _) _ (B.ᴬ & ,≡ refl e) (coe-coe _ _ (πᴬ xᴬ) ◾ apd πᴬ e))
+                                  (B.m (γ , xᴱ) (γᴬ , xᴬ) (δ , xʷ) (ρ , xᴿ) ϕ τ (π xᴱ) (πᴬ xᴬ) (πʷ xᴱ xʷ) (πᴿ xᴬ xᴱ xᴿ)) }
   where
     module a = TmS a
     module B = TyP B
+    module Γ = Con Γ
+    Bᴹaux : ∀ {γᴬ₀ γᴬ₁ αᴬ₀ αᴬ₀' αᴬ₁ αᴬ₁'} (γᴹ : Γ.ᴹ γᴬ₀ γᴬ₁) (αᴹ : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀ ≡ αᴬ₁)) (αᴹ' : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀' ≡ αᴬ₁'))
+              (βᴬ₀ : B.ᴬ (γᴬ₀ , αᴬ₀)) (βᴬ₁ : B.ᴬ (γᴬ₁ , αᴬ₁)) (βᴬ₁' : B.ᴬ (γᴬ₁ , αᴬ₁'))
+              (αᴬ₀≡ : αᴬ₀ ≡ αᴬ₀') (αᴬ₁≡ : αᴬ₁ ≡ αᴬ₁') (αᴹ≡ : coe (Lift _ & ≡≡ (a.ᴹ γᴹ & αᴬ₀≡) αᴬ₁≡) αᴹ ≡ αᴹ')
+              (Bᴬ₀≡ : B.ᴬ (γᴬ₀ , αᴬ₀) ≡ B.ᴬ (γᴬ₀ , αᴬ₀')) (Bᴬ₁≡ : B.ᴬ (γᴬ₁ , αᴬ₁) ≡ B.ᴬ (γᴬ₁ , αᴬ₁')) (βᴬ₁≡ : coe Bᴬ₁≡ βᴬ₁ ≡ βᴬ₁')
+              → B.ᴹ (γᴹ , αᴹ) βᴬ₀ βᴬ₁ ≡ B.ᴹ (γᴹ , αᴹ') (coe Bᴬ₀≡ βᴬ₀) βᴬ₁'
+    Bᴹaux γᴹ αᴹ .αᴹ βᴬ₀ βᴬ₁ .βᴬ₁ refl refl refl refl refl refl = refl
+
 
 Π : ∀{k}{Γ : Con} → (a : TmS Γ U) → (B : Ty (Γ ▶ El a) k) → Ty Γ k
 Π {P} a B = ΠP a B
