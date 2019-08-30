@@ -206,7 +206,7 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
 -- Internal function type
 ΠS : {Γ : Con} (a : TmS Γ U) (B : TyS (Γ ▶P El a)) → TyS Γ
 ΠS {Γ} a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
-                      ᴹ   = λ {γᴬ} γᴹ πᴬ ϕᴬ → (αᴬ : a.ᴬ γᴬ) → B.ᴹ (γᴹ , lift refl) (πᴬ αᴬ) (ϕᴬ (a.ᴹ γᴹ αᴬ)) ;
+                      ᴹ   = λ {γᴬ} γᴹ πᴬ ϕᴬ → (αᴬ : a.ᴬ γᴬ)→ B.ᴹ (γᴹ , lift refl) (πᴬ αᴬ) (ϕᴬ (a.ᴹ γᴹ αᴬ)) ;
                       w   = λ γc πᴱ → S.Π̂S ((a.E ᵃt) γc) λ α → B.w γc πᴱ ;
                       R   = λ {γᴬ} πᴱ πᴬ → S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R πᴱ (πᴬ αᴬ) ;
                       f   = λ {γc} γ γᴬ {δc} δ {ρc} ρ π πᴬ πʷ πᴿ
@@ -221,13 +221,32 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
                       m   = λ {γc} γ γᴬ {δc} δ {ρc} ρ ϕ τ π πᴬ πʷ πᴿ πᶠ πᵗ αᴬ
                               → let (xᴱ , xʷ) = coe (a.sg γ δ) αᴬ in
                                 let (xᴬ , xᴿ) = a.t γ γᴬ δ ρ τ xᴱ xʷ in
-                                coe {!!} -- uniqueness + path algebra
+                                let xᴬ' = a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ) αᴬ in
+                                let e' = happly (a.m γ γᴬ δ ρ ϕ τ) (xᴱ , xʷ) in
+                                let xᴿ' = coe (happly2 ((a.R γ γᴬ ᵃt) ρc) e' xᴱ ⁻¹) xᴿ in
+                                let e'' = happly (coehapply2 (a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ)) (a.sg γ δ)) (xᴱ , xʷ)
+                                          ◾ a.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ) & coecoe⁻¹' (a.sg γ δ) αᴬ in
+                                let e = a.f γ γᴬ δ ρ ϕ xᴱ xᴬ xᴬ' xʷ xᴿ (coe (happly2 ((a.R γ γᴬ ᵃt) ρc) e'' xᴱ) xᴿ') in
+                                coe
+                                (Bᴹaux _ _ _ _ _ _ _ _ _ _ _ _ _ (B.ᴬ & ,≡ refl e) (coe-coe _ _ (πᴬ xᴬ) ◾ apd πᴬ e))
                                 (B.m {γc} (γ , xᴱ) (γᴬ , xᴬ) (δ , xʷ) {ρc} (ρ , xᴿ) ϕ τ
                                      π (πᴬ xᴬ) (πʷ xᴱ) (πᴿ xᴬ) (πᶠ xᴱ xᴬ xʷ xᴿ) (πᵗ xᴱ xᴬ xʷ xᴿ)) }
   where
     module Γ = Con Γ
     module a = TmS a
     module B = TyS B
+    Bᴹaux : ∀ γᴬ₀ γᴬ₁ αᴬ₀ αᴬ₀' αᴬ₁ αᴬ₁' (γᴹ : Γ.ᴹ γᴬ₀ γᴬ₁) (αᴹ : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀ ≡ αᴬ₁)) (αᴹ' : Lift (suc zero) (a.ᴹ γᴹ αᴬ₀' ≡ αᴬ₁'))
+              (βᴬ₀ : B.ᴬ (γᴬ₀ , αᴬ₀)) (βᴬ₁ : B.ᴬ (γᴬ₁ , αᴬ₁)) (βᴬ₁' : B.ᴬ (γᴬ₁ , αᴬ₁'))
+              (Bᴬ₀≡ : B.ᴬ (γᴬ₀ , αᴬ₀) ≡ B.ᴬ (γᴬ₀ , αᴬ₀')) (Bᴬ₁≡ : B.ᴬ (γᴬ₁ , αᴬ₁) ≡ B.ᴬ (γᴬ₁ , αᴬ₁')) (βᴬ₁≡ : coe Bᴬ₁≡ βᴬ₁ ≡ βᴬ₁')
+              → B.ᴹ (γᴹ , αᴹ) βᴬ₀ βᴬ₁ ≡ B.ᴹ (γᴹ , αᴹ') (coe Bᴬ₀≡ βᴬ₀) βᴬ₁'
+    Bᴹaux γᴬ₀ γᴬ₁ αᴬ₀ αᴬ₀' αᴬ₁ αᴬ₁' γᴹ (lift refl) (lift refl) βᴬ₀ βᴬ₁ βᴬ₁' Bᴬ₀≡ Bᴬ₁≡ refl = {!!}
+
+{-
+{γᴬ = γᴬ₁ : Σ a.B.Γ.ᴬ a.ᴬ} {δᴬ : Σ a.B.Γ.ᴬ a.ᴬ} →
+      Σ (a.B.Γ.ᴹ (₁ γᴬ₁) (₁ δᴬ))
+      (λ γᴹ → Lift (suc zero) (a.ᴹ γᴹ (₂ γᴬ₁) ≡ ₂ δᴬ)) →
+      B.ᴬ γᴬ₁ → B.ᴬ δᴬ → Set
+-}
 
 ΠP : {Γ : Con} (a : TmS Γ U) (B : TyP (Γ ▶P El a)) → TyP Γ
 ΠP a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;

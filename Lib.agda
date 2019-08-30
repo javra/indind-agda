@@ -288,6 +288,9 @@ aptot f refl = refl
   → (A₀ × B₀) ≡ (A₁ × B₁)
 ×≡ refl refl = refl
 
+irrel : ∀{ℓ}{A : Set ℓ}{a₀ a₁ : A}(p₀ p₁ : a₀ ≡ a₁) → p₀ ≡ p₁
+irrel refl refl = refl
+
 {-
 ,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
       (p : w ≡ w') → ,Σ= (,Σ=0 p) (,Σ=1 p) ≡ p
