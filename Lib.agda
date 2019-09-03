@@ -298,6 +298,11 @@ Lift-irrel (lift refl) (lift refl) = refl
   → (a₀ ≡ a₁) ≡ (a₀' ≡ a₁')
 ≡≡ refl refl = refl
 
+coe→ : ∀{ℓ ℓ'}{A : Set ℓ}{B₀ B₁ : A → Set ℓ'}(f₀ : (a : A) → B₀ a)(a : A)
+  (p : ((a : A) → B₀ a) ≡ ((a : A) → B₁ a)) (q : B₀ a ≡ B₁ a) (r : B₀ ≡ B₁)
+  → (coe p f₀) a ≡ coe q (f₀ a)
+coe→ f₀ a refl refl refl = refl
+
 {-
 ,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
       (p : w ≡ w') → ,Σ= (,Σ=0 p) (,Σ=1 p) ≡ p

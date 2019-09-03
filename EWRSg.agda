@@ -282,6 +282,7 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
 Π {P} a B = ΠP a B
 Π {S} a B = ΠS a B
 
+{-
 appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (f : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
 appS {Γ}{a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
                             ᴹ   = λ { {γᴬ , αᴬ} {δᴬ , βᴬ} (γᴹ , lift refl) → (f.ᴹ γᴹ αᴬ) } ;
@@ -297,10 +298,11 @@ appS {Γ}{a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
                             m   = λ { {γc} (γ , α) (γᴬ , αᴬ) {δc} (δ , αʷ) {ρc} (ρ , αᴿ) ϕ τ
                                       → let e = happly (f.m γ γᴬ δ ρ ϕ τ) (coe (a.sg γ δ ⁻¹) (α , αʷ)) in
                                         --let ae = a.m γ γᴬ δ ρ ϕ τ in
-                                        {!!}
+                                        coe-coe {!!} {!!} {!!}
                                         ◾ coe≡ e
                                         ◾ Bᵐcoecoe γ γᴬ δ ρ ϕ τ (coe (a.sg γ δ) (coe (a.sg γ δ ⁻¹) (α , αʷ)))
-                                            (α , αʷ) (αᴬ , αᴿ) (a.sg γ δ) {!!} } }
+                                            (α , αʷ) (αᴬ , αᴿ) (a.sg γ δ)
+                                            {!!} } }
                                         -- essentially e
   where
     module a = TmS a
@@ -326,7 +328,7 @@ appS {Γ}{a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
                      (f.f γ γᴬ δ ρ ϕ (₁ ααʷ') (₁ αᴬᴿ') (₂ ααʷ') (₂ αᴬᴿ'))
                      (f.t γ γᴬ δ ρ τ (₁ ααʷ') (₁ αᴬᴿ') (₂ ααʷ') (₂ αᴬᴿ'))
     Bᵐcoecoe γ γᴬ δ ρ ϕ τ ααʷ ααʷ' p q = {!!}
-
+-}
 
 appP : {Γ : Con} {a : TmS Γ U} → {B : TyP (Γ ▶P El a)} → (f : TmP Γ (ΠP a B)) → TmP (Γ ▶P El a) B
 appP {a = a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
@@ -374,9 +376,14 @@ âppS {Γ}{T}{B} f τ = record { ᴬ  = λ γᴬ → f.ᴬ γᴬ τ ;
                               f  = λ γ γᴬ δ ρ ϕ → f.f γ γᴬ δ ρ ϕ τ ;
                               t  = λ γ γᴬ δ ρ τ' → f.t γ γᴬ δ ρ τ' τ ;
                               sg = λ γ δ → happly (f.sg γ δ) τ ;
-                              m  = λ γ γᴬ δ ρ ϕ τ' → {!!} ◾ happly (f.m γ γᴬ δ ρ ϕ τ') τ } -- path algebra
+                              m  = λ γ γᴬ δ ρ ϕ τ'
+                                     → coe→ (f.ᴹ (Γ.m γ γᴬ δ ρ ϕ τ')) τ _ _
+                                       (ext (λ τ → happly2 (TyS.ᴹ (B τ) (f.B.Γ.m γ γᴬ δ ρ ϕ τ'))
+                                                   (happly (f.sg γ δ) τ) (f.ᴬ γᴬ τ))) ⁻¹
+                                       ◾ happly (f.m γ γᴬ δ ρ ϕ τ') τ }
   where
     module f = TmS f
+    module Γ = Con Γ
 
 âppP : {Γ : Con} {T : Set} {B : T → TyP Γ} (f : TmP Γ (Π̂P T B)) (τ : T) → TmP Γ (B τ)
 âppP {Γ}{T}{B} f τ = record { ᴬ  = λ γᴬ → f.ᴬ γᴬ τ ;
@@ -400,7 +407,7 @@ id {Γ} = record { ᴬ   = λ γ → γ ;
                   f   = λ γ γᴬ δ ρ x → x ;
                   t   = λ γ γᴬ δ ρ x → x ;
                   sg  = λ γ δ → refl }
-
+                  
 _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 σ ∘ δ = record { ᴬ   = λ γ → σ.ᴬ (δ.ᴬ γ) ;
                  ᴹ   = λ γᴹ → σ.ᴹ (δ.ᴹ γᴹ) ;
@@ -432,7 +439,7 @@ _[_]TS B σ = record { ᴬ   = λ γ → B.ᴬ (σ.ᴬ γ) ;
   where
     module B = TyS B
     module σ = Sub σ
-
+{-
 _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
 _[_]TP A σ = record { ᴬ   = λ γ → A.ᴬ (σ.ᴬ γ) ;
                       ᴹ   = λ γᴹ αᴬ βᴬ → A.ᴹ (σ.ᴹ γᴹ) αᴬ βᴬ ;
@@ -651,4 +658,5 @@ atP {Γ}{a}{B} t u = appP {Γ}{a}{B} t [ < u >P ]tP
 {-_^_ : ∀ {k}{Γ Δ : Con}(σ : Sub Γ Δ)(A : Ty Δ k) → Sub (Γ ▶ (A [ σ ]T)) (Δ ▶ A)
 _^_ {k}{Γ} {Δ} σ A = {!!} --σ ∘ wk , ? --coe (Tm _ & [][]T) (vz {k}{Γ}{A [ σ ]T})
 infixl 5 _^_-}
+-}
 -}
