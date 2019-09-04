@@ -249,18 +249,9 @@ coe≡' : ∀{ℓ}{A B : Set ℓ}{p : A ≡ B}{q : B ≡ A} → {a : A} → {b :
   → a ≡ coe q b
 coe≡' {p = refl}{q = refl} r = r
 
-coe& : ∀{ℓ}{X : Set ℓ}{A B : X → Set ℓ}(f : (x : X) → A x)
-        (p : ((x : X) → A x) ≡ ((x : X) → B x))(x : X)(q : A x ≡ B x)
-       → (coe p f) x ≡ coe q (f x)
-coe& f p x q = {!!}
-
 coehapply2 : ∀{ℓ}{A A' B : Set ℓ}(f : A → B)(q : A ≡ A')
   → coe(happly2 (λ A B → A → B) q B) f ≡ λ a' → f (coe (q ⁻¹) a')
 coehapply2 {ℓ} {A} {.A} {B} f refl = refl
-
-{- a.ᴹ (a.B.Γ.m γ γᴬ δ ρ ϕ τ) (coe (a.sg γ δ ⁻¹) (α , αʷ)) ≡
-      coe (happly2 (λ γᴬ₁ δᴬ → γᴬ₁ → δᴬ) (a.sg γ δ) (a.ᴬ γᴬ))
-      (a.ᴹ (a.B.Γ.m γ γᴬ δ ρ ϕ τ)) (α , αʷ) -}
 
 aptot : ∀{ℓ}{A : Set ℓ}{B : A → Set}(f : (x : A) → B x){a₀ a₁ : A}(a₂ : a₀ ≡ a₁)
     → _≡_ {A = Σ Set λ X → X} (B a₀ , f a₀) (B a₁ , f a₁)
@@ -298,10 +289,14 @@ Lift-irrel (lift refl) (lift refl) = refl
   → (a₀ ≡ a₁) ≡ (a₀' ≡ a₁')
 ≡≡ refl refl = refl
 
-coe→ : ∀{ℓ ℓ'}{A : Set ℓ}{B₀ B₁ : A → Set ℓ'}(f₀ : (a : A) → B₀ a)(a : A)
+coe→ : ∀{ℓ ℓ'}{A : Set ℓ}{B₀ B₁ : A → Set ℓ'}(f : (a : A) → B₀ a)(a : A)
   (p : ((a : A) → B₀ a) ≡ ((a : A) → B₁ a)) (q : B₀ a ≡ B₁ a) (r : B₀ ≡ B₁)
-  → (coe p f₀) a ≡ coe q (f₀ a)
-coe→ f₀ a refl refl refl = refl
+  → (coe p f) a ≡ coe q (f a)
+coe→ f a refl refl refl = refl
+
+fcoe : ∀{ℓ ℓ'}{A A' : Set ℓ}{B : A → Set ℓ'}(f : (a : A) → B a){a : A'} p p' q
+  → f (coe p a) ≡ coe q (f (coe p' a))
+fcoe f refl refl refl = refl
 
 {-
 ,Σ=η : ∀{ℓ ℓ'}{A : Set ℓ}{B : A → Set ℓ'}{w w' : Σ A B}
