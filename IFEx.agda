@@ -70,27 +70,27 @@ module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ 
 
   elimPᵃ' : ∀{A}(tP : TmP Ω A) → ˢP A (elimcᵃ' id) (ᵈtP tP ωᵈ)
   elimPᵃ' {El a}   tP = coe≡' {q = ᵈt a _ & contPᵃ' idP tP ⁻¹}
-                               (apd (ˢt a (elimcᵃ' id)) (contPᵃ' idP tP)
-                               ◾ happly (elimtᵃ' id a) (coe (contᵃ' id a ⁻¹) tP) ⁻¹)
-                             ◾ coe∘ (ᵈt a ωcᵈ & contPᵃ' idP tP ⁻¹)
-                                  (ᵈt a ωcᵈ &
-                                   (contPᵃ' idP (coe (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP)) ◾
-                                    coecoe⁻¹' (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP)))
-                                  (ᵈtP (coe (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP)) ωᵈ)
-                             ◾ ᵈtP≡ tP (coe (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP))
-                                 (ᵈt a ωcᵈ &
-                                    (contPᵃ' idP (coe (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP)) ◾
-                                     coecoe⁻¹' (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP))
-                                    ◾ ᵈt a ωcᵈ & contPᵃ' idP tP ⁻¹)
-                                 (coecoe⁻¹ (contᵃ' id a) tP ⁻¹)
+                          (apd (ˢt a (elimcᵃ' id)) (contPᵃ' idP tP) ◾ happly (elimtᵃ' id a) (coe (contᵃ' id a ⁻¹) tP) ⁻¹)
+                        ◾ coe∘ (ᵈt a ωcᵈ & contPᵃ' idP tP ⁻¹) _
+                          (ᵈtP (coe (contᵃ' id a) (coe (contᵃ' id a ⁻¹) tP)) ωᵈ)
+                        ◾ ᵈtP≡ tP _ _ (coecoe⁻¹ (contᵃ' id a) tP ⁻¹)
     where ᵈtP≡ : ∀ {A} (tP tP' : TmP Ω A) p (q : tP ≡ tP') → coe p (ᵈtP tP' ωᵈ) ≡ ᵈtP tP ωᵈ
           ᵈtP≡ tP .tP refl refl = refl
   elimPᵃ' {Π̂P T A} tP = λ τ → elimPᵃ' {A τ} (tP $̂P τ)
-  elimPᵃ' {a ⇒P A} tP = λ α → coe (ˢPAid≡ _ _ _ _ ((tP ᵃtP) (conᵃ Ω) & {!!}) {!!} {!!})
+  elimPᵃ' {a ⇒P A} tP = λ α → let e' = happly (elimtᵃ' id a) α in
+                              let e : (coe (contᵃ' id a) α ᵃtP) (conᵃ Ω) ≡ α
+                                  e = contPᵃ' idP (coe (contᵃ' id a) α) ◾ coecoe⁻¹' (contᵃ' id a) α in
+                              coe (ˢPAid≡ (ᵃtP≡ e) (ᵈP A ωcᵈ & ᵃtP≡ e)
+                                   (ᵈtP≡ _ _ (e ⁻¹)
+                                    ◾ ᵈtP tP ωᵈ α & e'))
                                    (elimPᵃ' {A} (tP $P coe (contᵃ' id a) α))
-    where ˢPAid≡ : ∀ α α' αᵈ αᵈ'(p : α ≡ α') p' (q : coe p' αᵈ ≡ αᵈ')
+    where ˢPAid≡ : ∀ {α α' αᵈ αᵈ'} (p : α ≡ α') p' (q : coe p' αᵈ ≡ αᵈ')
                    → ˢP A (elimcᵃ' id) {α} αᵈ ≡ ˢP A (elimcᵃ' id) {α'} αᵈ'
-          ˢPAid≡ α .α αᵈ .αᵈ refl refl refl = refl
+          ˢPAid≡ refl refl refl = refl
+          ᵃtP≡ : ∀ {α α'} (p : α ≡ α') → (tP ᵃtP) (conᵃ Ω) α ≡ (tP ᵃtP) (conᵃ Ω) α'
+          ᵃtP≡ refl = refl
+          ᵈtP≡ : ∀ {α α' αᵈ} p q (r : α ≡ α') → coe p (ᵈtP tP ωᵈ α' αᵈ) ≡ ᵈtP tP ωᵈ α (coe q αᵈ)
+          ᵈtP≡ refl refl refl = refl
 
   elimᵃ' : ∀{Γ}(σP : SubP Ω Γ) → ˢC Γ (elimcᵃ' id) (ᵈsP σP ωᵈ)
   elimᵃ' εP         = lift tt
