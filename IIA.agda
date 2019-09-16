@@ -23,7 +23,7 @@ Sub : Con → Con → Set₁
 Sub Γ Δ = Γ → Δ
 
 ∙ : Con
-∙ = Lift ⊤
+∙ = Lift _ ⊤
 
 _▶_ : ∀(Γ : Con) → Ty Γ → Con
 Γ ▶ A = Σ Γ λ γ → A γ 
@@ -115,7 +115,7 @@ U[] : ∀{Γ Δ}{σ : Sub Γ Δ} → (U [ σ ]T) ≡ U
 U[] = refl
 
 El : ∀{Γ}(a : Tm Γ U) → Ty Γ
-El a γ = Lift (a γ)
+El a γ = Lift _ (a γ)
 
 El[] : ∀{Γ Δ}{σ : Sub Γ Δ}{a : Tm Δ U}
        → (El a [ σ ]T) ≡ (El (a [ σ ]t))

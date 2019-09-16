@@ -36,10 +36,8 @@ module Constructor {Ωc}(Ω : Con Ωc) where
   contPᵃ' εP         tP              = ⊥-elim (TmP∙ tP)
   contPᵃ' (σP ,P sP) (varP vvzP)     = refl
   contPᵃ' (σP ,P sP) (varP (vvsP v)) = contPᵃ' σP (varP v)
-  contPᵃ' (σP ,P sP) (tP $P uP)      = contPᵃ' (σP ,P sP) tP
-                                         ⊗ contPᵃ' (σP ,P sP) uP
-                                       ◾ conPᵃ' & (_$P_ (tP [ σP ,P sP ]tP)
-                                         & coecoe⁻¹ (contᵃ' id _) (uP [ σP ,P sP ]tP))
+  contPᵃ' (σP ,P sP) (tP $P uP)      = contPᵃ' (σP ,P sP) tP ⊗ contPᵃ' (σP ,P sP) uP
+                                       ◾ conPᵃ' & (_$P_ (tP [ σP ,P sP ]tP) & coecoe⁻¹ (contᵃ' id _) _)
   contPᵃ' (σP ,P sP) (tP $̂P τ)       = happly (contPᵃ' _ tP) τ
 
 concᵃ : ∀{Ωc}(Ω : Con Ωc) → _ᵃc {suc zero} Ωc
@@ -77,12 +75,9 @@ module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ 
     where ᵈtP≡ : ∀ {A} (tP tP' : TmP Ω A) p (q : tP ≡ tP') → coe p (ᵈtP tP' ωᵈ) ≡ ᵈtP tP ωᵈ
           ᵈtP≡ tP .tP refl refl = refl
   elimPᵃ' {Π̂P T A} tP = λ τ → elimPᵃ' {A τ} (tP $̂P τ)
-  elimPᵃ' {a ⇒P A} tP = λ α → let e' = happly (elimtᵃ' id a) α in
-                              let e : (coe (contᵃ' id a) α ᵃtP) (conᵃ Ω) ≡ α
+  elimPᵃ' {a ⇒P A} tP = λ α → let e' = happly (elimtᵃ' id a) α
                                   e = contPᵃ' idP (coe (contᵃ' id a) α) ◾ coecoe⁻¹' (contᵃ' id a) α in
-                              coe (ˢPAid≡ (ᵃtP≡ e) (ᵈP A ωcᵈ & ᵃtP≡ e)
-                                   (ᵈtP≡ _ _ (e ⁻¹)
-                                    ◾ ᵈtP tP ωᵈ α & e'))
+                              coe (ˢPAid≡ (ᵃtP≡ e) (ᵈP A ωcᵈ & ᵃtP≡ e) (ᵈtP≡ _ _ (e ⁻¹) ◾ ᵈtP tP ωᵈ α & e'))
                                    (elimPᵃ' {A} (tP $P coe (contᵃ' id a) α))
     where ˢPAid≡ : ∀ {α α' αᵈ αᵈ'} (p : α ≡ α') p' (q : coe p' αᵈ ≡ αᵈ')
                    → ˢP A (elimcᵃ' id) {α} αᵈ ≡ ˢP A (elimcᵃ' id) {α'} αᵈ'
