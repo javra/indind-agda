@@ -65,7 +65,7 @@ wk,ᵈ {σ = σ , x} = ,≡ wk,ᵈ refl
 
 idᵈ : ∀{ℓ' ℓ Γc γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ᵈs id γcᵈ ≡ γcᵈ
 idᵈ {Γc = ∙c}      = refl
-idᵈ {Γc = Γc ▶c x} = ,≡ idᵈ refl
+idᵈ {Γc = Γc ▶c x} {γc , α} {γcᵈ , αᵈ} = ,≡ idᵈ refl
 {-# REWRITE idᵈ #-}
 
 ∘ᵈ : ∀{ℓ' ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}
@@ -123,6 +123,7 @@ wkP,ᵈ (σP ,P x) = ,≡ (wkP,ᵈ σP) refl
 
 idPᵈ : ∀{ℓ' ℓ Γc}{Γ : Con Γc}{γc}{γcᵈ : ᵈc Γc γc}{γ}{γᵈ : ᵈC {ℓ'}{ℓ} Γ γcᵈ γ}
         → ᵈsP {ℓ'}{ℓ}{Γc}{Γ} idP γᵈ ≡ γᵈ
-idPᵈ {Γ = ∙} {γᵈ = lift tt}      = refl
-idPᵈ {Γ = Γ ▶P A} {γᵈ = γᵈ , αᵈ} = ,≡ (idPᵈ {Γ = Γ}) refl
+idPᵈ {Γ = ∙}                 {γᵈ = lift tt} = refl
+idPᵈ {Γ = Γ ▶P A} {γ = γ , α}{γᵈ = γᵈ , αᵈ} = ,≡ (idPᵈ {Γ = Γ}) refl
 {-# REWRITE idPᵈ #-}
+

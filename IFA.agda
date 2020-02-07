@@ -63,6 +63,10 @@ idᵃ {ℓ}{∙c}      γc       = refl
 idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ γc) refl
 {-# REWRITE idᵃ #-}
 
+wkid : ∀{ℓ Γc B} γc → _ᵃs {ℓ} (wk {B = B} (id {Γ = Γc})) γc ≡ ₁ γc
+wkid (γc , α) = refl
+{-# REWRITE wkid #-}
+
 ∘ᵃ : ∀{ℓ Γc Δc Σc}{σ : Sub Δc Σc}{δ : Sub Γc Δc}{γc} → _ᵃs {ℓ} (σ ∘ δ) γc ≡ (σ ᵃs) ((δ ᵃs) γc)
 ∘ᵃ {σ = ε}                      = refl
 ∘ᵃ {σ = σ , t} {δ = δ}{γc = γc} = happly2 _,_ (∘ᵃ {σ = σ} {δ = δ}) ((t ᵃt) ((δ ᵃs) γc))
