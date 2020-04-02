@@ -109,7 +109,8 @@ U {Γ} = record { ᴬ   = λ γ → Set ;
 
 El : {Γ : Con} (a : TmS Γ U) → TyP Γ
 El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
-                    E   = S.El a.E }
+                    E   = S.El a.E ;
+                    w   = {!!} }
   where
     module Γ = Con Γ
     module a = TmS a
