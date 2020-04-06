@@ -1,5 +1,5 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
-module EWRSgRec (X Y : Set₁) (y : Y) where
+module EWRSgRec where
 
 open import Lib hiding (id; _∘_)
 open import II using (PS; P; S)
@@ -26,21 +26,17 @@ record Con : Set₂ where
     ᴬ   : Set₁
     Ec  : S.SCon
     E   : S.Con Ec
-    wc  : _ᵃc {suc zero} Ec
-    w   : (E ᵃC) wc
 
 record TyS (Γ : Con) : Set₃ where
   module Γ = Con Γ
   field
     ᴬ   : Γ.ᴬ → Set₁
-    w   : Set₁
 
 record TyP (Γ : Con) : Set₃ where
   module Γ = Con Γ
   field
     ᴬ   : Γ.ᴬ → Set
     E   : S.TyP Γ.Ec
-    w   : (E ᵃP) Γ.wc
 
 Ty : (Γ : Con) (k : PS) → Set₃
 Ty Γ P = TyP Γ
@@ -80,9 +76,7 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S B = record { ᴬ   = Σ Γ.ᴬ B.ᴬ ;
                   Ec  = Γ.Ec S.▶c S.U ;
-                  E   = Γ.E S.▶S S.U ;
-                  wc  = Γ.wc , B.w ;
-                  w   = Γ.w }
+                  E   = Γ.E S.▶S S.U }
   where
     module Γ = Con Γ
     module B = TyS B
@@ -90,9 +84,7 @@ _▶S_ : (Γ : Con) → TyS Γ → Con
 _▶P_ : (Γ : Con) → TyP Γ → Con
 Γ ▶P A = record { ᴬ   = Σ Γ.ᴬ A.ᴬ ;
                   Ec  = Γ.Ec ;
-                  E   = Γ.E S.▶P A.E ;
-                  wc  = Γ.wc ;
-                  w   = Γ.w , A.w }
+                  E   = Γ.E S.▶P A.E }
   where
     module Γ = Con Γ
     module A = TyP A
@@ -102,22 +94,19 @@ _▶_ {P} Γ A = Γ ▶P A
 _▶_ {S} Γ A = Γ ▶S A
 
 U : {Γ : Con} → TyS Γ
-U {Γ} = record { ᴬ   = λ γ → Set ;
-                 w   = Y }
+U {Γ} = record { ᴬ   = λ γ → Set }
   where
     module Γ = Con Γ
 
 El : {Γ : Con} (a : TmS Γ U) → TyP Γ
 El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
-                    E   = S.El a.E ;
-                    w   = {!!} }
+                    E   = S.El a.E }
   where
     module Γ = Con Γ
     module a = TmS a
 
 ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
-ΠS {Γ} a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
-                      w   = X → B.w }
+ΠS {Γ} a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) }
   where
     module Γ = Con Γ
     module a = TmS a
@@ -125,8 +114,7 @@ El {Γ} a = record { ᴬ   = λ γ → a.ᴬ γ ;
 
 ΠP : {Γ : Con} → (a : TmS Γ U) → (B : TyP (Γ ▶P El a)) → TyP Γ
 ΠP a B = record { ᴬ   = λ γ → (α : a.ᴬ γ) → B.ᴬ (γ , α) ;
-                  E   = a.E S.⇒P B.E ;
-                  w   = λ α → B.w }
+                  E   = a.E S.⇒P B.E }
   where
     module a = TmS a
     module B = TyP B
@@ -152,16 +140,14 @@ appP {a = a}{B} t = record { ᴬ   = λ { (γ , α) → t.ᴬ γ α } ;
     module t = TmP t
 
 _[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
-_[_]TS B σ = record { ᴬ   = λ γ → B.ᴬ (σ.ᴬ γ) ;
-                      w   = {!!} }
+_[_]TS B σ = record { ᴬ   = λ γ → B.ᴬ (σ.ᴬ γ) }
   where
     module B = TyS B
     module σ = Sub σ
 
 _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
 _[_]TP A σ = record { ᴬ   = λ γ → A.ᴬ (σ.ᴬ γ) ;
-                      E   = A.E S.[ σ.Ec ]T ;
-                      w   = {!!} }
+                      E   = A.E S.[ σ.Ec ]T }
   where
     module A = TyP A
     module σ = Sub σ
