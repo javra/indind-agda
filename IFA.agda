@@ -55,15 +55,15 @@ vs,ᵃ {x = x $S α} = happly (vs,ᵃ {x = x}) α
 
 wk,ᵃ : ∀{ℓ Γc Δc B γc}{α : B ᵃS}{σ : Sub Γc Δc} → _ᵃs {ℓ} (wk {B = B} σ) (γc , α) ≡ (σ ᵃs) γc
 wk,ᵃ {σ = ε}     = refl
-wk,ᵃ {σ = σ , x} = ,≡ wk,ᵃ refl
+wk,ᵃ {σ = σ , t} = ,≡ wk,ᵃ refl
 {-# REWRITE wk,ᵃ #-}
 
 idᵃ : ∀{ℓ Γc} → (γc : _ᵃc {ℓ} Γc) → (id ᵃs) γc ≡ γc
 idᵃ {ℓ}{∙c}      γc       = refl
-idᵃ {ℓ}{Γc ▶c x} (γc , α) = ,≡ (idᵃ γc) refl
+idᵃ {ℓ}{Γc ▶c B} (γc , α) = ,≡ (idᵃ γc) refl
 {-# REWRITE idᵃ #-}
 
-wkid : ∀{ℓ Γc B} γc → _ᵃs {ℓ} (wk {B = B} (id {Γ = Γc})) γc ≡ ₁ γc
+wkid : ∀{ℓ Γc B} γc → _ᵃs {ℓ} (wk {B = B} (id {Γc = Γc})) γc ≡ ₁ γc
 wkid (γc , α) = refl
 {-# REWRITE wkid #-}
 

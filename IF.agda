@@ -94,9 +94,9 @@ wkβ {δc = δc , var x}{γc}       = (λ δc₁ → δc₁ , (var x [ γc ]t)) 
 wkβ {δc = δc , (x $S α)}{γc}{t} = _,_ (wk δc ∘ (γc , _)) & vs[,]t (x $S α) t γc ◾ (λ δc₁ → δc₁ , ((x [ γc ]t) $S α)) & wkβ
 {-# REWRITE wkβ #-}
 
-id : ∀{Γ} → Sub Γ Γ
-id {∙c}     = ε
-id {Γ ▶c B} = wk id , vz
+id : ∀{Γc} → Sub Γc Γc
+id {∙c}      = ε
+id {Γc ▶c B} = wk id , vz
 
 idl : ∀{Γ}{Δ} → (δ : Sub Γ Δ) → id ∘ δ ≡ δ
 idl ε       = refl
