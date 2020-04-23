@@ -16,13 +16,13 @@ module IFW where
 ʷc ∙c        γc       = lift tt
 ʷc (Γc ▶c B) (γc , α) = ʷc Γc γc , λ _ → ʷS B
 
-ʷP' : (B : TyS)(β : Set₁) → ʷS B
-ʷP' U        β = ⊤
-ʷP' (Π̂S T B) β = λ τ → ʷP' (B τ) β
+ʷP' : (B : TyS) → ʷS B
+ʷP' U        = ⊤
+ʷP' (Π̂S T B) = λ τ → ʷP' (B τ)
 
 ʷt : ∀{Γc B}(t : Tm Γc B){γc : ᴱc Γc ᵃc}(α : (ᴱt t ᵃt) γc)
      → ᵈt (ᴱt t) (ʷc Γc γc) α
-ʷt (var vvz)     {γc , β} αʷ = ʷP' _ β
+ʷt (var vvz)     {γc , β} αʷ = ʷP' _
 ʷt (var (vvs x))          αʷ = ʷt (var x) αʷ
 ʷt (t $S τ)               αʷ = ʷt t αʷ
 

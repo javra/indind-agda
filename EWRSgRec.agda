@@ -259,7 +259,7 @@ _,t_ {S} = _,tS_
 π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
 π₂S {Γ}{Δ}{A} σ = record { ᴬ   = λ γ → ₂ (σ.ᴬ γ) ;
                            E   = S.π₂ σ.Ec ;
-                           w   = λ α → ? }
+                           w   = λ α → {!!} }
   where
     module σ = Sub σ
 
