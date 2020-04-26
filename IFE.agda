@@ -78,3 +78,44 @@ idᴱ {Γc ▶c B} = (λ σ → σ , vz) & (wk & idᴱ {Γc = Γc})
 π₂ᴱ : ∀{Γc Δc A}{σ : Sub Γc (Δc ▶c A)} → ᴱt (π₂ σ) ≡ π₂ (ᴱs σ)
 π₂ᴱ {σ = σ , x} = refl
 {-# REWRITE π₂ᴱ #-}
+
+ᴱtP : ∀{Γc}{Γ : Con Γc}{A} → TmP Γ A → TmP (ᴱC Γ) (ᴱP A)
+ᴱtP (varP vvzP)     = varP vvzP
+ᴱtP (varP (vvsP x)) = vsP (ᴱtP (varP x))
+ᴱtP (tP $P sP)      = ᴱtP tP $P ᴱtP sP
+ᴱtP (tP $̂P τ)       = ᴱtP tP $̂P τ
+
+ᴱsP : ∀{Γc}{Γ Δ : Con Γc} → SubP Γ Δ → SubP (ᴱC Γ) (ᴱC Δ)
+ᴱsP εP         = εP
+ᴱsP (σP ,P tP) = ᴱsP σP ,P ᴱtP tP
+
+vsP,ᴱ : ∀{Γc}{Γ : Con Γc}{A A'}{tP : TmP Γ A}
+        → ᴱtP (vsP {A' = A'} tP) ≡ vsP (ᴱtP tP)
+vsP,ᴱ {tP = varP x}   = refl
+vsP,ᴱ {tP = tP $P sP} = _$P_ & vsP,ᴱ {tP = tP}
+                        ⊗ vsP,ᴱ {tP = sP}
+vsP,ᴱ {tP = tP $̂P τ}  = (λ tP → tP $̂P τ) & vsP,ᴱ {tP = tP}
+{-# REWRITE vsP,ᴱ #-}
+
+[]ᴱtP : ∀{Γc}{Γ Δ : Con Γc}{A}{tP : TmP Δ A}{σP : SubP Γ Δ}
+        → ᴱtP (tP [ σP ]tP) ≡ ᴱtP tP [ ᴱsP σP ]tP
+[]ᴱtP {tP = varP vvzP}     {σP ,P _} = refl
+[]ᴱtP {tP = varP (vvsP x)} {σP ,P _} = []ᴱtP {tP = varP x} {σP}
+[]ᴱtP {tP = tP $P sP}      {σP}      = _$P_ & []ᴱtP {tP = tP} {σP}
+                                         ⊗ []ᴱtP {tP = sP} {σP}
+[]ᴱtP {tP = tP $̂P τ}       {σP}      = (λ tP → tP $̂P τ)
+                                         & []ᴱtP {tP = tP} {σP}
+{-# REWRITE []ᴱtP #-}
+
+wkP,ᴱ : ∀{Γc}{Γ Δ : Con Γc}{A}(σP : SubP Γ Δ)
+        → ᴱsP (wkP {A = A} σP) ≡ wkP (ᴱsP σP)
+wkP,ᴱ εP         = refl
+wkP,ᴱ (σP ,P tP) = (λ x → x ,P _) & wkP,ᴱ σP
+{-# REWRITE wkP,ᴱ #-}
+
+idPᴱ : ∀{Γc}{Γ : Con Γc} → ᴱsP (idP {Γ = Γ}) ≡ idP
+idPᴱ {Γ = ∙}      = refl
+idPᴱ {Γ = Γ ▶P A} = (λ σP → wkP σP ,P vzP) & (idPᴱ {Γ = Γ})
+{-# REWRITE idPᴱ #-}
+
+--TODO complete substitution calculus

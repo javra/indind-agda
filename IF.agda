@@ -256,5 +256,13 @@ TmP∙ (tP $̂P τ)  = TmP∙ tP
 [idP]tP {tP = tP $̂P τ}       = happly2 _$̂P_ [idP]tP τ
 {-# REWRITE [idP]tP #-}
 
+vsP[,P]tP : ∀{Γc}{Γ Δ : Con Γc}{A A'}{tP : TmP Δ A}{sP}{σP : SubP Γ Δ}
+            → (vsP {A' = A'} tP) [ σP ,P sP ]tP ≡ tP [ σP ]tP
+vsP[,P]tP {tP = varP x} = refl
+vsP[,P]tP {tP = tP $P sP} {rP} {σP} = _$P_ & vsP[,P]tP {tP = tP}{rP}{σP}
+                                      ⊗ vsP[,P]tP {tP = sP} {rP} {σP}
+vsP[,P]tP {tP = tP $̂P τ} {sP} {σP} = (λ tP → tP $̂P τ)
+                                      & vsP[,P]tP {tP = tP}{sP}{σP}
+{-# REWRITE vsP[,P]tP #-}
 
 --TODO complete calculus here
