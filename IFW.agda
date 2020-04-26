@@ -13,7 +13,7 @@ module IFW {Ωc}(Ω : Con Ωc)
     Z : Nat
     S : Nat → Nat
 
-  ʷS : TyS → Set₁
+  ʷS : (B : TyS) → Set₁
   ʷS U        = Set
   ʷS (Π̂S T B) = (τ : T) → ʷS (B τ)
 
@@ -21,5 +21,9 @@ module IFW {Ωc}(Ω : Con Ωc)
   ʷc ε                 = lift tt
   ʷc (_,_ {B = B} σ t) = ʷc σ , λ _ → ʷS B
 
-  ʷP : ∀{A}(tP : TmP Ω A) → ᵈP (ᴱP A) (ʷc id) (({!!} ᵃtP) ω)
-  ʷP = {!!}
+  ʷP : ∀{A}(tP : TmP Ω A) → ᵈP (ᴱP A) (ʷc id) ((ᴱtP tP ᵃtP) ω)
+  ʷP {A} tP = ?
+
+  ʷC : ∀{Γ}(σP : SubP Ω Γ) → ᵈC (ᴱC Γ) (ʷc id) ((ᴱsP σP ᵃsP) ω)
+  ʷC εP         = lift tt
+  ʷC (σP ,P tP) = ʷC σP , ʷP tP
