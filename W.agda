@@ -1,11 +1,13 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 open import Lib hiding (id; _∘_)
 open import IFA
-import EWRSgRec as S
+open import IFD
+import E
 
-module W (X Y : Set₁) (y : Y) (Ω : S.Con) where
+module W (Ω : E.Con)
+  {ωc : _ᵃc {zero} (E.Con.Ec Ω)}(ω : (E.Con.E Ω ᵃC) ωc) where
 
-  module Ω = S.Con Ω
+  module Ω = E.Con Ω
 
 {-
 infixl 7 _[_]TS
@@ -25,84 +27,84 @@ infixl 3 _▶P_
 
   record Con : Set₃ where
     field
-      S : S.Con
-      w : (ω : S.Sub Ω S) → _ᵃc {suc zero} (S.Con.Ec S)
+      E  : E.Con
+      wc : (σ : E.Sub Ω E) → ᵈc {suc zero} (E.Con.Ec E) ((E.Sub.Ec σ ᵃs) ωc)
 
   record TyS (Γ : Con) : Set₃ where
     module Γ = Con Γ
     field
-      S : S.TyS Γ.S
-      w : Set₁
+      E : E.TyS Γ.E
+      w : _ᵃc {zero} (E.Con.Ec Γ.E) → Set₁
 
   record TyP (Γ : Con) : Set₃ where
     module Γ = Con Γ
     field
-      S : S.TyP Γ.S
-      w : (ω : S.Sub Ω Γ.S)(t : S.TmP Ω (S S.[ ω ]TP)) → (S.TyP.E S ᵃP) (Γ.w ω)
+      E : E.TyP Γ.E
 
   record TmS (Γ : Con) (B : TyS Γ) : Set₃ where
     module Γ = Con Γ
     module B = TyS B
     field
-      S : S.TmS Γ.S B.S
-      w : (ω : S.Sub Ω Γ.S) → B.w ≡ (S.TmS.E S ᵃt) (Γ.w ω)
+      E  : E.TmS Γ.E B.E
+      w' : Set₁
+      w  : ∀(σ : E.Sub Ω Γ.E) α → ᵈt (E.TmS.E E) (Γ.wc σ) α ≡ w'
 
   record TmP (Γ : Con) (A : TyP Γ) : Set₃ where
     module Γ = Con Γ
     module A = TyP A
     field
-      S : S.TmP Γ.S A.S
-      w : (ω : S.Sub Ω Γ.S) → A.w ω (S S.[ ω ]tP) ≡ {!!} -- fix univ levels
+      E : E.TmP Γ.E A.E
 
   ∙ : Con
-  ∙ = record { S = S.∙
-             ; w = λ ω → lift tt
+  ∙ = record { E = E.∙
              }
 
   _▶S_ : (Γ : Con) → TyS Γ → Con
-  Γ ▶S B = record { S = Γ.S S.▶S B.S
-                  ; w = λ ω → Γ.w (S.π₁S ω) , B.w
+  Γ ▶S B = record { E  = Γ.E E.▶S B.E
+                  ; wc = λ σ → Γ.wc (E.π₁S σ) , λ _ → B.w ((E.Sub.Ec (E.π₁S σ) ᵃs) ωc)
                   }
     where
       module Γ = Con Γ
       module B = TyS B
 
   _▶P_ : (Γ : Con) → TyP Γ → Con
-  Γ ▶P A = record { S = Γ.S S.▶P A.S
-                  ; w = λ ω → Γ.w (S.π₁P ω)
+  Γ ▶P A = record { E  = Γ.E E.▶P A.E
+                  ; wc = λ σ → Γ.wc (E.π₁P σ)
                   }
     where
       module Γ = Con Γ
       module A = TyP A
 
   U : {Γ : Con} → TyS Γ
-  U {Γ} = record { S = S.U
-                 ; w = Y }
+  U {Γ} = record { E = E.U
+                 ; w = λ _ → Set
+                 }
     where
       module Γ = Con Γ
 
   El : {Γ : Con} (a : TmS Γ U) → TyP Γ
-  El {Γ} a = record { S = S.El a.S
-                    ; w = λ ω t → coe (a.w ω) y
+  El {Γ} a = record { E = E.El a.E
                     }
     where
       module Γ = Con Γ
       module a = TmS a
 
   ΠS : {Γ : Con} → (a : TmS Γ U) → (B : TyS (Γ ▶P El a)) → TyS Γ
-  ΠS {Γ} a B = record { S = S.ΠS a.S B.S
-                      ; w = X → B.w
+  ΠS {Γ} a B = record { E = E.ΠS a.E B.E
+                      ; w = λ γ → (aS.E ᵃt) γ → B.w γ
                       }
     where
       module Γ = Con Γ
       module a = TmS a
+      module aS = E.TmS a.E
       module B = TyS B
 
   --add ΠP
 
   appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
-  appS {Γ}{a}{B} t = record { S = S.appS t.S
-                            ; w = λ ω → {!!} ◾ t.w (S.π₁P ω)
+  appS {Γ}{a}{B} t = record { E  = E.appS t.E
+                            ; w' = t.w'
+                            ; w  = λ σ α → t.w (E.π₁P {A = E.El a.E} σ) α
                             }
     where
       module Γ = Con Γ
