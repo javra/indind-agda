@@ -55,6 +55,12 @@ infixl 3 _▶P_
     field
       E : E.TmP Γ.E A.E
 
+  record Sub (Γ : Con) (Δ : Con) : Set₂ where
+    module Γ = Con Γ
+    module Δ = Con Δ
+    field
+      E : E.Sub Γ.E Δ.E
+
   ∙ : Con
   ∙ = record { E = E.∙
              }
@@ -99,7 +105,14 @@ infixl 3 _▶P_
       module aS = E.TmS a.E
       module B = TyS B
 
-  --add ΠP
+  ΠP : {Γ : Con} → (a : TmS Γ U) → (A : TyP (Γ ▶P El a)) → TyP Γ
+  ΠP {Γ} a A = record { E = E.ΠP a.E A.E
+                      }
+    where
+      module Γ = Con Γ
+      module a = TmS a
+      module aS = E.TmS a.E
+      module A = TyP A
 
   appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (t : TmS Γ (ΠS a B)) → TmS (Γ ▶P El a) B
   appS {Γ}{a}{B} t = record { E  = E.appS t.E
@@ -111,5 +124,94 @@ infixl 3 _▶P_
       module a = TmS a
       module B = TyS B
       module t = TmS t
-               
 
+  appP : {Γ : Con}{a : TmS Γ U}{B : TyP (Γ ▶P El a)} → (t : TmP Γ (ΠP a B)) → TmP (Γ ▶P El a) B
+  appP {Γ}{a}{B} t = record { E = E.appP t.E
+                            }
+    where
+      module a = TmS a
+      module B = TyP B
+      module t = TmP t
+
+  _[_]TS : ∀{Γ Δ} → TyS Δ → Sub Γ Δ → TyS Γ
+  _[_]TS B σ = record { E = B.E E.[ σ.E ]TS
+                      ; w = λ γ → B.w ((E.Sub.Ec σ.E ᵃs) γ)
+                      }
+    where
+      module B = TyS B
+      module σ = Sub σ
+
+  _[_]TP : ∀{Γ Δ} → TyP Δ → Sub Γ Δ → TyP Γ
+  _[_]TP A σ = record { E = A.E E.[ σ.E ]TP
+                      }
+    where
+      module A = TyP A
+      module σ = Sub σ
+
+  _[_]tS : ∀{Γ Δ}{A : TyS Δ} → TmS Δ A → (σ : Sub Γ Δ) → TmS Γ (A [ σ ]TS)
+  _[_]tS {Γ}{Δ}{A} a σ = record { E  = a.E E.[ σ.E ]tS
+                                ; w' = a.w' -- ???
+                                ; w  = λ δ α → {!!} ◾ a.w (σ.E E.∘ δ) α
+                                }
+    where
+      module A = TyS A
+      module a = TmS a
+      module σ = Sub σ
+
+  _[_]tP : ∀{Γ Δ}{A : TyP Δ} → TmP Δ A → (σ : Sub Γ Δ) → TmP Γ (A [ σ ]TP)
+  _[_]tP {Γ}{Δ}{A} a σ = record { E = a.E E.[ σ.E ]tP
+                                }
+    where
+      module A = TyP A
+      module a = TmP a
+      module σ = Sub σ
+
+  id : ∀{Γ} → Sub Γ Γ
+  id {Γ} = record { E = E.id
+                  }
+    where
+      module Γ = Con Γ
+
+  _∘_ : ∀{Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
+  σ ∘ δ = record { E = σ.E E.∘ δ.E
+                 }
+    where
+      module σ = Sub σ
+      module δ = Sub δ
+
+  ε : ∀{Γ} → Sub Γ ∙
+  ε = record { E = E.ε }
+
+  _,tS_  : ∀{Γ Δ}(σ : Sub Γ Δ){B : TyS Δ} → TmS Γ (B [ σ ]TS) → Sub Γ (Δ ▶S B)
+  σ ,tS t = record { E = σ.E E.,tS t.E }
+    where
+      module σ = Sub σ
+      module t = TmS t
+
+  _,tP_ : ∀{Γ Δ}(σ : Sub Γ Δ) → {A : TyP Δ} → (t : TmP Γ (A [ σ ]TP)) → Sub Γ (Δ ▶P A)
+  _,tP_ σ {A} t = record { E = σ.E E.,tP t.E }
+    where
+      module σ = Sub σ
+      module A = TyP A
+      module t = TmP t
+
+  π₁S : ∀{Γ Δ}{B : TyS Δ} → Sub Γ (Δ ▶S B) → Sub Γ Δ
+  π₁S σ = record { E = E.π₁S σ.E }
+    where
+      module σ = Sub σ
+
+  π₁P : ∀{Γ Δ}{A : TyP Δ} → Sub Γ (Δ ▶P A) → Sub Γ Δ
+  π₁P σ = record { E = E.π₁P σ.E }
+    where
+      module σ = Sub σ
+
+  π₂S : ∀{Γ Δ}{B : TyS Δ}(σ : Sub Γ (Δ ▶S B)) → TmS Γ (B [ π₁S {B = B} σ ]TS)
+  π₂S {Γ}{Δ}{B} σ = record { E = E.π₂S {B = B} σ.E }
+    where
+      module σ = Sub σ
+
+  π₂P : ∀{Γ Δ}{A : TyP Δ}(σ : Sub Γ (Δ ▶P A)) → TmP Γ (A [ π₁P {A = A} σ ]TP)
+  π₂P {Γ}{Δ}{A} σ = record { E = E.π₂P σ.E }
+    where
+      module A = TyP A
+      module σ = Sub σ

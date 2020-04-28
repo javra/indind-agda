@@ -235,7 +235,7 @@ _,t_ {S} = _,tS_
 π₁ {P}{A = A} = π₁P {A = A}
 π₁ {S}        = π₁S
 
-π₂S : ∀{Γ Δ}{A : TyS Δ}(σ : Sub Γ (Δ ▶S A)) → TmS Γ (A [ π₁S σ ]TS)
+π₂S : ∀{Γ Δ}{B : TyS Δ}(σ : Sub Γ (Δ ▶S B)) → TmS Γ (B [ π₁S σ ]TS)
 π₂S {Γ}{Δ}{A} σ = record { ᴬ   = λ γ → ₂ (σ.ᴬ γ) ;
                            E   = S.π₂ σ.Ec }
   where
