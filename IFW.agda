@@ -32,15 +32,17 @@ module IFW {Ωc}(Ω : Con Ωc)
   ʷt ε       (t $S τ)      α = ʷt ε t α
   ʷt (σ , s) (t $S τ)      α = ʷt (σ , s) t α
 
-  ʷtid : ∀{B}(t : Tm Ωc B) α → ᵈt (ᴱt t) (ʷc id) α ≡ rhs id t
-  ʷtid t α = ʷt id t α
+  ʷtid : ∀{B}(t : Tm Ωc B) α → ᵈt (ᴱt t) (ʷc id) α ≡ ʷS B --rhs id t
+  ʷtid t α = {!!} --ʷt id t α --this is temporary to ignore Π̂P
   {-# REWRITE ʷtid #-}
 
-  ʷP : ∀{A}(tP : TmP Ω A) → ᵈP (ᴱP A) (ʷc id) ((ᴱtP tP ᵃtP) ω)
-  ʷP {El a} tP = {!!}
-  ʷP {Π̂P T A} tP = {!!} --maybe defer, needs ext ctxt
-  ʷP {a ⇒P A} tP = λ α αᵈ → {!!}
+
+  ʷP : ∀(A : TyP _)(α : (ᴱP A ᵃP) ωc)(acc : Set)
+       → ᵈP (ᴱP A) (ʷc id) α
+  ʷP (El a) α acc = acc
+  ʷP (Π̂P T A) ϕ acc = {!!} --ignore for now
+  ʷP (a ⇒P A) ϕ acc = λ α αᵈ → ʷP A (ϕ α) (acc × αᵈ)
 
   ʷC : ∀{Γ}(σP : SubP Ω Γ) → ᵈC (ᴱC Γ) (ʷc id) ((ᴱsP σP ᵃsP) ω)
-  ʷC εP         = lift tt
-  ʷC (σP ,P tP) = ʷC σP , ʷP tP
+  ʷC εP                   = lift tt
+  ʷC (_,P_ {A = A} σP tP) = ʷC σP , ʷP A ((ᴱtP tP ᵃtP) ω) ⊤
