@@ -11,7 +11,7 @@ module Constructor {Ωc}(Ω : Con Ωc) where
 
   conSᵃ' : ∀{B}(t : Tm Ωc B) → _ᵃS {suc zero} B
   conSᵃ' {U}      t     = TmP Ω (El t)
-  conSᵃ' {Π̂S T B} t     = λ τ → conSᵃ' (t $S τ)
+  conSᵃ' {T ⇒̂S B} t     = λ τ → conSᵃ' (t $S τ)
 
   concᵃ' : ∀{Γc}(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
   concᵃ' ε       = lift tt
@@ -54,7 +54,7 @@ module Eliminator {Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ 
   elimSᵃ' {U}      a = λ α → coe (ᵈt a _ & (contPᵃ' idP (coe (contᵃ' id a) α)
                                  ◾ coecoe⁻¹' (contᵃ' id a) α))
                                    (ᵈtP {suc zero} {suc zero} (coe (contᵃ' id a) α) ωᵈ)
-  elimSᵃ' {Π̂S T B} t = λ τ → elimSᵃ' {B τ} (t $S τ)
+  elimSᵃ' {T ⇒̂S B} t = λ τ → elimSᵃ' {B} (t $S τ)
 
   elimcᵃ' : ∀{Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
   elimcᵃ' ε       = lift tt

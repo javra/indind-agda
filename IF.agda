@@ -11,8 +11,8 @@ infixl 8 _[_]tP
 infixl 8 _[_]t
 
 data TyS : Set₁ where
-  U  : TyS
-  Π̂S : (T : Set) → (T → TyS) → TyS
+  U    : TyS
+  _⇒̂S_ : (T : Set) → TyS → TyS
 
 data SCon : Set₁ where
   ∙c   : SCon
@@ -24,7 +24,7 @@ data Var : SCon → TyS → Set₁ where
 
 data Tm (Γc : SCon) : TyS → Set₁ where
   var  : ∀{A} → Var Γc A → Tm Γc A
-  _$S_ : ∀{T B} → Tm Γc (Π̂S T B) → (τ : T) → Tm Γc (B τ)
+  _$S_ : ∀{T B} → Tm Γc (T ⇒̂S B) → T → Tm Γc B
 
 data TyP (Γc : SCon) : Set₁ where
   El   : Tm Γc U → TyP Γc
@@ -41,9 +41,6 @@ Tm∙c (var ())
 Tm∙c (t $S α) = Tm∙c t
 
 -- Non dependent, recursive functions
-_⇒̂S_ : Set → TyS → TyS
-T ⇒̂S A = Π̂S T (λ _ → A)
-
 _⇒̂P_ : ∀{Γc} → Set → TyP Γc → TyP Γc
 T ⇒̂P A = Π̂P T (λ _ → A)
 
@@ -177,7 +174,7 @@ El[] = refl
 Π̂P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{T}{A : T → TyP Δ} → (Π̂P T A) [ δ ]T ≡ Π̂P T λ α → A α [ δ ]T
 Π̂P[] = refl
 
-$S[] : ∀{Γ Δ}{δ : Sub Γ Δ}{T}{B}{t : Tm Δ (Π̂S T B)}{α} → (t $S α) [ δ ]t ≡ (t [ δ ]t) $S α
+$S[] : ∀{Γ Δ}{δ : Sub Γ Δ}{T}{B}{t : Tm Δ (T ⇒̂S B)}{α} → (t $S α) [ δ ]t ≡ (t [ δ ]t) $S α
 $S[] = refl
 
 ⇒P[] : ∀{Γ Δ}{δ : Sub Γ Δ}{a : Tm Δ U}{A : TyP Δ} → (a ⇒P A) [ δ ]T ≡ (a [ δ ]t) ⇒P (A [ δ ]T)

@@ -9,7 +9,7 @@ open import IFS
 
 conSᵃ' : ∀{Ωc}(Ω : Con Ωc){B}(t : Tm Ωc B) → _ᵃS {suc zero} B
 conSᵃ' Ω {U}      t     = TmP Ω (El t)
-conSᵃ' Ω {Π̂S T B} t     = λ τ → conSᵃ' Ω (t $S τ)
+conSᵃ' Ω {T ⇒̂S B} t     = λ τ → conSᵃ' Ω (t $S τ)
 
 concᵃ' : ∀{Ωc}(Ω : Con Ωc)(Γc : SCon)(σ : Sub Ωc Γc) → _ᵃc {suc zero} Γc
 concᵃ' Ω ∙c        ε       = lift tt
@@ -20,7 +20,7 @@ contᵃ' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
 contᵃ' Ω ε           t                   = ⊥-elim (Tm∙c t)
 contᵃ' Ω (σ , s)     (var vvz)           = refl
 contᵃ' Ω (σ , s) {B} (var (vvs x))       = contᵃ' Ω σ (var x)
-contᵃ' Ω (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {Π̂S T B''} t) α
+contᵃ' Ω (σ , s) {B} (_$S_ {T}{B''} t α) = happly (contᵃ' Ω (σ , s) {T ⇒̂S B''} t) α
 {-# REWRITE contᵃ' #-}
 
 contᵃ'' : ∀{Ωc}(Ω : Con Ωc){Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B)
@@ -54,8 +54,8 @@ conᵃ : ∀{Γc}(Γ : Con Γc) → (Γ ᵃC) (concᵃ Γ)
 conᵃ Γ = conᵃ' Γ Γ idP
 
 elimSᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC {suc zero} Ω ωcᵈ (conᵃ Ω)){B}(t : Tm Ωc B) → ˢS B (ᵈt t ωcᵈ)
-elimSᵃ' Ω ωᵈ {U}      t = λ α → lower (ᵈtP α ωᵈ)
-elimSᵃ' Ω ωᵈ {Π̂S T B} t = λ τ → elimSᵃ' Ω ωᵈ {B τ} (t $S τ)
+elimSᵃ' Ω ωᵈ {U}      t = λ α → ᵈtP α ωᵈ
+elimSᵃ' Ω ωᵈ {T ⇒̂S B} t = λ τ → elimSᵃ' Ω ωᵈ {B} (t $S τ)
 
 elimcᵃ' : ∀{Ωc}(Ω : Con Ωc){ωcᵈ}(ωᵈ : ᵈC Ω ωcᵈ (conᵃ Ω)){Γc}(σ : Sub Ωc Γc) → ˢc Γc (ᵈs σ ωcᵈ)
 elimcᵃ' Ω ωᵈ ε       = lift tt
@@ -101,7 +101,7 @@ nsucc : nat → nat
 nsucc = ₂ (₁ (conᵃ Γnat))
 
 nrec : ∀(P : nat → Set₁)(ps : ∀ n → P n → P (nsucc n))(pz : P nzero) → ∀ n → P n
-nrec P ps pz = elimSᵃ' Γnat (_ , (λ m p → lift (ps m p)) , lift pz) vz
+nrec P ps pz = elimSᵃ' Γnat (_ , (λ m p → ps m p) , pz) vz
 
 Γuu : Con (∙c ▶c U ▶c U)
 Γuu = ∙ ▶P El (vs vz) ▶P El vz
@@ -120,13 +120,13 @@ st2 = ₂ (conᵃ Γuu)
 
 uurec : ∀(P : uu1 → Set₁)(Q : uu2 → Set₁)(p : P st1)(q : Q st2) →
          ˢc (∙c ▶c U ▶c U) (_ , P , Q)
-uurec P Q p q = elimcᵃ Γuu (_ , lift p , lift q)
+uurec P Q p q = elimcᵃ Γuu (_ , p , q)
 
 postulate N : Set
 postulate Nz  : N
 postulate Ns  : N → N
 
-Γvec : Set → Con (∙c ▶c Π̂S N (λ _ → U))
+Γvec : Set → Con (∙c ▶c N ⇒̂S U)
 Γvec A = ∙ ▶P El (vz $S Nz) ▶P (Π̂P A (λ a → Π̂P N λ m → (vz $S m) ⇒P El (vz $S Ns m)))
 
 vec : Set → N → Set₁

@@ -7,7 +7,7 @@ open import IFA
 
 ᵐS : ∀{ℓ' ℓ} B (αc : _ᵃS {ℓ} B)(βc : _ᵃS {ℓ'} B) → Set (ℓ' ⊔ ℓ)
 ᵐS U        αc βc = αc → βc
-ᵐS (Π̂S T B) αc βc = (τ : T) → ᵐS (B τ) (αc τ) (βc τ)
+ᵐS (T ⇒̂S B) αc βc = (τ : T) → ᵐS B (αc τ) (βc τ)
 
 ᵐc : ∀{ℓ' ℓ} Γc (γc : _ᵃc {ℓ} Γc)(δc : _ᵃc {ℓ'} Γc) → Set (ℓ' ⊔ ℓ)
 ᵐc ∙c        γc        δc        = Lift _ ⊤

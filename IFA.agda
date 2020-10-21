@@ -6,7 +6,7 @@ open import IF
 
 _ᵃS : ∀{ℓ} → TyS → Set (suc ℓ)
 _ᵃS {ℓ} U        = Set ℓ
-_ᵃS {ℓ} (Π̂S T B) = (τ : T) → _ᵃS {ℓ} (B τ)
+_ᵃS {ℓ} (T ⇒̂S B) = T → _ᵃS {ℓ} B
 
 _ᵃc : ∀{ℓ} → SCon → Set (suc ℓ)
 ∙c ᵃc             = Lift _ ⊤
