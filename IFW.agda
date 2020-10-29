@@ -40,15 +40,12 @@ f2 B f = cur B (ʷS' B (Set ℓ)) λ l → cur B (Set ℓ) (f l)
 ʷv' U        A = A
 ʷv' (T ⇒̂S B) A = λ τ τ' → ʷv' B (A × (τ ≡ τ'))
 
-ʷv : (B : TyS) → ʷS' B (ʷS' B (Set ℓ))
-ʷv B = f2 B (f1 B (ʷv' B (Lift _ ⊤)))
-
 hd : ∀{B}{Γc}(t : Tm Γc B) → TyS
 hd {B} (var x)  = B
 hd     (t $S x) = hd t
 
 ʷt' : ∀{B}{Γc}(t : Tm Γc B) → ʷS' B (ʷS' (hd t) (Set ℓ))
-ʷt' {B} (var x)  = ʷv B
+ʷt' {B} (var x)  = f2 B (f1 B (ʷv' B (Lift _ ⊤)))
 ʷt'     (t $S τ) = ʷt' t τ
 
 ʷt= : ∀{B}{Γc}(σ : Sub Ωc Γc)(t : Tm Γc B)(α : (ᴱt t ᵃt) ((ᴱs σ ᵃs) ωc)) → ᵈt (ᴱt t) (ʷc σ) α ≡ ʷS' (hd t) (Set ℓ)
@@ -57,15 +54,23 @@ hd     (t $S x) = hd t
 ʷt= ε       (t $S τ)      α = ʷt= ε t α
 ʷt= (σ , s) (t $S τ)      α = ʷt= (σ , s) t α
 
+ʷt=idv : ∀{B}(v : Var Ωc B)(α : (var (ᴱv v) ᵃt) ωc) → ᵈt (var (ᴱv v)) (ʷc id) α ≡ ʷS' B (Set ℓ)
+ʷt=idv v α = ʷt= id (var v) α
+{-# REWRITE ʷt=idv #-}
+
 ʷt=id : ∀{B}(t : Tm Ωc B)(α : (ᴱt t ᵃt) ωc) → ᵈt (ᴱt t) (ʷc id) α ≡ ʷS' (hd t) (Set ℓ)
 ʷt=id t α = ʷt= id t α
 {-# REWRITE ʷt=id #-}
 
-ʷP : ∀ A (α : (ᴱP A ᵃP) ωc) → ᵈP (ᴱP A) (ʷc id) α
-ʷP (El a)   α = ʷt' a
-ʷP (Π̂P T A) ϕ = λ τ → ʷP (A τ) (ϕ τ)
-ʷP (a ⇒P A) ϕ = λ α αᵈ → ʷP A (ϕ α)
+foo : ∀{B}(t : Tm Ωc B) → ʷS' (hd t) (Set ℓ) → ʷS' B (Set ℓ)
+foo (var v)  αᵈ = αᵈ
+foo (t $S τ) αᵈ = foo t αᵈ τ
+
+ʷP : ∀ A (α : (ᴱP A ᵃP) ωc)(X : Set ℓ) → ᵈP (ᴱP A) (ʷc id) α
+ʷP (El a)   α X = ʷt' a
+ʷP (Π̂P T A) ϕ X = λ τ → ʷP (A τ) (ϕ τ) X
+ʷP (a ⇒P A) ϕ X = λ α αᵈ → ʷP A (ϕ α) (X × foo a αᵈ)
 
 ʷC : ∀{Γ}(σP : SubP Ω Γ) → ᵈC (ᴱC Γ) (ʷc id) ((ᴱsP σP ᵃsP) ω)
 ʷC εP                   = lift tt
-ʷC (_,P_ {A = A} σP tP) = ʷC σP , ʷP A ((ᴱtP tP ᵃtP) ω)
+ʷC (_,P_ {A = A} σP tP) = ʷC σP , ʷP A ((ᴱtP tP ᵃtP) ω) (Lift _ ⊤)
