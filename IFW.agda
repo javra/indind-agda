@@ -25,16 +25,16 @@ unc : (B : TyS)(Acc : Set) → Set
 unc U        Acc = Acc
 unc (T ⇒̂S B) Acc = T × unc B Acc
 
-f1 : (B : TyS) → ʷ²S B → unc B ⊤ → unc B ⊤ → Set ℓ
-f1 U        w l       k        = w
-f1 (T ⇒̂S B) w (τ , l) (τ' , k) = f1 B (w τ τ') l k
+f1 : {B : TyS} → ʷ²S B → unc B ⊤ → unc B ⊤ → Set ℓ
+f1 {U}      w l       k        = w
+f1 {T ⇒̂S B} w (τ , l) (τ' , k) = f1 (w τ τ') l k
 
 cur : ∀{ℓ}(B : TyS)(X : Set ℓ) → (unc B ⊤ → X) → ʷS' B X
 cur U        X f = f tt
 cur (T ⇒̂S B) X f = λ τ → cur B X λ l → f (τ , l)
 
-f2 : (B : TyS) → (unc B ⊤ → unc B ⊤ → Set ℓ) → ʷS' B (ʷS' B (Set ℓ))
-f2 B f = cur B (ʷS' B (Set ℓ)) λ l → cur B (Set ℓ) (f l)
+f2 : {B : TyS} → (unc B ⊤ → unc B ⊤ → Set ℓ) → ʷS' B (ʷS' B (Set ℓ))
+f2 {B} f = cur B (ʷS' B (Set ℓ)) λ l → cur B (Set ℓ) (f l)
 
 ʷv' : (B : TyS) (A : Set ℓ) → ʷ²S B
 ʷv' U        A = A
@@ -42,11 +42,11 @@ f2 B f = cur B (ʷS' B (Set ℓ)) λ l → cur B (Set ℓ) (f l)
 
 hd : ∀{B}{Γc}(t : Tm Γc B) → TyS
 hd {B} (var x)  = B
-hd     (t $S x) = hd t
+hd     (t $S τ) = hd t
 
-ʷt' : ∀{B}{Γc}(t : Tm Γc B) → ʷS' B (ʷS' (hd t) (Set ℓ))
-ʷt' {B} (var x)  = f2 B (f1 B (ʷv' B (Lift _ ⊤)))
-ʷt'     (t $S τ) = ʷt' t τ
+hdfill : ∀{B}(t : Tm Ωc B){X : Set (suc ℓ)} → ʷS' (hd t) X → ʷS' B X
+hdfill (var x)  α = α
+hdfill (t $S τ) α = hdfill t α τ
 
 ʷt= : ∀{B}{Γc}(σ : Sub Ωc Γc)(t : Tm Γc B)(α : (ᴱt t ᵃt) ((ᴱs σ ᵃs) ωc)) → ᵈt (ᴱt t) (ʷc σ) α ≡ ʷS' (hd t) (Set ℓ)
 ʷt= (σ , s) (var vvz)     α = refl
@@ -62,14 +62,10 @@ hd     (t $S x) = hd t
 ʷt=id t α = ʷt= id t α
 {-# REWRITE ʷt=id #-}
 
-foo : ∀{B}(t : Tm Ωc B) → ʷS' (hd t) (Set ℓ) → ʷS' B (Set ℓ)
-foo (var v)  αᵈ = αᵈ
-foo (t $S τ) αᵈ = foo t αᵈ τ
-
 ʷP : ∀ A (α : (ᴱP A ᵃP) ωc)(X : Set ℓ) → ᵈP (ᴱP A) (ʷc id) α
-ʷP (El a)   α X = ʷt' a
+ʷP (El a)   α X = hdfill a (f2 (f1 (ʷv' (hd a) X))) -- check again, maybe revive old ʷt'
 ʷP (Π̂P T A) ϕ X = λ τ → ʷP (A τ) (ϕ τ) X
-ʷP (a ⇒P A) ϕ X = λ α αᵈ → ʷP A (ϕ α) (X × foo a αᵈ)
+ʷP (a ⇒P A) ϕ X = λ α αᵈ → ʷP A (ϕ α) (X × hdfill a αᵈ)
 
 ʷC : ∀{Γ}(σP : SubP Ω Γ) → ᵈC (ᴱC Γ) (ʷc id) ((ᴱsP σP ᵃsP) ω)
 ʷC εP                   = lift tt

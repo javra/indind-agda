@@ -2,6 +2,10 @@
 
 open import Lib hiding (id; _∘_)
 open import IF
+open import IFA
+open import IFE
+open import IFD
+open import IFS
 
 postulate N A : Set
 postulate Nz  : N
@@ -18,5 +22,18 @@ postulate nᴱ : vᴱ
 postulate cᴱ : A → N → vᴱ → vᴱ
 
 nʷ = ₂ (₁ (ʷC Γvec (_ , nᴱ , cᴱ) idP))
-
 cʷ = ₂ (ʷC Γvec (_ , nᴱ , cᴱ) idP)
+
+foo = ˢc (ᴱc (∙c ▶c (N ⇒̂S U))) (ʷc Γvec (_ , nᴱ , cᴱ) id)
+
+postulate s : foo
+
+bar = ˢC (ᴱC Γvec) s {_ , nᴱ , cᴱ} (ʷC Γvec (_ , nᴱ , cᴱ) idP)
+
+postulate s' : bar
+postulate a : A
+
+baz = happly (₂ s' a Nz nᴱ) (Ns Nz)
+
+baz' : ₂ s (cᴱ a Nz nᴱ) (Ns Nz)
+baz' = coe (happly (₂ s' a Nz nᴱ) (Ns Nz) ⁻¹) (_ , coe (happly (₂ (₁ s')) Nz ⁻¹) (_ , refl) , refl)
