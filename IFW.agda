@@ -62,7 +62,7 @@ hdfill (t $S τ) α = hdfill t α τ
 ʷt=id t α = ʷt= id t α
 {-# REWRITE ʷt=id #-}
 
-ʷP : ∀ A (α : (ᴱP A ᵃP) ωc)(X : Set ℓ) → ᵈP (ᴱP A) (ʷc id) α
+ʷP : ∀ A (α : (ᴱP A ᵃP) ωc)(X : Set ℓ) → ᵈP (ᴱP A) (ʷc id) α -- maybe put the term itself into the signature
 ʷP (El a)   α X = hdfill a (f2 (f1 (ʷv' (hd a) X))) -- check again, maybe revive old ʷt'
 ʷP (Π̂P T A) ϕ X = λ τ → ʷP (A τ) (ϕ τ) X
 ʷP (a ⇒P A) ϕ X = λ α αᵈ → ʷP A (ϕ α) (X × hdfill a αᵈ)

@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --rewriting --allow-unsolved-metas #-}
 module IFS where
 
 open import Lib hiding (id; _∘_)
@@ -31,3 +31,10 @@ open import IFD
 ˢs : ∀{ℓ' ℓ Γc Δc} σ {γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc} → ˢc Γc γcᵈ → ˢc Δc (ᵈs σ γcᵈ)
 ˢs ε       γcˢ = lift tt
 ˢs (σ , t) γcˢ = ˢs σ γcˢ , ˢt t γcˢ
+
+ˢtP : ∀{ℓ' ℓ Γc Γ}{A : TyP Γc}(tP : TmP Γ A){γc}{γcᵈ : ᵈc {ℓ'}{ℓ} Γc γc}{γcˢ : ˢc Γc γcᵈ}
+      {γ}{γᵈ : ᵈC Γ γcᵈ γ} → ˢC Γ γcˢ γᵈ → ˢP A γcˢ (ᵈtP tP γᵈ)
+ˢtP (varP vvzP)              (γˢ , αˢ) = αˢ
+ˢtP (varP (vvsP vP))         (γˢ , αˢ) = ˢtP (varP vP) γˢ
+ˢtP (t $P s)         {γ = γ} γˢ        = coe (ˢP _ _ & (ᵈtP t _ _ & ˢtP s γˢ)) (ˢtP t γˢ ((s ᵃtP) γ))
+ˢtP (t $̂P τ)                 γˢ        = ˢtP t γˢ τ
