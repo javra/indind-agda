@@ -5,7 +5,7 @@ module IF where
 open import Lib hiding (id; _∘_)
 
 infixl 3 _▶c_ _▶P_
-infixr 5 _$S_ _⇒P_
+infixr 5 _$S_ _⇒P_ _⇒̂S_
 infixl 7 _[_]T
 infixl 8 _[_]tP
 infixl 8 _[_]t

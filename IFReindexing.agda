@@ -29,21 +29,33 @@ open IFW Ω ω
 ᴿc ε       = lift tt
 ᴿc (σ , t) = ᴿc σ , ᴿS t
 
-ᴿt : ∀{B}{Γc}(σ : Sub Ωc Γc)(t : Tm Γc B) → (t ᵃt) (ᴿc σ) ≡ ᴿS (t [ σ ]t)
-ᴿt (σ , s) (var vvz)     = refl
-ᴿt (σ , s) (var (vvs v)) = ᴿt σ (var v)
-ᴿt  ε      (t $S τ)      = happly (ᴿt ε t) τ
-ᴿt (σ , s) (t $S τ)      = happly (ᴿt (σ , s) t) τ
+ᴿt= : ∀{B}{Γc}(σ : Sub Ωc Γc)(t : Tm Γc B) → (t ᵃt) (ᴿc σ) ≡ ᴿS (t [ σ ]t)
+ᴿt= (σ , s) (var vvz)     = refl
+ᴿt= (σ , s) (var (vvs v)) = ᴿt= σ (var v)
+ᴿt=  ε      (t $S τ)      = happly (ᴿt= ε t) τ
+ᴿt= (σ , s) (t $S τ)      = happly (ᴿt= (σ , s) t) τ
 
-ᴿtid : ∀{B}(t : Tm Ωc B) → (t ᵃt) (ᴿc id) ≡ ᴿS t
-ᴿtid t = ᴿt id t
-{-# REWRITE ᴿtid #-}
+ᴿt=id : ∀{B}(t : Tm Ωc B) → (t ᵃt) (ᴿc id) ≡ ᴿS t
+ᴿt=id t = ᴿt= id t
+{-# REWRITE ᴿt=id #-}
 
-ᴿP : (A : TyP Ωc)(α : (ᴱP A ᵃP) ωc) → _ᵃP {suc zero} A (ᴿc id)
-ᴿP (El a)   α = α , {!!}
-ᴿP (Π̂P T A) ϕ = λ τ → ᴿP (A τ) (ϕ τ)
-ᴿP (a ⇒P A) ϕ = λ α → ᴿP A (ϕ (₁ α))
+ᴿv : ∀(v : Var Ωc U) α → ˢt (ᴱt (var v)) ωcˢ α
+ᴿv vvz α = {!!}
+ᴿv (vvs v) α = {!!}
+
+ᴿt : ∀{B}(t : Tm Ωc U) α → hdfill t (ˢt (ᴱt t) ωcˢ α)
+ᴿt t α = {!!}
+
+ᴿP : ∀ A (α : (ᴱP A ᵃP) ωc) (αˢ : ˢP (ᴱP A) ωcˢ (ʷP A α (Lift _ ⊤))) → _ᵃP {suc zero} A (ᴿc id)
+ᴿP (El a)   α αˢ = α , {!!} --coe (hdfill a & (αˢ ⁻¹)) {!!}
+ᴿP (Π̂P T A) ϕ ϕˢ = λ τ → ᴿP (A τ) (ϕ τ) (ϕˢ τ)
+ᴿP (a ⇒P A) ϕ ϕˢ = λ α → ᴿP A (ϕ (₁ α)) {!!}
+
+ᴿP' : ∀{A}(tP : TmP Ω A) → _ᵃP {suc zero} A (ᴿc id)
+ᴿP' {El a}   tP = (ᴱtP tP ᵃtP) ω , {!!}
+ᴿP' {Π̂P T A} tP = λ τ → ᴿP' (tP $̂P τ)
+ᴿP' {a ⇒P A} tP = λ { α → ᴿP' {A} (tP $P {!!}) } -- nope
 
 ᴿC : ∀{Γ}(σP : SubP Ω Γ) → _ᵃC {suc zero} Γ (ᴿc id)
 ᴿC εP                   = lift tt
-ᴿC (_,P_ {A = A} σP tP) = ᴿC σP , ᴿP A ((ᴱtP tP ᵃtP) ω)
+ᴿC (_,P_ {A = A} σP tP) = ᴿC σP , ᴿP A ((ᴱtP tP ᵃtP) ω) {!!} --(ˢtP (ᴱtP tP) ωˢ)
