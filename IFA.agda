@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --prop --rewriting #-}
 module IFA where
 
 open import Lib hiding (id; _∘_)

@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting --allow-unsolved-meta #-}
+{-# OPTIONS --prop --rewriting --allow-unsolved-meta #-}
 module IFD where
 
 open import Lib hiding (id; _∘_)

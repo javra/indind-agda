@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --prop --rewriting #-}
 
 module IF where
 

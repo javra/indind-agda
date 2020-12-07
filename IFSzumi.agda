@@ -55,7 +55,7 @@ F0t : ∀{Γc B}(t : Tm Γc B) → F0S' Γc B
 F0t {B = U}      (var vvz) = inr _
 F0t {B = T ⇒̂S B} (var vvz) = λ τ → F0S'fun B (λ { (inl x) → inl x ;
                                                   (inr x) → inr (τ , x) }) (F0t {B = B} (var vvz))
-F0t {Γc}{B}      (var (vvs x)) = F0S'fun B inl (F0t (var x))
+F0t {B = B}      (var (vvs x)) = F0S'fun B inl (F0t (var x))
 F0t              (t $S τ)      = F0t t τ
 
 F0P : ∀{Ωc B}(t : Tm Ωc B) → (CodS B ᵃP) (_ , F0c Ωc)

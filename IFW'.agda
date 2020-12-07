@@ -1,10 +1,11 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
+-- This is a version of wellformedness where we assume erasure does nothing
+
 open import Lib hiding (id; _∘_)
 open import IF
 open import IFA
 open import IFD
-open import IFE
 
 module IFW' {Ωc}(Ω : Con Ωc)
   {ωc : _ᵃc {zero} Ωc}(ω : (Ω ᵃC) ωc) where
@@ -20,8 +21,7 @@ module IFW' {Ωc}(Ω : Con Ωc)
 ʷt : ∀{Γc}(σ : Sub Ωc Γc){B}(t : Tm Γc B) → ᵈt t (ʷc σ) ≡ ʷS B ((t ᵃt) ((σ ᵃs) ωc))
 ʷt (σ , s) (var vvz)     = refl
 ʷt (σ , s) (var (vvs x)) = ʷt σ (var x)
-ʷt ε       (t $S τ)      = happly (ʷt ε t) τ
-ʷt (σ , s) (t $S τ)      = happly (ʷt (σ , s) t) τ
+ʷt σ       (t $S τ)      = happly (ʷt σ t) τ
 
 ʷtid : ∀{B}(t : Tm Ωc B) → ᵈt t (ʷc id) ≡ ʷS B ((t ᵃt) ωc)
 ʷtid t = ʷt id t

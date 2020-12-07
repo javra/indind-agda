@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting --allow-unsolved-metas #-}
+{-# OPTIONS --prop --rewriting --allow-unsolved-metas #-}
 
 module Lib where
 
@@ -284,6 +284,12 @@ irrel refl refl = refl
 
 Lift-irrel : ∀{ℓ ℓ'}{A : Set ℓ}{a₀ a₁ : A}(p₀ p₁ : Lift ℓ' (a₀ ≡ a₁)) → p₀ ≡ p₁
 Lift-irrel (lift refl) (lift refl) = refl
+
+data PLift {ℓ} : Prop ℓ → Set ℓ where
+  plift : ∀ {A} → A → PLift A
+
+plower : ∀{ℓ A} → PLift {ℓ} A → A
+plower (plift a) = a
 
 ≡≡ : ∀{ℓ}{A : Set ℓ}{a₀ a₀' a₁ a₁' : A}(p : a₀ ≡ a₀')(q : a₁ ≡ a₁')
   → (a₀ ≡ a₁) ≡ (a₀' ≡ a₁')

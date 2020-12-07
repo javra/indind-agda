@@ -36,9 +36,9 @@ cur (T ⇒̂S B) X f = λ τ → cur B X λ l → f (τ , l)
 f2 : {B : TyS} → (unc B ⊤ → unc B ⊤ → Set ℓ) → ʷS' B (ʷS' B (Set ℓ))
 f2 {B} f = cur B (ʷS' B (Set ℓ)) λ l → cur B (Set ℓ) (f l)
 
-ʷv' : (B : TyS) (A : Set ℓ) → ʷ²S B
-ʷv' U        A = A
-ʷv' (T ⇒̂S B) A = λ τ τ' → ʷv' B (A × (τ ≡ τ'))
+ʷEl : (B : TyS) (A : Set ℓ) → ʷ²S B
+ʷEl U        A = A
+ʷEl (T ⇒̂S B) A = λ τ τ' → ʷEl B (A × (τ ≡ τ'))
 
 hd : ∀{B}{Γc}(t : Tm Γc B) → TyS
 hd {B} (var x)  = B
@@ -63,7 +63,7 @@ hdfill (t $S τ) α = hdfill t α τ
 {-# REWRITE ʷt=id #-}
 
 ʷP : ∀ A (α : (ᴱP A ᵃP) ωc)(X : Set ℓ) → ᵈP (ᴱP A) (ʷc id) α -- maybe put the term itself into the signature
-ʷP (El a)   α X = hdfill a (f2 (f1 (ʷv' (hd a) X))) -- check again, maybe revive old ʷt'
+ʷP (El a)   α X = hdfill a (f2 (f1 (ʷEl (hd a) X))) -- check again, maybe revive old ʷt'
 ʷP (Π̂P T A) ϕ X = λ τ → ʷP (A τ) (ϕ τ) X
 ʷP (a ⇒P A) ϕ X = λ α αᵈ → ʷP A (ϕ α) (X × hdfill a αᵈ)
 
