@@ -1,8 +1,8 @@
-{-# OPTIONS --rewriting --allow-unsolved-metas #-}
+{-# OPTIONS --prop --rewriting --allow-unsolved-metas #-}
 module EWRSg where
 
 open import Lib hiding (id; _∘_)
-open import II using (PS; P; S)
+--open import II using (PS; P; S)
 --import IIA as IIA
 import IF as S
 open import IFA
@@ -21,6 +21,10 @@ infixl 5 _,t_
 infixl 3 _▶_
 infixl 3 _▶S_
 infixl 3 _▶P_
+
+data PS : Set where
+  P : PS
+  S : PS
 
 record Con : Set₂ where
   field
@@ -221,8 +225,8 @@ El {Γ} a = record { ᴬ   = λ γᴬ → a.ᴬ γᴬ ;
 ΠS : {Γ : Con} (a : TmS Γ U) (B : TyS (Γ ▶P El a)) → TyS Γ
 ΠS {Γ} a B = record { ᴬ   = λ γᴬ → (α : a.ᴬ γᴬ) → B.ᴬ (γᴬ , α) ;
                       ᴹ   = λ {γᴬ} γᴹ πᴬ ϕᴬ → (αᴬ : a.ᴬ γᴬ)→ B.ᴹ (γᴹ , lift refl) (πᴬ αᴬ) (ϕᴬ (a.ᴹ γᴹ αᴬ)) ;
-                      w   = λ γc πᴱ → S.Π̂S ((a.E ᵃt) γc) λ α → B.w γc πᴱ ;
-                      R   = λ {γᴬ} πᴱ πᴬ → S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R πᴱ (πᴬ αᴬ) ;
+                      w   = λ γc πᴱ → ? ; --S.Π̂S ((a.E ᵃt) γc) λ α → B.w γc πᴱ ;
+                      R   = λ {γᴬ} πᴱ πᴬ → ? ; --S.Π̂S (a.ᴬ γᴬ) λ αᴬ → B.R πᴱ (πᴬ αᴬ) ;
                       F   = λ {γc} γ γᴬ {ρc} ρ π πᴬ πᴿ
                               → (xᴱ : (a.E ᵃt) γc)(xᴬ : a.ᴬ γᴬ)(xᴿ : (a.R γ γᴬ ᵃt) ρc xᴬ xᴱ)
                               → B.F (γ , xᴱ) (γᴬ , xᴬ) (ρ , xᴿ) π (πᴬ xᴬ) (πᴿ xᴬ) ;
@@ -356,7 +360,7 @@ appP {a = a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
     module a = TmS a
     module B = TyP B
     module f = TmP f
-
+{-
 --External function type
 Π̂S : {Γ : Con} (T : Set) (B : T → TyS Γ) → TyS Γ
 Π̂S T B = record { ᴬ   = λ γᴬ → (τ : T) → TyS.ᴬ (B τ) γᴬ ;
@@ -378,7 +382,7 @@ appP {a = a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
                   sg = λ γ δ πᴱ πᴬ τ → TyP.sg (A τ) γ δ (πᴱ τ) (πᴬ τ)
                   {- m  = λ γ γᴬ δ ρ γᶠ τ' π πᴬ πʷ πᴿ τ
                          → TyP.m (A τ) γ γᴬ δ ρ γᶠ τ' (π τ) (πᴬ τ) (πʷ τ) (πᴿ τ) -} }
-
+-}
 âppS : {Γ : Con} {T : Set} {B : T → TyS Γ} (f : TmS Γ (Π̂S T B)) (τ : T) → TmS Γ (B τ)
 âppS {Γ}{T}{B} f τ = record { ᴬ  = λ γᴬ → f.ᴬ γᴬ τ ;
                               ᴹ  = λ γᴹ → f.ᴹ γᴹ τ ;

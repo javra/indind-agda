@@ -31,6 +31,10 @@ record Con : Set₂ where
     ᴾᴬ  : Set₁
     Ec  : S.SCon
     E   : S.Con Ec
+    wc  : ∀{γc}(γ : _ᵃC {zero} E γc) → S.SCon
+    w   : ∀{γc}(γ : (E ᵃC) γc) → S.Con (wc γ)
+    Rc  : ∀{γc}(γ : _ᵃC {zero} E γc)(γᴬ : ᴬ) → S.SCon
+    R   : ∀{γc}(γ : (E ᵃC) γc)(γᴬ : ᴬ) → S.Con (Rc γ γᴬ)
 
 record TyS (Γ : Con) : Set₂ where
   no-eta-equality
@@ -39,6 +43,8 @@ record TyS (Γ : Con) : Set₂ where
     ᴬ   : Γ.ᴬ → Set₁
     ᴹ   : ∀{γᴬ δᴬ} → Γ.ᴹ γᴬ δᴬ → ᴬ γᴬ → ᴬ δᴬ → Set
     ᴾᴬ  : Γ.ᴾᴬ → Set₁
+    w   : ∀(γc : _ᵃc {zero} Γ.Ec) → Set → S.TyS
+    R   : ∀{γᴬ}(α : Set)(αᴬ : ᴬ γᴬ) → S.TyS
 
 record TyP (Γ : Con) : Set₂ where
   module Γ = Con Γ
@@ -47,6 +53,8 @@ record TyP (Γ : Con) : Set₂ where
     ᴹ   : ∀{γᴬ δᴬ} → Γ.ᴹ γᴬ δᴬ → ᴬ γᴬ → ᴬ δᴬ → Set₁
     ᴾᴬ  : Γ.ᴾᴬ → Prop
     E   : S.TyP Γ.Ec
+    w   : ∀{γc}(γ : (Γ.E ᵃC) γc) → (E ᵃP) γc → S.TyP (Γ.wc γ)
+    R   : ∀{γc}(γ : (Γ.E ᵃC) γc){γᴬ : Γ.ᴬ}(α : (E ᵃP) γc)(αᴬ : ᴬ γᴬ) → S.TyP (Γ.Rc γ γᴬ)
 
 Ty : (Γ : Con) (k : PS) → Set₂
 Ty Γ P = TyP Γ
@@ -60,6 +68,8 @@ record TmS (Γ : Con) (B : TyS Γ) : Set₂ where
     ᴹ   : ∀{γᴬ δᴬ}(γᴹ : Γ.ᴹ γᴬ δᴬ) → B.ᴹ γᴹ (ᴬ γᴬ) (ᴬ δᴬ)
     ᴾᴬ  : (γᴾᴬ : Γ.ᴾᴬ) → B.ᴾᴬ γᴾᴬ
     E   : S.Tm Γ.Ec S.U
+    w   : ∀{γc}(γ : (Γ.E ᵃC) γc) → S.Tm (Γ.wc γ) (B.w γc ((E ᵃt) γc))
+    R   : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ) → S.Tm (Γ.Rc γ γᴬ) (B.R ((E ᵃt) γc) (ᴬ γᴬ))
 
 record TmP (Γ : Con) (A : TyP Γ) : Set₂ where
   module Γ = Con Γ
@@ -69,6 +79,8 @@ record TmP (Γ : Con) (A : TyP Γ) : Set₂ where
     ᴹ   : ∀{γᴬ δᴬ}(γᴹ : Γ.ᴹ γᴬ δᴬ) → A.ᴹ γᴹ (ᴬ γᴬ) (ᴬ δᴬ)
     ᴾᴬ  : (γᴾᴬ : Γ.ᴾᴬ) → A.ᴾᴬ γᴾᴬ
     E   : ∀{γc} → _ᵃC {zero} Γ.E γc → (A.E ᵃP) γc
+    w   : ∀{γc}(γ : (Γ.E ᵃC) γc){δc : _ᵃc {zero} (Γ.wc γ)} → (Γ.w γ ᵃC) δc → S.TmP (Γ.w γ) (A.w γ (E γ))
+    R   : ∀{γc}(γ : (Γ.E ᵃC) γc)(γᴬ : Γ.ᴬ){δc}(δ : _ᵃC {zero} (Γ.R γ γᴬ) δc) → S.TmP (Γ.R γ γᴬ) (A.R γ (E γ) (ᴬ γᴬ))
 
 Tm : {k : PS} → (Γ : Con) → (A : Ty Γ k) → Set₂
 Tm {P} = TmP
@@ -89,7 +101,11 @@ record Sub (Γ : Con) (Δ : Con) : Set₂ where
              ᴹ  = λ _ _ → Lift _ ⊤ ;
              ᴾᴬ = Lift _ ⊤ ;
              Ec = S.∙c ;
-             E  = S.∙ }
+             E  = S.∙ ;
+             wc = λ _ → S.∙c ;
+             w  = λ _ → S.∙ ;
+             Rc = λ _ _ → S.∙c ;
+             R  = λ _ _ → S.∙ }
              
 _▶S_ : (Γ : Con) → TyS Γ → Con
 Γ ▶S B = record { ᴬ   = Σ Γ.ᴬ B.ᴬ ;
