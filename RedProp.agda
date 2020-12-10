@@ -1,5 +1,5 @@
 {-# OPTIONS --prop --rewriting --allow-unsolved-metas #-}
-module AME where
+module RedProp where
 
 open import Lib hiding (id; _∘_)
 open import StrictLib renaming (_,_ to _p,_)
@@ -200,7 +200,7 @@ appS : {Γ : Con} {a : TmS Γ U} → {B : TyS (Γ ▶P El a)} → (f : TmS Γ (�
 appS {Γ}{a}{B} f = record { ᴬ   = λ { (γ , α) → f.ᴬ γ α } ;
                             ᴹ   = λ { {γᴬ , αᴬ} {δᴬ , βᴬ} (γᴹ , lift refl) → (f.ᴹ γᴹ αᴬ) } ;
                             ᴾᴬ  = λ { (γᴾᴬ , plift α) → f.ᴾᴬ γᴾᴬ α } ;
-                            E   = f.E  ;
+                            E   = f.E ;
                             w   = λ { (γ , α) → f.w γ S.$S α } ;
                             R   = λ { (γ , α) (γᴬ , αᴬ) → f.R γ γᴬ S.$S αᴬ } }
   where
